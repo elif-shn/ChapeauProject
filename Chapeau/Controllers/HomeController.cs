@@ -2,7 +2,7 @@ using System.Diagnostics;
 using Chapeau.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Chapeau.Controllers  hgadshvbasu
+namespace Chapeau.Controllers  
 {
     public class HomeController : Controller
     {
