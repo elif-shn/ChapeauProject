@@ -18,7 +18,7 @@ namespace Chapeau.Controllers
             return View();
         }
 
-        public IActionResult PrivacY()
+        public IActionResult Privacy()
         {
             return View();
         }
