@@ -1,4 +1,5 @@
-﻿using Chapeau.Models;
+﻿using Chapeau.Enums;
+using Chapeau.Models;
 using Chapeau.Repositories;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -13,30 +14,31 @@ namespace Chapeau.Controllers
         {
             _menuItemRepository = menuItemRepository;
         }
-        public ActionResult Index(string search)
+        public ActionResult Index(int? selectedMenuId, Category? selectedCategory)
         {
             List<MenuItemViewModel> menuViewModel = new List<MenuItemViewModel>();
 
-            try
+            MenuFilterViewModel menuFilterViewModel = new MenuFilterViewModel
             {
-                List<MenuItem> menuItems = _menuItemRepository.GetAll();
+                SelectedMenuId = selectedMenuId,
+                SelectedCategory = selectedCategory,
+                Categories = Enum.GetValues(typeof(Category)).Cast<Category>().ToList()
+            };
 
-                foreach (var item in menuItems)
+            List<MenuItem> menuItems = _menuItemRepository.GetAllByFilter(menuFilterViewModel);
+
+            foreach (var item in menuItems)
+            {
+                menuViewModel.Add(new MenuItemViewModel
                 {
-                    menuViewModel.Add(new MenuItemViewModel
-                    {
-                        MenuItemName = item.MenuItemName,
-                        MenuItemPrice = item.MenuItemPrice
-                    });
-                }
+                    MenuItemName = item.MenuItemName,
+                    MenuItemPrice = item.MenuItemPrice
+                });
+            }
 
-                return View("Index", menuViewModel);
-            }
-            catch (Exception ex)
-            {
-                ViewData["ErrorMessage"] = ex.Message;
-                return View("Index", new List<MenuItemViewModel>());
-            }
+            menuFilterViewModel.MenuItems = menuViewModel;
+
+            return View(menuFilterViewModel);
         }
     }
 }

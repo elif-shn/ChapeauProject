@@ -1,23 +1,45 @@
-﻿@model List<Chapeau.ViewModels.MenuItemViewModel>
+﻿@using Chapeau.Enums
+@model Chapeau.ViewModels.MenuFilterViewModel
+
 @{
     ViewData["Title"] = "MenuItems";
 }
 
 <h1 class="display-4 pb-4">Le MENU</h1>
 
+<form method="get" class="mb-4">
+    <div class="row">
+        <div class="col-md-4">
+            <select name="selectedMenuId" class="form-select">
+                <option value="">All Menus</option>
+                <option value="1">Lunch</option>
+                <option value="2">Dinner</option>
+                <option value="3">Drinks</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select name="selectedCategory" class="form-select">
+                <option value="">All Categories</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@((int)category)">@category</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
+    </div>
+</form>
+
 <table class="table table-success table-striped table-hover table-responsive">
     <tbody>
-        @{
-            foreach (var menuItem in Model)
-            {
-               
-                <tr class="table-warning">
-                    <td>@menuItem.MenuItemName</td>
-                    <td>@menuItem.MenuItemPrice</td>
-                </tr>
-                
-            }
+        @foreach (var menuItem in Model.MenuItems)
+        {
+            <tr class="table-warning">
+                <td>@menuItem.MenuItemName</td>
+                <td>€ @menuItem.MenuItemPrice.ToString("0.00")</td>
+            </tr>
         }
     </tbody>
 </table>
-

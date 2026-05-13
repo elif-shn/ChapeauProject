@@ -1,5 +1,6 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
+using Chapeau.ViewModels;
 using Microsoft.Data.SqlClient;
 
 namespace Chapeau.Repositories
@@ -11,13 +12,21 @@ namespace Chapeau.Repositories
         {
             _connectionString = configuration.GetConnectionString("ChapeauDataBase");
         }
-        public List<MenuItem> GetAll()
+        public List<MenuItem> GetAllByFilter(MenuFilterViewModel menuFilterViewModel)
         {
             List<MenuItem> menuItems = new List<MenuItem>();
+
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string query = "Select MenuItemId, MenuItemName, MenuItemPrice, MenuId, Category, VatPercentage, Stock From MenuItem";
+                string query = "SELECT MenuItemId, MenuItemName, MenuItemPrice, MenuId, Category, VatPercentage, Stock " +
+                "FROM MenuItem " +
+                "WHERE (@MenuId IS NULL OR MenuId = @MenuId) " +
+                "AND (@Category IS NULL OR Category = @Category)";
+
                 SqlCommand command = new SqlCommand(query, connection);
+
+                command.Parameters.AddWithValue("@MenuId", (object?)menuFilterViewModel.SelectedMenuId ?? DBNull.Value);
+                command.Parameters.AddWithValue("@Category", (object?)menuFilterViewModel.SelectedCategory ?? DBNull.Value);
                 command.Connection.Open();
                 SqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
@@ -27,6 +36,7 @@ namespace Chapeau.Repositories
                 }
                 reader.Close();
             }
+
             return menuItems;
         }
         private MenuItem ReadMenuItem(SqlDataReader reader)
