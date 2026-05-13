@@ -1,0 +1,23 @@
+﻿@model List<Chapeau.ViewModels.MenuItemViewModel>
+@{
+    ViewData["Title"] = "MenuItems";
+}
+
+<h1 class="display-4 pb-4">Le MENU</h1>
+
+<table class="table table-success table-striped table-hover table-responsive">
+    <tbody>
+        @{
+            foreach (var menuItem in Model)
+            {
+               
+                <tr class="table-warning">
+                    <td>@menuItem.MenuItemName</td>
+                    <td>@menuItem.MenuItemPrice</td>
+                </tr>
+                
+            }
+        }
+    </tbody>
+</table>
+
