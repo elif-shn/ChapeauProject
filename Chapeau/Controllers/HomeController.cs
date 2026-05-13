@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Chapeau.Controllers  
 {
-    public class HomeController : Controller jhuhu
+    public class HomeController : Controller .km
     {
         private readonly ILogger<HomeController> _logger;
 
