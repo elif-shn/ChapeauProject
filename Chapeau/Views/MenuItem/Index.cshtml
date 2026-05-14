@@ -45,6 +45,7 @@
 
         @foreach (var menu in Model.Menus)
         {
+
             if (Model.SelectedMenuId != null && Model.SelectedMenuId != menu.MenuId)
             {
                 continue;
@@ -85,10 +86,19 @@
 
                     foreach (var item in Model.MenuItems)
                     {
+                        
+                        var stockClass =
+                            item.StockStatus == "OUT OF STOCK" ? "text-danger" :
+                            item.StockStatus == "ALMOST OUT OF STOCK" ? "text-warning" :
+                            "text-success";
+                        
                         if (item.MenuId == menu.MenuId && item.Category == category)
                         {
                             <tr>
                                 <td class="pe-3">@item.MenuItemName</td>
+                                <td class="pe-3">
+                                    <small class="@stockClass">@item.StockStatus</small>
+                                </td>
                                 <td>€ @item.MenuItemPrice.ToString("0.00")</td>
                             </tr>
                         }
