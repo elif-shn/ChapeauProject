@@ -1,0 +1,72 @@
+﻿@model Chapeau.ViewModels.MenuManagementViewModel
+
+<style>
+    h2 { color: #5a3e2b; border-bottom: 3px solid #c8a96e; padding-bottom: 10px; }
+    .filter-bar { background-color: #fff8f0; border: 1px solid #e0c99a; border-radius: 10px; padding: 15px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
+    .filter-bar label { font-weight: bold; color: #5a3e2b; }
+    .filter-bar select { padding: 8px 12px; border-radius: 6px; border: 1px solid #c8a96e; font-size: 0.95rem; }
+    .btn { padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem; text-decoration: none; display: inline-block; }
+    .btn-filter { background-color: #c8a96e; color: white; }
+    .btn-add { background-color: #5a3e2b; color: white; margin-bottom: 15px; font-size: 1rem; padding: 10px 22px; }
+    .btn-edit { background-color: #c8a96e; color: white; padding: 5px 12px; font-size: 0.85rem; }
+    table { width: 100%; border-collapse: collapse; background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    thead { background-color: #5a3e2b; color: white; }
+    thead th { padding: 14px 16px; text-align: left; }
+    tbody tr { border-bottom: 1px solid #f0e6d6; }
+    tbody tr:hover { background-color: #fff8f0; }
+    tbody td { padding: 12px 16px; }
+    .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
+    .badge-drinks { background-color: #d4edff; color: #1a6fa8; }
+    .badge-lunch { background-color: #d4f4e2; color: #1a7a40; }
+    .badge-diner { background-color: #fde8d0; color: #a85a1a; }
+</style>
+
+<h2>Menu Management</h2>
+
+<form method="get" asp-action="Index" class="filter-bar">
+    <label>Filter by Menu:</label>
+    <select name="menuId">
+        <option value="0">All</option>
+        <option value="1">Drinks</option>
+        <option value="2">Lunch</option>
+        <option value="3">Diner</option>
+    </select>
+    <button type="submit" class="btn btn-filter">Filter</button>
+</form>
+
+<a asp-action="Add" class="btn btn-add">+ Add New Menu Item</a>
+
+<br />
+<br />
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Menu</th>
+            <th>Category</th>
+            <th>VAT %</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.MenuItems)
+        {
+            string menuLabel = item.MenuId == 1 ? "Drinks" : item.MenuId == 2 ? "Lunch" : "Diner";
+            string badgeClass = item.MenuId == 1 ? "badge-drinks" : item.MenuId == 2 ? "badge-lunch" : "badge-diner";
+            <tr>
+                <td>@item.MenuItemId</td>
+                <td><strong>@item.MenuItemName</strong></td>
+                <td>euro @item.MenuItemPrice.ToString("0.00")</td>
+                <td>@item.Stock</td>
+                <td><span class="badge @badgeClass">@menuLabel</span></td>
+                <td>@item.Category</td>
+                <td>@item.VatPercentage%</td>
+                <td><a asp-action="Edit" asp-route-id="@item.MenuItemId" class="btn btn-edit">Edit</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
