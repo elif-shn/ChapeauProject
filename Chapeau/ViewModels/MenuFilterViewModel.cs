@@ -7,7 +7,7 @@ namespace Chapeau.ViewModels
     {
         public int? SelectedMenuId { get; set; }
         public Category? SelectedCategory { get; set; }
-
+        public List<Menu> Menus { get; set; }
         public List<MenuItemViewModel> MenuItems { get; set; }
 
         public List<Category> Categories { get; set; }
@@ -16,6 +16,7 @@ namespace Chapeau.ViewModels
         {
             MenuItems = new List<MenuItemViewModel>();
             Categories = new List<Category>();
+            Menus = new List<Menu>();
         }
     }
 }

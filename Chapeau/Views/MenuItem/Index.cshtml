@@ -12,9 +12,13 @@
         <div class="col-md-4">
             <select name="selectedMenuId" class="form-select">
                 <option value="">All Menus</option>
-                <option value="1">Lunch</option>
-                <option value="2">Dinner</option>
-                <option value="3">Drinks</option>
+
+                @foreach (var menu in Model.Menus)
+                {
+                    <option value="@menu.MenuId" selected="@(Model.SelectedMenuId == menu.MenuId)">
+                        @menu.MenuName.ToString().ToUpper()
+                    </option>
+                }
             </select>
         </div>
         <div class="col-md-4">
@@ -22,7 +26,11 @@
                 <option value="">All Categories</option>
                 @foreach (var category in Model.Categories)
                 {
-                    <option value="@((int)category)">@category</option>
+                <option value="@((int)category)"
+                        selected="@(Model.SelectedCategory == category)">
+                        @category.ToString().Replace("CoffeeAndTea", "Coffee & Tea").ToUpper()
+                </option>
+                                
                 }
             </select>
         </div>
@@ -32,14 +40,62 @@
     </div>
 </form>
 
-<table class="table table-success table-striped table-hover table-responsive">
+<table>
     <tbody>
-        @foreach (var menuItem in Model.MenuItems)
+
+        @foreach (var menu in Model.Menus)
         {
-            <tr class="table-warning">
-                <td>@menuItem.MenuItemName</td>
-                <td>€ @menuItem.MenuItemPrice.ToString("0.00")</td>
+            if (Model.SelectedMenuId != null && Model.SelectedMenuId != menu.MenuId)
+            {
+                continue;
+            }
+            <tr style="height:35px;"></tr>
+            <tr>
+                <td colspan="2">
+                    <strong>@menu.MenuName.ToUpper()</strong>
+                </td>
             </tr>
+
+            @foreach (var category in Model.Categories)
+            {
+                if (Model.SelectedCategory != null && Model.SelectedCategory != category)
+                {
+                    continue;
+                }
+
+                var hasItems = false;
+
+                foreach (var item in Model.MenuItems)
+                {
+                    if (item.MenuId == menu.MenuId && item.Category == category)
+                    {
+                        hasItems = true;
+                        break;
+                    }
+                }
+
+                if (hasItems)
+                {
+                    <tr style="height:35px;"></tr>
+                    <tr>
+                        <td colspan="2">
+                            <em>@category.ToString().Replace("CoffeeAndTea", "Coffee & Tea").ToUpper()</em>
+                        </td>
+                    </tr>
+
+                    foreach (var item in Model.MenuItems)
+                    {
+                        if (item.MenuId == menu.MenuId && item.Category == category)
+                        {
+                            <tr>
+                                <td class="pe-3">@item.MenuItemName</td>
+                                <td>€ @item.MenuItemPrice.ToString("0.00")</td>
+                            </tr>
+                        }
+                    }
+                }
+            }
         }
+
     </tbody>
 </table>
