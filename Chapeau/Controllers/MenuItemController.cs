@@ -30,12 +30,22 @@ namespace Chapeau.Controllers
 
             foreach (var item in menuItems)
             {
+                string status;
+
+                if (item.Stock == 0)
+                    status = "OUT OF STOCK";
+                else if (item.Stock <= 10)
+                    status = "ALMOST OUT OF STOCK";
+                else
+                    status = "IN STOCK";
+
                 menuViewModel.Add(new MenuItemViewModel
                 {
                     MenuItemName = item.MenuItemName,
                     MenuItemPrice = item.MenuItemPrice,
                     MenuId = item.MenuId,
-                    Category = item.Category
+                    Category = item.Category,
+                    StockStatus = status
                 });
             }
 
