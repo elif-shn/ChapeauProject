@@ -1,0 +1,45 @@
+﻿@using Chapeau.ViewModels
+@model List<Chapeau.ViewModels.RunningOrderViewModel>
+
+@{
+    ViewData["Title"] = "Running Orders";
+}
+
+<div class="container mt-4 bg-white p-4 rounded shadow-sm">
+
+    <h1 class="mb-4">Running Orders</h1>
+
+    <div class="mb-4 text-end">
+        <button class="btn btn-primary" onclick="location.reload()">
+            Refresh Orders
+        </button>
+    </div>
+
+    <table class="table table-hover table-bordered">
+
+        <thead class="table-light">
+            <tr>
+                <th>Table Number</th>
+                <th>Order Time</th>
+                <th>Waiting Time</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (RunningOrderViewModel order in Model)
+            {
+                <tr>
+                    <td>@order.TableId</td>
+                    <td>@order.OrderTime.ToShortTimeString()</td>
+                    <td>@order.WaitingTime</td>
+                    <td>@order.OrderStatus</td>
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>
