@@ -18,7 +18,7 @@ namespace Chapeau.Repositories
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string query = "SELECT OrderId, TableId, OrderTime, OrderStatus FROM [Order] WHERE OrderStatus IN ('pending', 'preparing', 'ready') ORDER BY OrderTime ASC";
+                string query = "SELECT * FROM [Order] WHERE OrderStatus NOT IN ('Completed', 'Served', 'Cancelled') ORDER BY OrderTime ASC";
                 SqlCommand command = new SqlCommand(query, connection);
 
                 connection.Open();
@@ -35,14 +35,12 @@ namespace Chapeau.Repositories
             }
             return orders;
         }
-
         private RunningOrderViewModel ReadRunningOrder(SqlDataReader reader)
         {
             DateTime orderTime = (DateTime)reader["OrderTime"];
+            string displayTime = reader["WaitingTime"].ToString();
+            return new RunningOrderViewModel((int)reader["OrderId"], (int)reader["TableId"], orderTime, displayTime, reader["OrderStatus"].ToString());
 
-            TimeSpan waitingTime = DateTime.Now - orderTime;
-
-            return new RunningOrderViewModel((int)reader["OrderId"], (int)reader["TableId"], orderTime, $"{waitingTime.TotalMinutes:0} min", (string)reader["OrderStatus"]);
         }
     }
 }
