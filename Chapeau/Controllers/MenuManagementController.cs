@@ -2,24 +2,23 @@
 using Chapeau.Services;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-
 namespace Chapeau.Controllers
 {
-    public class MenuManagementController : Controller 
+    public class MenuManagementController : Controller
     {
         private IMenuService _menuService;
-    //shgdsygfyugfusiyf
+
         public MenuManagementController(IMenuService menuService)
         {
             _menuService = menuService;
         }
 
-      
-        public IActionResult Index(int menuId = 0)
+        public IActionResult Index(int menuId = 0, int category = 0)
         {
             MenuManagementViewModel vm = new MenuManagementViewModel();
-            vm.MenuItems = _menuService.GetFilteredMenuItems(menuId);
+            vm.MenuItems = _menuService.GetFilteredMenuItems(menuId, category);
             vm.SelectedMenuId = menuId;
+            vm.SelectedCategory = category;
             return View(vm);
         }
 
@@ -28,7 +27,6 @@ namespace Chapeau.Controllers
             return View();
         }
 
-       
         [HttpPost]
         public IActionResult Add(MenuItem newItem)
         {
@@ -36,7 +34,6 @@ namespace Chapeau.Controllers
             return RedirectToAction("Index");
         }
 
-       
         public IActionResult Edit(int id)
         {
             MenuManagementViewModel vm = new MenuManagementViewModel();
@@ -44,11 +41,22 @@ namespace Chapeau.Controllers
             return View(vm);
         }
 
-       
         [HttpPost]
         public IActionResult Edit(MenuItem updatedItem)
         {
             _menuService.UpdateMenuItem(updatedItem);
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult Deactivate(int id)
+        {
+            _menuService.DeactivateMenuItem(id);
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult Activate(int id)
+        {
+            _menuService.ActivateMenuItem(id);
             return RedirectToAction("Index");
         }
     }

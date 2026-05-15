@@ -9,22 +9,25 @@ namespace Chapeau.Controllers
     public class MenuItemController : Controller
     {
         private readonly IMenuItemRepository _menuItemRepository;
-        private readonly IMenuRepository _menuRepository;
+        private readonly IMenuListRepository _menuListRepository;
+
 
         public MenuItemController(
-            IMenuItemRepository menuItemRepository,
-            IMenuRepository menuRepository)
+         IMenuItemRepository menuItemRepository,
+         IMenuListRepository menuListRepository)
         {
             _menuItemRepository = menuItemRepository;
-            _menuRepository = menuRepository;
+            _menuListRepository = menuListRepository;
         }
+
         public ActionResult Index(MenuFilterViewModel menuFilterViewModel)
         {
             List<MenuItemViewModel> menuViewModel = new List<MenuItemViewModel>();
 
             menuFilterViewModel.Categories = Enum.GetValues(typeof(Category)).Cast<Category>().ToList();
 
-            menuFilterViewModel.Menus = _menuRepository.GetAllMenus();
+            menuFilterViewModel.Menus = _menuListRepository.GetAllMenus();
+
 
             List<MenuItem> menuItems = _menuItemRepository.GetAllByFilter(menuFilterViewModel);
 

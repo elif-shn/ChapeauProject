@@ -2,7 +2,6 @@
 using Microsoft.Data.SqlClient;
 using Dapper;
 using Microsoft.Extensions.Configuration;
-
 namespace Chapeau.Repositories
 {
     public class MenuRepository : IMenuRepository
@@ -14,7 +13,6 @@ namespace Chapeau.Repositories
             _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-       
         public List<MenuItem> GetAll()
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -24,17 +22,17 @@ namespace Chapeau.Repositories
             }
         }
 
-        
-        public List<MenuItem> GetByMenuId(int menuId)
+        public List<MenuItem> GetByFilter(int menuId, int category)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
-                string sql = "SELECT * FROM MenuItem WHERE MenuId = @MenuId";
-                return conn.Query<MenuItem>(sql, new { MenuId = menuId }).ToList();
+                string sql = "SELECT * FROM MenuItem WHERE 1=1";
+                if (menuId != 0) sql += " AND MenuId = @MenuId";
+                if (category != 0) sql += " AND Category = @Category";
+                return conn.Query<MenuItem>(sql, new { MenuId = menuId, Category = category }).ToList();
             }
         }
 
-      
         public MenuItem GetById(int id)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -44,18 +42,16 @@ namespace Chapeau.Repositories
             }
         }
 
-      
         public void Add(MenuItem item)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
-                string sql = @"INSERT INTO MenuItem (MenuItemName, MenuItemPrice, MenuId, Category, VatPercentage, Stock)
-                               VALUES (@MenuItemName, @MenuItemPrice, @MenuId, @Category, @VatPercentage, @Stock)";
+                string sql = @"INSERT INTO MenuItem (MenuItemName, MenuItemPrice, MenuId, Category, VatPercentage, Stock, IsActive)
+                               VALUES (@MenuItemName, @MenuItemPrice, @MenuId, @Category, @VatPercentage, @Stock, 1)";
                 conn.Execute(sql, item);
             }
         }
 
-       
         public void Update(MenuItem item)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -69,6 +65,15 @@ namespace Chapeau.Repositories
                                    Stock = @Stock
                                WHERE MenuItemId = @MenuItemId";
                 conn.Execute(sql, item);
+            }
+        }
+
+        public void SetActive(int id, bool isActive)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                string sql = "UPDATE MenuItem SET IsActive = @IsActive WHERE MenuItemId = @MenuItemId";
+                conn.Execute(sql, new { MenuItemId = id, IsActive = isActive });
             }
         }
     }

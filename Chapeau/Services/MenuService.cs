@@ -1,6 +1,5 @@
 ﻿using Chapeau.Models;
 using Chapeau.Repositories;
-
 namespace Chapeau.Services
 {
     public class MenuService : IMenuService
@@ -17,13 +16,11 @@ namespace Chapeau.Services
             return _menuRepository.GetAll();
         }
 
-        public List<MenuItem> GetFilteredMenuItems(int menuId)
+        public List<MenuItem> GetFilteredMenuItems(int menuId, int category)
         {
-            
-            if (menuId == 0)
+            if (menuId == 0 && category == 0)
                 return _menuRepository.GetAll();
-
-            return _menuRepository.GetByMenuId(menuId);
+            return _menuRepository.GetByFilter(menuId, category);
         }
 
         public MenuItem GetMenuItemById(int id)
@@ -39,6 +36,16 @@ namespace Chapeau.Services
         public void UpdateMenuItem(MenuItem item)
         {
             _menuRepository.Update(item);
+        }
+
+        public void ActivateMenuItem(int id)
+        {
+            _menuRepository.SetActive(id, true);
+        }
+
+        public void DeactivateMenuItem(int id)
+        {
+            _menuRepository.SetActive(id, false);
         }
     }
 }

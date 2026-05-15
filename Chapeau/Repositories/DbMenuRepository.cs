@@ -3,7 +3,10 @@ using Microsoft.Data.SqlClient;
 
 namespace Chapeau.Repositories
 {
-    public class DbMenuRepository: IMenuRepository
+    public class DbMenuRepository : IMenuListRepository
+
+
+
     {
         private readonly string _connectionString;
 

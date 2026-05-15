@@ -1,5 +1,4 @@
 ﻿@model Chapeau.Models.MenuItem
-
 <style>
     h2 {
         color: #5a3e2b;
@@ -71,36 +70,40 @@
             <label>Name</label>
             <input type="text" name="MenuItemName" placeholder="e.g. Tomato Soup" required />
         </div>
-
         <div class="form-group">
-            <label>Price (euro)</label>
+            <label>Price (€)</label>
             <input type="number" name="MenuItemPrice" step="0.01" min="0" placeholder="e.g. 5.50" required />
         </div>
-
         <div class="form-group">
             <label>Stock</label>
             <input type="number" name="Stock" min="0" placeholder="e.g. 10" required />
         </div>
-
         <div class="form-group">
             <label>Menu Card</label>
             <select name="MenuId">
-                <option value="1">Drinks</option>
-                <option value="2">Lunch</option>
-                <option value="3">Diner</option>
+                <option value="1">Lunch</option>
+                <option value="2">Dinner</option>
+                <option value="3">Drinks</option>
             </select>
         </div>
-
         <div class="form-group">
-            <label>Category (number)</label>
-            <input type="number" name="Category" min="1" placeholder="e.g. 1" required />
+            <label>Category</label>
+            <select name="Category">
+                <option value="1">Starters</option>
+                <option value="2">Entremets</option>
+                <option value="3">Mains</option>
+                <option value="4">Desserts</option>
+                <option value="5">Soft Drinks</option>
+                <option value="6">Beers</option>
+                <option value="7">Wines</option>
+                <option value="8">Spirit Drinks</option>
+                <option value="9">Coffee and Tea</option>
+            </select>
         </div>
-
         <div class="form-group">
             <label>VAT Percentage</label>
             <input type="number" name="VatPercentage" min="0" placeholder="e.g. 9" required />
         </div>
-
         <div class="btn-row">
             <button type="submit" class="btn btn-save">Add Item</button>
             <a asp-action="Index" class="btn btn-cancel">Cancel</a>
