@@ -1,3 +1,6 @@
+using Chapeau.Repositories;
+using Chapeau.Services;
+
 namespace Chapeau
 {
     public class Program
@@ -8,6 +11,13 @@ namespace Chapeau
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddScoped<IMenuItemRepository, DbMenuItemRepository>();
+            builder.Services.AddScoped<IOrderRepository, DbOrderRepository>();
+            builder.Services.AddScoped<IMenuRepository, MenuRepository>();
+            builder.Services.AddScoped<IMenuListRepository, DbMenuRepository>();
+            builder.Services.AddScoped<IMenuService, MenuService>();
+
+
 
             var app = builder.Build();
 
