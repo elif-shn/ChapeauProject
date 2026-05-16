@@ -8,6 +8,29 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Chapeau.styles.css" asp-append-version="true" />
 </head>
+@using Chapeau.Extensions
+@using Chapeau.Models
+@{
+    User? user =
+        Context.Session.GetObject<User>("LoggedInUser");
+}
+
+@if (user != null)
+{
+    <span>Welcome @user.Username</span>
+
+    <a asp-controller="Account"
+       asp-action="Logout">
+        Logout
+    </a>
+}
+else
+{
+    <a asp-controller="Account"
+       asp-action="Login">
+        Login
+    </a>
+}
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
