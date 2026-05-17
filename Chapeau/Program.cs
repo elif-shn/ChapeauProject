@@ -28,8 +28,6 @@ namespace Chapeau
             });
             builder.Services.AddScoped<IMenuListService, MenuListService>();
             builder.Services.AddScoped<IMenuRepository, MenuRepository>();
-            builder.Services.AddScoped<ITableRepository, TableRepository>();
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddSession();
             
 
