@@ -1,3 +1,5 @@
+using Chapeau.Repositories;
+
 namespace Chapeau
 {
     public class Program
@@ -6,6 +8,7 @@ namespace Chapeau
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
@@ -15,6 +18,10 @@ namespace Chapeau
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<ITableRepository, TableRepository>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
