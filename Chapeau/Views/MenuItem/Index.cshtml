@@ -1,0 +1,111 @@
+﻿@using Chapeau.Enums
+@model Chapeau.ViewModels.MenuFilterViewModel
+
+@{
+    ViewData["Title"] = "MenuItems";
+}
+
+<h1 class="display-4 pb-4">Le MENU</h1>
+
+<form method="get" class="mb-4">
+    <div class="row">
+        <div class="col-md-4">
+            <select name="selectedMenuId" class="form-select">
+                <option value="">All Menus</option>
+
+                @foreach (var menu in Model.Menus)
+                {
+                    <option value="@menu.MenuId" selected="@(Model.SelectedMenuId == menu.MenuId)">
+                        @menu.MenuName.ToString().ToUpper()
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select name="selectedCategory" class="form-select">
+                <option value="">All Categories</option>
+                @foreach (var category in Model.Categories)
+                {
+                <option value="@((int)category)"
+                        selected="@(Model.SelectedCategory == category)">
+                        @category.ToString().Replace("CoffeeAndTea", "Coffee & Tea").ToUpper()
+                </option>
+                                
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
+    </div>
+</form>
+
+<table>
+    <tbody>
+
+        @foreach (var menu in Model.Menus)
+        {
+
+            if (Model.SelectedMenuId != null && Model.SelectedMenuId != menu.MenuId)
+            {
+                continue;
+            }
+            <tr style="height:35px;"></tr>
+            <tr>
+                <td colspan="2">
+                    <strong>@menu.MenuName.ToUpper()</strong>
+                </td>
+            </tr>
+
+            @foreach (var category in Model.Categories)
+            {
+                if (Model.SelectedCategory != null && Model.SelectedCategory != category)
+                {
+                    continue;
+                }
+
+                var hasItems = false;
+
+                foreach (var item in Model.MenuItems)
+                {
+                    if (item.MenuId == menu.MenuId && item.Category == category)
+                    {
+                        hasItems = true;
+                        break;
+                    }
+                }
+
+                if (hasItems)
+                {
+                    <tr style="height:35px;"></tr>
+                    <tr>
+                        <td colspan="2">
+                            <em>@category.ToString().Replace("CoffeeAndTea", "Coffee & Tea").ToUpper()</em>
+                        </td>
+                    </tr>
+
+                    foreach (var item in Model.MenuItems)
+                    {
+                        
+                        var stockClass =
+                            item.StockStatus == "OUT OF STOCK" ? "text-danger" :
+                            item.StockStatus == "ALMOST OUT OF STOCK" ? "text-warning" :
+                            "text-success";
+                        
+                        if (item.MenuId == menu.MenuId && item.Category == category)
+                        {
+                            <tr>
+                                <td class="pe-3">@item.MenuItemName</td>
+                                <td class="pe-3">
+                                    <small class="@stockClass">@item.StockStatus</small>
+                                </td>
+                                <td>€ @item.MenuItemPrice.ToString("0.00")</td>
+                            </tr>
+                        }
+                    }
+                }
+            }
+        }
+
+    </tbody>
+</table>

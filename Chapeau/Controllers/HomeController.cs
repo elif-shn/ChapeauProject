@@ -2,9 +2,9 @@ using System.Diagnostics;
 using Chapeau.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Chapeau.Controllers
+namespace Chapeau.Controllers  
 {
-    public class HomeController : Controller
+    public class HomeController : Controller 
     {
         private readonly ILogger<HomeController> _logger;
 
