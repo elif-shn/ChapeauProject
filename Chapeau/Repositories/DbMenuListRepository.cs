@@ -3,16 +3,19 @@ using Microsoft.Data.SqlClient;
 
 namespace Chapeau.Repositories
 {
-    public class DbMenuRepository : IMenuRepository
+    public class DbMenuListRepository : IMenuListRepository
+
+
+
     {
         private readonly string _connectionString;
 
-        public DbMenuRepository(IConfiguration configuration)
+        public DbMenuListRepository(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("ChapeauDataBase");
         }
 
-        public List<Menu> GetAll()
+        public List<Menu> GetAllMenus()
         {
             List<Menu> menus = new List<Menu>();
 
@@ -38,36 +41,6 @@ namespace Chapeau.Repositories
             }
 
             return menus;
-        }
-
-        void IMenuRepository.Add(MenuItem item)
-        {
-            throw new NotImplementedException();
-        }
-
-        List<MenuItem> IMenuRepository.GetAll()
-        {
-            throw new NotImplementedException();
-        }
-
-        List<MenuItem> IMenuRepository.GetByFilter(int menuId, int category)
-        {
-            throw new NotImplementedException();
-        }
-
-        MenuItem IMenuRepository.GetById(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IMenuRepository.SetActive(int id, bool isActive)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IMenuRepository.Update(MenuItem item)
-        {
-            throw new NotImplementedException();
         }
     }
 }

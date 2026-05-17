@@ -1,5 +1,6 @@
 ﻿using Chapeau.Models;
 using Chapeau.Repositories;
+using Chapeau.ViewModels;
 namespace Chapeau.Services
 {
     public class MenuService : IMenuService
@@ -10,8 +11,12 @@ namespace Chapeau.Services
         {
             _menuRepository = menuRepository;
         }
+        public List<MenuItem> GetAllByFilter(MenuViewModel menuItems)
+        {
+            return _menuRepository.GetAllByFilter(menuItems);
+        }
 
-        public List<MenuItem> GetAllMenuItems()
+        /*public List<MenuItem> GetAllMenuItems()
         {
             return _menuRepository.GetAll();
         }
@@ -21,7 +26,7 @@ namespace Chapeau.Services
             if (menuId == 0 && category == 0)
                 return _menuRepository.GetAll();
             return _menuRepository.GetByFilter(menuId, category);
-        }
+        }*/
 
         public MenuItem GetMenuItemById(int id)
         {
