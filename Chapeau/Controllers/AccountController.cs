@@ -1,6 +1,6 @@
 ﻿using Chapeau.Extensions;
 using Chapeau.Models;
-using Chapeau.Repositories;
+using Chapeau.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chapeau.Controllers
@@ -8,11 +8,11 @@ namespace Chapeau.Controllers
     public class AccountController : Controller
     {
          
-        private readonly IUserRepository userRepository;
+        private readonly IUserService _userServices;
 
-        public AccountController(IUserRepository userRepository)
+        public AccountController(IUserService userServices)
         {
-            this.userRepository = userRepository;
+            this._userServices = userServices;
         }
 
         public IActionResult Login()
@@ -25,7 +25,7 @@ namespace Chapeau.Controllers
                                    
         {
             User? user =
-                userRepository.GetByUsernameAndPassword(
+                _userServices.GetByUsernameAndPassword(
                     username,
                     password);
 

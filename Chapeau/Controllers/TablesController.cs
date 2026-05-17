@@ -1,24 +1,24 @@
-﻿using Chapeau.Repositories;
+﻿
 using Microsoft.AspNetCore.Mvc;
-
+using Chapeau.Services;
 
 namespace Chapeau.Controllers
 {
     public class TablesController : Controller
     {
-        private readonly ITableRepository tableRepository;
+        private readonly ITablesService _tableService;
 
 
-        public TablesController(ITableRepository tableRepository)
+        public TablesController(ITablesService tableService)
 
         {
-            this.tableRepository = tableRepository;
+            this._tableService = tableService;
 
         }
 
         public IActionResult Index()
         {
-            var tables = tableRepository.GetAllTables();
+            var tables = _tableService.GetAllTables();
 
 
             return View(tables);
