@@ -1,10 +1,12 @@
 ﻿using Chapeau.Models;
+using Chapeau.ViewModels;
 namespace Chapeau.Services
 {
     public interface IMenuService
     {
-        List<MenuItem> GetAllMenuItems();
-        List<MenuItem> GetFilteredMenuItems(int menuId, int category);
+       /* List<MenuItem> GetAllMenuItems();
+        List<MenuItem> GetFilteredMenuItems(int menuId, int category);*/
+        List<MenuItem> GetAllByFilter(MenuViewModel menuItems);
         MenuItem GetMenuItemById(int id);
         void AddMenuItem(MenuItem item);
         void UpdateMenuItem(MenuItem item);

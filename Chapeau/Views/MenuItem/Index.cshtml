@@ -1,5 +1,5 @@
 ﻿@using Chapeau.Enums
-@model Chapeau.ViewModels.MenuFilterViewModel
+@model Chapeau.ViewModels.MenuViewModel
 
 @{
     ViewData["Title"] = "MenuItems";
@@ -86,18 +86,26 @@
 
                     foreach (var item in Model.MenuItems)
                     {
-                        
-                        var stockClass =
-                            item.StockStatus == "OUT OF STOCK" ? "text-danger" :
-                            item.StockStatus == "ALMOST OUT OF STOCK" ? "text-warning" :
-                            "text-success";
-                        
                         if (item.MenuId == menu.MenuId && item.Category == category)
                         {
+                            string status;
+
+                            if (item.Stock == 0)
+                                status = "OUT OF STOCK";
+                            else if (item.Stock <= 10)
+                                status = "ALMOST OUT OF STOCK";
+                            else
+                                status = "IN STOCK";
+
+                            var stockClass =
+                            status == "OUT OF STOCK" ? "text-danger" :
+                            status == "ALMOST OUT OF STOCK" ? "text-warning" :
+                            "text-success";
+
                             <tr>
                                 <td class="pe-3">@item.MenuItemName</td>
                                 <td class="pe-3">
-                                    <small class="@stockClass">@item.StockStatus</small>
+                                    <small class="@stockClass">@status</small>
                                 </td>
                                 <td>€ @item.MenuItemPrice.ToString("0.00")</td>
                             </tr>
