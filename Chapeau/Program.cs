@@ -17,7 +17,10 @@ namespace Chapeau
             builder.Services.AddScoped<IOrderServices, OrderService>();
             builder.Services.AddScoped<IMenuRepository, MenuRepository>();
             builder.Services.AddScoped<IMenuService, MenuService>();
-
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<ITableRepository, TableRepository>();
+            builder.Services.AddScoped<ITablesService, TableService>();
+            builder.Services.AddScoped<IUserService, UserServices>();
 
             builder.Services.AddSession(options =>
             {
@@ -25,9 +28,7 @@ namespace Chapeau
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
-
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<ITableRepository, TableRepository>();
+            
 
           
             var app = builder.Build();
