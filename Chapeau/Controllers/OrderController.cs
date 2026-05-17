@@ -1,4 +1,5 @@
 ﻿using Chapeau.Repositories;
+using Chapeau.Services;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 namespace Chapeau.Controllers
@@ -7,18 +8,20 @@ namespace Chapeau.Controllers
     {
         private readonly IOrderRepository _orderRepository;
 
-        public OrderController(IOrderRepository orderRepository)
+        private readonly IOrderServices _orderServices;
+
+        public OrderController(IOrderServices orderServices )
         {
-            _orderRepository = orderRepository;
+            _orderServices = orderServices;
         }
         public IActionResult Index() 
         { 
-            List<RunningOrderViewModel> runningOrdersViewModel = _orderRepository.GetRunningOrder();
+            List<RunningOrderViewModel> runningOrdersViewModel = _orderServices.GetRunningOrders();
             return View(runningOrdersViewModel); 
         }
         public ActionResult RunningOrders()
         {
-            List<RunningOrderViewModel> runningOrdersViewModel = _orderRepository.GetRunningOrder();
+            List<RunningOrderViewModel> runningOrdersViewModel = _orderServices.GetRunningOrders();
 
             return View();
         }

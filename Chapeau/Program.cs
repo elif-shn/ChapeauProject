@@ -11,15 +11,22 @@ namespace Chapeau
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-            builder.Services.AddScoped<IMenuItemRepository, DbMenuItemRepository>();
             builder.Services.AddScoped<IOrderRepository, DbOrderRepository>();
-            builder.Services.AddScoped<IMenuRepository, MenuRepository>();
-            builder.Services.AddScoped<IMenuListRepository, DbMenuRepository>();
+            builder.Services.AddScoped<IOrderServices, OrderService>();
+            builder.Services.AddScoped<IMenuListRepository, DbMenuListRepository>();
             builder.Services.AddScoped<IMenuService, MenuService>();
+            builder.Services.AddScoped<IMenuListService, MenuListService>();
+            builder.Services.AddScoped<IMenuRepository, MenuRepository>();
+            builder.Services.AddScoped<ITableRepository, TableRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddSession();
+            
 
+            builder.Services.AddControllersWithViews();
 
-
+            builder.Services.AddSession();
             var app = builder.Build();
+            app.UseSession();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())

@@ -1,0 +1,36 @@
+﻿@model List<Chapeau.Models.Table>
+
+<h1>Restaurant Overview</h1>
+
+<a asp-action="Index"
+   class="btn btn-primary mb-3">
+    Refresh
+</a>
+
+<div class="restaurant-layout">
+
+    @foreach (var table in Model)
+    {
+        string cssClass =
+            table.TableStatus == "Occupied"
+            ? "occupied"
+            : "free";
+
+        <div class="table-card @cssClass">
+
+            <h3>Table @table.TableId</h3>
+
+            <p>
+                Capacity:
+                @table.TableCapacity
+            </p>
+
+            <p>
+                Status:
+                @table.TableStatus
+            </p>
+
+        </div>
+    }
+
+</div>
