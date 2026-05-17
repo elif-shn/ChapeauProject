@@ -28,7 +28,7 @@ namespace Chapeau
             });
             builder.Services.AddScoped<IMenuListService, MenuListService>();
             builder.Services.AddScoped<IMenuRepository, MenuRepository>();
-            builder.Services.AddSession();
+
             
 
             builder.Services.AddControllersWithViews();
