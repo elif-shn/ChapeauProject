@@ -14,8 +14,11 @@ namespace Chapeau
             builder.Services.AddScoped<IMenuItemRepository, DbMenuItemRepository>();
             builder.Services.AddScoped<IOrderRepository, DbOrderRepository>();
             builder.Services.AddScoped<IOrderServices, OrderService>();
-            builder.Services.AddScoped<IMenuRepository, DbMenuRepository>();
+            builder.Services.AddScoped<IMenuListRepository, DbMenuRepository>();
+            builder.Services.AddScoped<IMenuService, MenuService>();
+            builder.Services.AddScoped<IMenuRepository, MenuRepository>();
 
+          
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
