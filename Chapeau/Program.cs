@@ -18,6 +18,7 @@ namespace Chapeau
             builder.Services.AddScoped<IMenuService, MenuService>();
 
 
+          
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
