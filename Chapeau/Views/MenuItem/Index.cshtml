@@ -86,7 +86,7 @@
 
                     foreach (var item in Model.MenuItems)
                     {
-                        if (item.MenuId == menu.MenuId && item.Category == category)
+                        if (item.MenuId == menu.MenuId && item.Category == category && item.IsActive == true)
                         {
                             string status;
 
