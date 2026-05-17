@@ -14,7 +14,9 @@ namespace Chapeau
             builder.Services.AddScoped<IMenuItemRepository, DbMenuItemRepository>();
             builder.Services.AddScoped<IOrderRepository, DbOrderRepository>();
             builder.Services.AddScoped<IOrderServices, OrderService>();
-            builder.Services.AddScoped<IMenuRepository, DbMenuRepository>();
+            builder.Services.AddScoped<IMenuRepository, MenuRepository>();
+            builder.Services.AddScoped<IMenuService, MenuService>();
+
 
             var app = builder.Build();
 
