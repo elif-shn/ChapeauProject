@@ -9,6 +9,7 @@ namespace Chapeau
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddScoped<IMenuItemRepository, DbMenuItemRepository>();
@@ -17,6 +18,16 @@ namespace Chapeau
             builder.Services.AddScoped<IMenuRepository, MenuRepository>();
             builder.Services.AddScoped<IMenuService, MenuService>();
 
+
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<ITableRepository, TableRepository>();
 
           
             var app = builder.Build();
@@ -34,6 +45,7 @@ namespace Chapeau
 
             app.UseRouting();
 
+            app.UseSession();
             app.UseAuthorization();
 
             app.MapControllerRoute(
