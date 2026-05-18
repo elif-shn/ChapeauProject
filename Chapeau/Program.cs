@@ -19,6 +19,8 @@ namespace Chapeau
             builder.Services.AddScoped<ITableRepository, TableRepository>();
             builder.Services.AddScoped<ITablesService, TableService>();
             builder.Services.AddScoped<IUserService, UserServices>();
+            builder.Services.AddScoped<IPaymentRepository, DbPaymentRepository>();
+            builder.Services.AddScoped<PaymentService>();
 
             builder.Services.AddSession(options =>
             {

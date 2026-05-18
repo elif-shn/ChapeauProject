@@ -11,8 +11,8 @@
 @using Chapeau.Extensions
 @using Chapeau.Models
 @{
-    User? user =
-        Context.Session.GetObject<User>("LoggedInUser");
+        User? user =
+                Context.Session.GetObject<User>("LoggedInUser");
 }
 
 
@@ -40,10 +40,13 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="MenuManagement" asp-action="Index">Menu Management</a>
                         </li>
-                         <li class="nav-item">
+                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Tables" asp-action="Index">Overview</a>
                         </li>
-                        
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Payment" asp-action="Index" asp-route-orderId="1">Payment</a>
+                        </li>
+
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
@@ -52,14 +55,14 @@
                             <span>Welcome @user.Username</span>
 
                             <a class="nav-link text-warning" asp-controller="Account" asp-action="Logout"> Logout </a>
-                               
+
                         }
                         else
                         {
                             <a class="nav-link" asp-controller="Account" asp-action="Login"> Login </a>
-                               
+
                         }
-                        
+
                     </ul>
                 </div>
             </div>
