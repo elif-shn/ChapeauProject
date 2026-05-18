@@ -3,14 +3,14 @@ using Microsoft.Data.SqlClient;
 
 namespace Chapeau.Repositories
 {
-    public class DbMenuRepository : IMenuListRepository
+    public class DbMenuListRepository : IMenuListRepository
 
 
 
     {
         private readonly string _connectionString;
 
-        public DbMenuRepository(IConfiguration configuration)
+        public DbMenuListRepository(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("ChapeauDataBase");
         }
@@ -44,3 +44,5 @@ namespace Chapeau.Repositories
         }
     }
 }
+
+       
