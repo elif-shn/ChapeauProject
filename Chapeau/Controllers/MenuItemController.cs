@@ -1,6 +1,7 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
 using Chapeau.Repositories;
+using Chapeau.Services;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,50 +9,30 @@ namespace Chapeau.Controllers
 {
     public class MenuItemController : Controller
     {
-        private readonly IMenuItemRepository _menuItemRepository;
-        private readonly IMenuRepository _menuRepository;
+        private readonly IMenuService _menuService;
+        private readonly IMenuListService _menuListService;
 
-        public MenuItemController(
-            IMenuItemRepository menuItemRepository,
-            IMenuRepository menuRepository)
+
+        public MenuItemController(IMenuService menuService,IMenuListService menuListService)
         {
-            _menuItemRepository = menuItemRepository;
-            _menuRepository = menuRepository;
+            _menuService = menuService;
+            _menuListService = menuListService;
         }
-        public ActionResult Index(MenuFilterViewModel menuFilterViewModel)
+
+        public ActionResult Index(MenuViewModel menuViewModel)
         {
-            List<MenuItemViewModel> menuViewModel = new List<MenuItemViewModel>();
+            menuViewModel.Categories = Enum.GetValues(typeof(Category)).Cast<Category>().ToList();
 
-            menuFilterViewModel.Categories = Enum.GetValues(typeof(Category)).Cast<Category>().ToList();
+            menuViewModel.Menus = _menuListService.GetAllMenus();
 
-            menuFilterViewModel.Menus = _menuRepository.GetAllMenus();
 
-            List<MenuItem> menuItems = _menuItemRepository.GetAllByFilter(menuFilterViewModel);
+            List<MenuItem> menuItems = _menuService.GetAllByFilter(menuViewModel);
 
-            foreach (var item in menuItems)
-            {
-                string status;
 
-                if (item.Stock == 0)
-                    status = "OUT OF STOCK";
-                else if (item.Stock <= 10)
-                    status = "ALMOST OUT OF STOCK";
-                else
-                    status = "IN STOCK";
+            menuViewModel.MenuItems = menuItems;
 
-                menuViewModel.Add(new MenuItemViewModel
-                {
-                    MenuItemName = item.MenuItemName,
-                    MenuItemPrice = item.MenuItemPrice,
-                    MenuId = item.MenuId,
-                    Category = item.Category,
-                    StockStatus = status
-                });
-            }
-
-            menuFilterViewModel.MenuItems = menuViewModel;
-
-            return View(menuFilterViewModel);
+            return View(menuViewModel);
         }
+
     }
 }

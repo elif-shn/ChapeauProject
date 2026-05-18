@@ -4,16 +4,17 @@ namespace Chapeau.Models
     public class MenuItem
     {
         public int MenuItemId { get; set; }
-        public string MenuItemName { get; set; }
+        public string MenuItemName { get; set; } = string.Empty;
         public decimal MenuItemPrice { get; set; }
         public int MenuId { get; set; }
         public Category Category { get; set; }
         public int VatPercentage { get; set; }
-
         public int Stock { get; set; }
+        public bool IsActive { get; set; }
 
         public MenuItem() { }
-        public MenuItem(int menuItemId, string menuItemName, decimal menuItemPrice, int menuId, Category category,int vatPercentage, int stock)
+
+        public MenuItem(int menuItemId, string menuItemName, decimal menuItemPrice, int menuId, Category category, int vatPercentage, int stock,bool isActive)
         {
             MenuItemId = menuItemId;
             MenuItemName = menuItemName;
@@ -22,6 +23,7 @@ namespace Chapeau.Models
             Category = category;
             VatPercentage = vatPercentage;
             Stock = stock;
+            IsActive = isActive;
         }
     }
 }

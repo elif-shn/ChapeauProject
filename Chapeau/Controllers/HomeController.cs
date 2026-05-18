@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Chapeau.Controllers  
 {
-    public class HomeController : Controller
+    public class HomeController : Controller 
     {
         private readonly ILogger<HomeController> _logger;
 
@@ -12,6 +12,7 @@ namespace Chapeau.Controllers
         {
             _logger = logger;
         }
+
         //test
         public IActionResult Index()
         {
