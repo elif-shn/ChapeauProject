@@ -4,6 +4,7 @@ using Chapeau.ViewModels;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+using System.Data;
 namespace Chapeau.Repositories
 {
     public class MenuRepository : IMenuRepository
@@ -12,7 +13,7 @@ namespace Chapeau.Repositories
 
         public MenuRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _connectionString = configuration.GetConnectionString("ChapeauDataBase");
         }
 
         /* public List<MenuItem> GetAll()
@@ -35,21 +36,22 @@ namespace Chapeau.Repositories
              }
          }*/
 
-        public List<MenuItem> GetAllByFilter(MenuViewModel menuViewModel)
+        public List<MenuItem> GetAllByFilter(int? menuId, Category? category)
         {
             List<MenuItem> menuItems = new List<MenuItem>();
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string query = "SELECT MenuItemId, MenuItemName, MenuItemPrice, MenuId, Category, VatPercentage, Stock, IsActive " +
-                "FROM MenuItem " +
-                "WHERE (@MenuId IS NULL OR MenuId = @MenuId) " +
-                "AND (@Category IS NULL OR Category = @Category)";
+                string query = "SELECT mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.MenuId, mi.Category, mi.VatPercentage, mi.Stock, mi.IsActive, m.MenuName " +
+                "FROM MenuItem mi " +
+                "JOIN Menu m ON mi.MenuId = m.MenuId "+
+                "WHERE (@MenuId IS NULL OR mi.MenuId = @MenuId) " +
+                "AND (@Category IS NULL OR mi.Category = @Category)";
 
                 SqlCommand command = new SqlCommand(query, connection);
 
-                command.Parameters.AddWithValue("@MenuId", (object?)menuViewModel.SelectedMenuId ?? DBNull.Value);
-                command.Parameters.AddWithValue("@Category", (object?)menuViewModel.SelectedCategory ?? DBNull.Value);
+                command.Parameters.Add("@MenuId", SqlDbType.Int).Value = (object?)menuId ?? DBNull.Value;
+                command.Parameters.Add("@Category", SqlDbType.Int).Value = (object?)category ?? DBNull.Value;
                 command.Connection.Open();
                 SqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
@@ -67,12 +69,16 @@ namespace Chapeau.Repositories
             int id = (int)reader["MenuItemId"];
             string name = (string)reader["MenuItemName"];
             decimal price = (decimal)reader["MenuItemPrice"];
-            int menuId = (int)reader["MenuId"];
+            Menu menu = new Menu
+            {
+                MenuId = (int)reader["MenuId"],
+                MenuName = (string)reader["MenuName"]
+            };
             Category category = (Category)(int)reader["Category"];
             int vatPercentage = (int)reader["VatPercentage"];
             int stock = (int)reader["Stock"];
             bool isActive = (bool)reader["isActive"];
-            return new MenuItem(id, name, price, menuId, category, vatPercentage, stock, isActive);
+            return new MenuItem(id, name, price, menu, category, vatPercentage, stock, isActive);
         }
 
         public MenuItem GetById(int id)
