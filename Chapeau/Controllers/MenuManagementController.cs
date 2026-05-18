@@ -34,7 +34,7 @@ namespace Chapeau.Controllers
 
 
 
-            List<MenuItem> menuItems = _menuService.GetAllByFilter(menuViewModel);
+            List<MenuItem> menuItems = _menuService.GetAllByFilter(menuViewModel.SelectedMenuId, menuViewModel.SelectedCategory);
 
 
             menuViewModel.MenuItems = menuItems;

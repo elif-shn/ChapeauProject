@@ -21,12 +21,11 @@ namespace Chapeau.Controllers
 
         public ActionResult Index(MenuViewModel menuViewModel)
         {
-            menuViewModel.Categories = Enum.GetValues(typeof(Category)).Cast<Category>().ToList();
-
+            menuViewModel.Categories = _menuListService.GetAllCategories();
             menuViewModel.Menus = _menuListService.GetAllMenus();
 
 
-            List<MenuItem> menuItems = _menuService.GetAllByFilter(menuViewModel);
+            List<MenuItem> menuItems = _menuService.GetActiveItems(menuViewModel.SelectedMenuId, menuViewModel.SelectedCategory);
 
 
             menuViewModel.MenuItems = menuItems;

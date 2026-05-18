@@ -1,4 +1,5 @@
-﻿using Chapeau.Models;
+﻿using Chapeau.Enums;
+using Chapeau.Models;
 using Chapeau.Repositories;
 
 namespace Chapeau.Services
@@ -14,6 +15,10 @@ namespace Chapeau.Services
         public List<Menu> GetAllMenus()
         {
             return _menuListRepository.GetAllMenus();
+        }
+        public List<Category> GetAllCategories()
+        {
+            return Enum.GetValues(typeof(Category)).Cast<Category>().ToList();
         }
     }
 }

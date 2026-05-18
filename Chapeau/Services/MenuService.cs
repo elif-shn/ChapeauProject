@@ -1,4 +1,5 @@
-﻿using Chapeau.Models;
+﻿using Chapeau.Enums;
+using Chapeau.Models;
 using Chapeau.Repositories;
 using Chapeau.ViewModels;
 namespace Chapeau.Services
@@ -11,9 +12,9 @@ namespace Chapeau.Services
         {
             _menuRepository = menuRepository;
         }
-        public List<MenuItem> GetAllByFilter(MenuViewModel menuItems)
+        public List<MenuItem> GetAllByFilter(int? menuId, Category? category)
         {
-            return _menuRepository.GetAllByFilter(menuItems);
+            return _menuRepository.GetAllByFilter(menuId, category);
         }
 
         /*public List<MenuItem> GetAllMenuItems()
@@ -51,6 +52,23 @@ namespace Chapeau.Services
         public void DeactivateMenuItem(int id)
         {
             _menuRepository.SetActive(id, false);
+        }
+
+        public List<MenuItem> GetActiveItems(int? menuId, Category? category)
+        {
+            List<MenuItem> allItems = _menuRepository.GetAllByFilter(menuId, category);
+
+            List<MenuItem> filtered = new List<MenuItem>();
+
+            foreach (var item in allItems)
+            {
+                if (item.IsActive)
+                {
+                    filtered.Add(item);
+                }
+            }
+
+            return filtered;
         }
     }
 }
