@@ -7,6 +7,8 @@ namespace Chapeau.Services
     {
         List<Menu> GetAllMenus();
         public List<Category> GetAllCategories();
-        
+        List<Category> GetCategoriesByMenu(int? menuId);
+
+
     }
 }

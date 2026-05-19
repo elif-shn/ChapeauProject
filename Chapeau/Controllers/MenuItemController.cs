@@ -21,7 +21,22 @@ namespace Chapeau.Controllers
 
         public ActionResult Index(MenuViewModel menuViewModel)
         {
-            menuViewModel.Categories = _menuListService.GetAllCategories();
+            menuViewModel.Categories = _menuListService.GetCategoriesByMenu(menuViewModel.SelectedMenuId);
+            bool categoryExists = false;
+
+            foreach (var category in menuViewModel.Categories)
+            {
+                if (category == menuViewModel.SelectedCategory)
+                {
+                    categoryExists = true;
+                }
+            }
+
+            if (!categoryExists)
+            {
+                menuViewModel.SelectedCategory = null;
+            }
+
             menuViewModel.Menus = _menuListService.GetAllMenus();
 
 

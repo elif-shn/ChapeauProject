@@ -10,7 +10,7 @@
 <form method="get" class="mb-4">
     <div class="row">
         <div class="col-md-4">
-            <select name="selectedMenuId" class="form-select">
+            <select name="selectedMenuId" class="form-select" onchange="this.form.submit()">
                 <option value="">All Menus</option>
 
                 @foreach (var menu in Model.Menus)
@@ -22,7 +22,7 @@
             </select>
         </div>
         <div class="col-md-4">
-            <select name="selectedCategory" class="form-select">
+            <select name="selectedCategory" class="form-select" onchange="this.form.submit()">
                 <option value="">All Categories</option>
                 @foreach (var category in Model.Categories)
                 {
@@ -33,9 +33,6 @@
                                 
                 }
             </select>
-        </div>
-        <div class="col-md-4">
-            <button type="submit" class="btn btn-primary">Filter</button>
         </div>
     </div>
 </form>
