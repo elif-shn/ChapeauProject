@@ -77,7 +77,7 @@ namespace Chapeau.Repositories
             Category category = (Category)(int)reader["Category"];
             int vatPercentage = (int)reader["VatPercentage"];
             int stock = (int)reader["Stock"];
-            bool isActive = (bool)reader["isActive"];
+            bool isActive = (bool)reader["IsActive"];
             return new MenuItem(id, name, price, menu, category, vatPercentage, stock, isActive);
         }
 
