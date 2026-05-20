@@ -14,7 +14,9 @@ namespace Chapeau.Models
         public DateTime? ServedTime { get; set; }
 
         public string OrderStatus { get; set; }
-
+        public Order()
+        {
+        }
         public Order(int orderId, Table table, User employee, DateTime orderTime, DateTime? servedTime, string orderStatus)
         {
             OrderId = orderId;

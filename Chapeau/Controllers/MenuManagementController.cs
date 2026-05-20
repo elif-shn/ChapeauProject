@@ -26,7 +26,7 @@ namespace Chapeau.Controllers
             vm.SelectedCategory = category;
             return View(vm);
         }*/
-        public ActionResult Index(MenuViewModel menuViewModel)
+        public ActionResult Index(MenuManagementViewModel menuViewModel)
         {
             menuViewModel.Categories = Enum.GetValues(typeof(Category)).Cast<Category>().ToList();
 
@@ -55,7 +55,7 @@ namespace Chapeau.Controllers
 
         public IActionResult Edit(int id)
         {
-            MenuViewModel vm = new MenuViewModel();
+            MenuManagementViewModel vm = new MenuManagementViewModel();
             vm.ItemToEdit = _menuService.GetMenuItemById(id);
             return View(vm);
         }

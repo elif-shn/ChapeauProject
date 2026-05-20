@@ -29,14 +29,14 @@ namespace Chapeau.Services
                 return GetAllCategories();
             }
 
-            if (menuId == 1) // Lunch
+            if (menuId == 1)
             {
                 categories.Add(Category.Starters);
                 categories.Add(Category.Mains);
                 categories.Add(Category.Desserts);
             }
 
-            else if (menuId == 2) // Dinner
+            else if (menuId == 2) 
             {
                 categories.Add(Category.Starters);
                 categories.Add(Category.Entremets);
@@ -44,7 +44,7 @@ namespace Chapeau.Services
                 categories.Add(Category.Desserts);
             }
 
-            else if (menuId == 3) // Drinks
+            else if (menuId == 3) 
             {
                 categories.Add(Category.SoftDrinks);
                 categories.Add(Category.Beers);

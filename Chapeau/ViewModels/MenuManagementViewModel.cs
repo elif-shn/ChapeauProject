@@ -2,7 +2,7 @@
 using Chapeau.Models;
 namespace Chapeau.ViewModels
 {
-    public class MenuViewModel
+    public class MenuManagementViewModel
     {
         public List<MenuItem> MenuItems { get; set; } = new List<MenuItem>();
         public int? SelectedMenuId { get; set; }
