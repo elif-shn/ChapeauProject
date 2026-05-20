@@ -1,0 +1,108 @@
+﻿@model List<OrderItem>
+
+@using Chapeau.Models
+@using Chapeau.Enums
+
+@{
+    ViewData["Title"] = "Order Items";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold">Order Items</h1>
+
+        <a asp-controller="Order"
+           asp-action="Index"
+           class="btn btn-success px-4">
+            Back to Orders
+        </a>
+    </div>
+
+    <h3 class="text-success mt-4 mb-3">Starters</h3>
+
+    <table class="table table-bordered table-hover shadow-sm">
+
+        <thead class="table-light">
+            <tr>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Comment</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (OrderItem item in Model.Where(i => i.MenuItem.Category == Category.Starters))
+            {
+                <tr>
+                    <td>@item.MenuItem.MenuItemName</td>
+                    <td>@item.OrderItemQuantity</td>
+                    <td>@item.Comment</td>
+                    <td>@item.OrderItemsStatus</td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+
+    <h3 class="text-primary mt-5 mb-3">Mains</h3>
+
+    <table class="table table-bordered table-hover shadow-sm">
+
+        <thead class="table-light">
+            <tr>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Comment</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (OrderItem item in Model.Where(i => i.MenuItem.Category == Category.Mains))
+            {
+                <tr>
+                    <td>@item.MenuItem.MenuItemName</td>
+                    <td>@item.OrderItemQuantity</td>
+                    <td>@item.Comment</td>
+                    <td>@item.OrderItemsStatus</td>
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+    <h3 class="text-danger mt-5 mb-3">Desserts</h3>
+
+    <table class="table table-bordered table-hover shadow-sm">
+
+        <thead class="table-light">
+            <tr>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Comment</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (OrderItem item in Model.Where(i => i.MenuItem.Category == Category.Desserts))
+            {
+                <tr>
+                    <td>@item.MenuItem.MenuItemName</td>
+                    <td>@item.OrderItemQuantity</td>
+                    <td>@item.Comment</td>
+                    <td>@item.OrderItemsStatus</td>
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>

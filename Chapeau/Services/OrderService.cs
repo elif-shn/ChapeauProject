@@ -3,7 +3,7 @@ using Chapeau.Services;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
-public class OrderService : IOrderServices
+public class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
 

@@ -12,7 +12,9 @@ namespace Chapeau
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddScoped<IOrderRepository, DbOrderRepository>();
-            builder.Services.AddScoped<IOrderServices, OrderService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IOrderItem, DbOrderItem>();
+            builder.Services.AddScoped<IOrderItemService, OrderItemService>();
             builder.Services.AddScoped<IMenuListRepository, DbMenuListRepository>();
             builder.Services.AddScoped<IMenuService, MenuService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
