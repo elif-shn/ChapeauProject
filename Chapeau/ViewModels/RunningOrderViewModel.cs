@@ -1,10 +1,13 @@
-﻿namespace Chapeau.ViewModels
+﻿using Chapeau.Models;
+using Chapeau.Extensions;
+
+namespace Chapeau.ViewModels
 {
     public class RunningOrderViewModel
     {
-        public int OrderId { get; set; }
+        public Order Order { get; set; }
 
-        public int TableId { get; set; }
+        public Table Table { get; set; }
 
         public DateTime OrderTime { get; set; }
 
@@ -12,13 +15,22 @@
 
         public string OrderStatus { get; set; }
 
-        public RunningOrderViewModel(int orderId, int tableId, DateTime orderTime, string waitingTime, string orderStatus)
+        public RunningOrderViewModel(Order order, Table table, DateTime orderTime, string waitingTime, string orderStatus)
         {
-            OrderId = orderId;
-            TableId = tableId;
+            Order = order;
+
+            Table = table;
+
             OrderTime = orderTime;
+
             WaitingTime = waitingTime;
+
             OrderStatus = orderStatus;
+        }
+
+        public RunningOrderViewModel()
+        {
+
         }
     }
 }

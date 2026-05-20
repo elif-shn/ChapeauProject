@@ -16,7 +16,7 @@ namespace Chapeau.Services
         public void ProcessPayment(Payment payment)
         {
             _paymentRepository.InsertPayment(payment);
-            _paymentRepository.UpdateTableStatusAfterPayment(payment.Order?.TableId ?? 1, "Free");
+            _paymentRepository.UpdateTableStatusAfterPayment(payment.Order?.Table.TableId ?? 1, "Free");
         }
     }
 }

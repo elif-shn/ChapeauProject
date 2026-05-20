@@ -42,7 +42,7 @@ namespace Chapeau.Controllers
             decimal subTotal = 0;
             foreach (var item in orderItems)
             {
-                decimal itemPrice = GetMenuItemPriceFromDb(item.MenuItemId);
+                decimal itemPrice = GetMenuItemPriceFromDb(item.MenuItem.MenuItemId);
                 subTotal += (itemPrice * item.OrderItemQuantity);
             }
 
@@ -97,8 +97,11 @@ namespace Chapeau.Controllers
             {
                 actualPaidAmount = customAmount;
             }
+            Table table = new Table { TableId = tableId };
 
-            var order = new Order(orderId, tableId, 0, DateTime.Now, null, "settled");
+            User employee = new User { Id = 0 };
+
+            var order = new Order(orderId, table, employee, DateTime.Now, null, "settled");
 
             var payment = new Payment
             {

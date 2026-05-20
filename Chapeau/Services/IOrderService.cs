@@ -2,7 +2,7 @@
 
 namespace Chapeau.Services
 {
-    public interface IOrderServices
+    public interface IOrderService
     {
         List<RunningOrderViewModel> GetRunningOrders();
     }

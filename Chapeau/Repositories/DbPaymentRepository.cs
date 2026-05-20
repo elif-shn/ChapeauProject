@@ -18,7 +18,7 @@ namespace Chapeau.Repositories
         {
             var list = new List<OrderItem>();
             using var connection = new SqlConnection(_connectionString);
-            string query = "SELECT MenuItemId, OrderItemQuantity, Comment, OrderItemsStatus FROM OrderItem WHERE OrderId = @OrderId";
+            string query = "SELECT OrderItemId, MenuItemId, OrderItemQuantity, Comment, OrderItemsStatus FROM OrderItem WHERE OrderId = @OrderId";
             var command = new SqlCommand(query, connection);
             command.Parameters.AddWithValue("@OrderId", orderId);
 
@@ -26,13 +26,14 @@ namespace Chapeau.Repositories
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
-                list.Add(new OrderItem
-                {
-                    MenuItemId = (int)reader["MenuItemId"],
-                    OrderItemQuantity = (int)reader["OrderItemQuantity"],
-                    Comment = reader["Comment"].ToString()!,
-                    OrderItemsStatus = reader["OrderItemsStatus"].ToString()!
-                });
+                list.Add(new OrderItem(
+                    orderItemId: reader["OrderItemId"] is int id ? id : (int)reader.GetInt32(reader.GetOrdinal("OrderItemId")),
+                    order: null,
+                    menuItem: new MenuItem { MenuItemId = (int)reader["MenuItemId"] },
+                    orderItemQuantity: (int)reader["OrderItemQuantity"],
+                    comment: reader["Comment"].ToString()!,
+                    orderItemsStatus: reader["OrderItemsStatus"].ToString()!
+                ));
             }
             return list;
         }
