@@ -1,5 +1,5 @@
 ﻿@using Chapeau.Enums
-@model Chapeau.ViewModels.MenuViewModel
+@model Chapeau.ViewModels.MenuDisplayViewModel
 
 @{
     ViewData["Title"] = "MenuItems";
@@ -9,7 +9,9 @@
 
 <form method="get" class="mb-4">
     <div class="row">
+        
         <div class="col-md-4">
+           
             <select name="selectedMenuId" class="form-select" onchange="this.form.submit()">
                 <option value="">All Menus</option>
 
@@ -33,6 +35,11 @@
                                 
                 }
             </select>
+        </div>
+        <div class="col-md-4">
+            <a class="btn btn-success px-4" asp-controller="TakeOrder" asp-action="Index">
+               Take Order
+            </a>
         </div>
     </div>
 </form>

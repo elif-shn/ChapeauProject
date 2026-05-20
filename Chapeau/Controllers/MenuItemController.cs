@@ -19,11 +19,11 @@ namespace Chapeau.Controllers
             _menuListService = menuListService;
         }
 
-        public ActionResult Index(MenuViewModel menuViewModel)
+        public ActionResult Index(MenuDisplayViewModel menuViewModel)
         {
+            menuViewModel.Menus = _menuListService.GetAllMenus();
             menuViewModel.Categories = _menuListService.GetCategoriesByMenu(menuViewModel.SelectedMenuId);
             bool categoryExists = false;
-
             foreach (var category in menuViewModel.Categories)
             {
                 if (category == menuViewModel.SelectedCategory)
@@ -37,9 +37,6 @@ namespace Chapeau.Controllers
                 menuViewModel.SelectedCategory = null;
             }
 
-            menuViewModel.Menus = _menuListService.GetAllMenus();
-
-
             List<MenuItem> menuItems = _menuService.GetActiveItems(menuViewModel.SelectedMenuId, menuViewModel.SelectedCategory);
 
 
@@ -47,6 +44,6 @@ namespace Chapeau.Controllers
 
             return View(menuViewModel);
         }
-
+       
     }
 }
