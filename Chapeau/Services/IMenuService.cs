@@ -5,15 +5,13 @@ namespace Chapeau.Services
 {
     public interface IMenuService
     {
-        /* List<MenuItem> GetAllMenuItems();
-         List<MenuItem> GetFilteredMenuItems(int menuId, int category);*/
-        List<MenuItem> GetAllByFilter(int? menuId, Category? category);
+        List<Menu> GetAllByFilter(Card? card, Category? category);
         MenuItem GetMenuItemById(int id);
         void AddMenuItem(MenuItem item);
         void UpdateMenuItem(MenuItem item);
         void ActivateMenuItem(int id);
         void DeactivateMenuItem(int id);
-        List<MenuItem> GetActiveItems(int? menuId, Category? category);
-
+        List<Menu> GetActiveItems(Card? card, Category? category);
+        List<Category> GetCategoriesByCard(List<Menu> menus, Card? selectedCard);
     }
 }
