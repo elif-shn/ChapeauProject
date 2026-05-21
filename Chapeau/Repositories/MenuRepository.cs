@@ -1,9 +1,7 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
-using Chapeau.ViewModels;
 using Dapper;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
 using System.Data;
 namespace Chapeau.Repositories
 {
@@ -16,71 +14,72 @@ namespace Chapeau.Repositories
             _connectionString = configuration.GetConnectionString("ChapeauDataBase");
         }
 
-        /* public List<MenuItem> GetAll()
-         {
-             using (SqlConnection conn = new SqlConnection(_connectionString))
-             {
-                 string sql = "SELECT * FROM MenuItem";
-                 return conn.Query<MenuItem>(sql).ToList();
-             }
-         }
-
-         public List<MenuItem> GetByFilter(int menuId, int category)
-         {
-             using (SqlConnection conn = new SqlConnection(_connectionString))
-             {
-                 string sql = "SELECT * FROM MenuItem WHERE 1=1";
-                 if (menuId != 0) sql += " AND MenuId = @MenuId";
-                 if (category != 0) sql += " AND Category = @Category";
-                 return conn.Query<MenuItem>(sql, new { MenuId = menuId, Category = category }).ToList();
-             }
-         }*/
-
-        public List<MenuItem> GetAllByFilter(int? menuId, Category? category)
+        public List<Menu> GetAllByFilter(Card? card, Category? category)
         {
-            List<MenuItem> menuItems = new List<MenuItem>();
+            Dictionary<int, Menu> menus = new Dictionary<int, Menu>();
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string query = "SELECT mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.MenuId, mi.Category, mi.VatPercentage, mi.Stock, mi.IsActive, m.MenuName " +
-                "FROM MenuItem mi " +
-                "JOIN Menu m ON mi.MenuId = m.MenuId "+
-                "WHERE (@MenuId IS NULL OR mi.MenuId = @MenuId) " +
-                "AND (@Category IS NULL OR mi.Category = @Category)";
+                string query =
+                    "SELECT mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.MenuId, " +
+                    "mi.VatPercentage, mi.Stock, mi.IsActive, " +
+                    "m.Card, m.Category " +
+                    "FROM MenuItem mi " +
+                    "INNER JOIN Menu m ON mi.MenuId = m.MenuId " +
+                    "WHERE (@Card IS NULL OR m.Card = @Card) " +
+                    "AND (@Category IS NULL OR m.Category = @Category)";
 
                 SqlCommand command = new SqlCommand(query, connection);
 
-                command.Parameters.Add("@MenuId", SqlDbType.Int).Value = (object?)menuId ?? DBNull.Value;
+                command.Parameters.Add("@Card", SqlDbType.Int).Value = (object?)card ?? DBNull.Value;
+
                 command.Parameters.Add("@Category", SqlDbType.Int).Value = (object?)category ?? DBNull.Value;
-                command.Connection.Open();
+
+                connection.Open();
+
                 SqlDataReader reader = command.ExecuteReader();
+
                 while (reader.Read())
                 {
-                    MenuItem menuItem = ReadMenuItem(reader);
-                    menuItems.Add(menuItem);
+                    int menuId = (int)reader["MenuId"];
+
+                    if (!menus.ContainsKey(menuId))
+                    {
+                        menus[menuId] = ReadMenu(reader, menuId);
+                    }
+
+                    MenuItem item = ReadMenuItem(reader);
+                    menus[menuId].MenuItems.Add(item);
                 }
-                reader.Close();
             }
 
-            return menuItems;
+            return menus.Values.ToList();
+        }
+        private Menu ReadMenu(SqlDataReader reader, int menuId)
+        {
+            Menu menu = new Menu();
+
+            menu.MenuId = menuId;
+            menu.Card = (Card)(int)reader["Card"];
+            menu.Category = (Category)(int)reader["Category"];
+            menu.MenuItems = new List<MenuItem>();
+
+            return menu;
         }
         private MenuItem ReadMenuItem(SqlDataReader reader)
         {
-            int id = (int)reader["MenuItemId"];
-            string name = (string)reader["MenuItemName"];
-            decimal price = (decimal)reader["MenuItemPrice"];
-            Menu menu = new Menu
-            {
-                MenuId = (int)reader["MenuId"],
-                MenuName = (string)reader["MenuName"]
-            };
-            Category category = (Category)(int)reader["Category"];
-            int vatPercentage = (int)reader["VatPercentage"];
-            int stock = (int)reader["Stock"];
-            bool isActive = (bool)reader["IsActive"];
-            return new MenuItem(id, name, price, menu, category, vatPercentage, stock, isActive);
-        }
+            MenuItem item = new MenuItem();
 
+            item.MenuItemId = (int)reader["MenuItemId"];
+            item.MenuItemName = (string)reader["MenuItemName"];
+            item.MenuItemPrice = (decimal)reader["MenuItemPrice"];
+            item.MenuId = (int)reader["MenuId"];
+            item.VatPercentage = (int)reader["VatPercentage"];
+            item.Stock = (int)reader["Stock"];
+            item.IsActive = (bool)reader["IsActive"];
+
+            return item;
+        }
         public MenuItem GetById(int id)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))

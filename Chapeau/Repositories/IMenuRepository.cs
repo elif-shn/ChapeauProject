@@ -5,7 +5,7 @@ namespace Chapeau.Repositories
 {
     public interface IMenuRepository
     {
-        List<MenuItem> GetAllByFilter(int? menuId, Category? category);
+        List<Menu> GetAllByFilter(Card? Card, Category? category);
         MenuItem GetById(int id);
         void Add(MenuItem item);
         void Update(MenuItem item);
