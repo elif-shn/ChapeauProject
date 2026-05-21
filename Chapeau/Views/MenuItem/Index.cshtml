@@ -1,5 +1,5 @@
 ﻿@using Chapeau.Enums
-@model Chapeau.ViewModels.MenuViewModel
+@model Chapeau.ViewModels.MenuDisplayViewModel
 
 @{
     ViewData["Title"] = "MenuItems";
@@ -9,8 +9,10 @@
 
 <form method="get" class="mb-4">
     <div class="row">
+        
         <div class="col-md-4">
-            <select name="selectedMenuId" class="form-select">
+           
+            <select name="selectedMenuId" class="form-select" onchange="this.form.submit()">
                 <option value="">All Menus</option>
 
                 @foreach (var menu in Model.Menus)
@@ -22,7 +24,7 @@
             </select>
         </div>
         <div class="col-md-4">
-            <select name="selectedCategory" class="form-select">
+            <select name="selectedCategory" class="form-select" onchange="this.form.submit()">
                 <option value="">All Categories</option>
                 @foreach (var category in Model.Categories)
                 {
@@ -35,7 +37,9 @@
             </select>
         </div>
         <div class="col-md-4">
-            <button type="submit" class="btn btn-primary">Filter</button>
+            <a class="btn btn-success px-4" asp-controller="TakeOrder" asp-action="Index">
+               Take Order
+            </a>
         </div>
     </div>
 </form>
@@ -45,7 +49,6 @@
 
         @foreach (var menu in Model.Menus)
         {
-
             if (Model.SelectedMenuId != null && Model.SelectedMenuId != menu.MenuId)
             {
                 continue;
@@ -64,56 +67,40 @@
                     continue;
                 }
 
-                var hasItems = false;
+                List<MenuItem> itemsInGroup = new List<MenuItem>();
 
-                foreach (var item in Model.MenuItems)
+                foreach (var x in Model.MenuItems)
                 {
-                    if (item.MenuId == menu.MenuId && item.Category == category)
+                    if (x.Menu.MenuId == menu.MenuId &&
+                    x.Category == category)
                     {
-                        hasItems = true;
-                        break;
+                        itemsInGroup.Add(x);
                     }
                 }
 
-                if (hasItems)
+                if (itemsInGroup.Count == 0)
+                    continue;
+
+                <tr style="height:35px;"></tr>
+                <tr>
+                    <td colspan="2">
+                        <em>@category.ToString().Replace("CoffeeAndTea", "Coffee & Tea").ToUpper()</em>
+                    </td>
+                </tr>
+
+                foreach (var item in itemsInGroup)
                 {
-                    <tr style="height:35px;"></tr>
                     <tr>
-                        <td colspan="2">
-                            <em>@category.ToString().Replace("CoffeeAndTea", "Coffee & Tea").ToUpper()</em>
+                        <td class="pe-3">@item.MenuItemName</td>
+                        <td class="pe-3">
+                            <small class="@item.StockCssClass">
+                                @item.StockStatus
+                            </small>
                         </td>
+                        <td>€ @item.MenuItemPrice.ToString("0.00")</td>
                     </tr>
-
-                    foreach (var item in Model.MenuItems)
-                    {
-                        if (item.MenuId == menu.MenuId && item.Category == category && item.IsActive == true)
-                        {
-                            string status;
-
-                            if (item.Stock == 0)
-                                status = "OUT OF STOCK";
-                            else if (item.Stock <= 10)
-                                status = "ALMOST OUT OF STOCK";
-                            else
-                                status = "IN STOCK";
-
-                            var stockClass =
-                            status == "OUT OF STOCK" ? "text-danger" :
-                            status == "ALMOST OUT OF STOCK" ? "text-warning" :
-                            "text-success";
-
-                            <tr>
-                                <td class="pe-3">@item.MenuItemName</td>
-                                <td class="pe-3">
-                                    <small class="@stockClass">@status</small>
-                                </td>
-                                <td>€ @item.MenuItemPrice.ToString("0.00")</td>
-                            </tr>
-                        }
-                    }
                 }
             }
         }
-
     </tbody>
 </table>

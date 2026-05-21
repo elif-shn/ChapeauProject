@@ -1,33 +1,37 @@
-﻿using Chapeau.Repositories;
+﻿using Chapeau.Models;
 using Chapeau.Services;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+
 namespace Chapeau.Controllers
 {
     public class OrderController : Controller
     {
-        private readonly IOrderRepository _orderRepository;
+        private readonly IOrderService _orderServices;
 
-        private readonly IOrderServices _orderServices;
+        private readonly IOrderItemService _orderItemService;
 
-        public OrderController(IOrderServices orderServices )
+        public OrderController(IOrderService orderServices, IOrderItemService orderItemService)
         {
             _orderServices = orderServices;
+
+            _orderItemService = orderItemService;
         }
-        public IActionResult Index() 
-        { 
-            List<RunningOrderViewModel> runningOrdersViewModel = _orderServices.GetRunningOrders();
-            return View(runningOrdersViewModel); 
-        }
-        public ActionResult RunningOrders()
+
+        public IActionResult Index()
         {
             List<RunningOrderViewModel> runningOrdersViewModel = _orderServices.GetRunningOrders();
 
-            return View();
+            return View(runningOrdersViewModel);
+        }
+        public IActionResult ViewOrderItems(int id)
+        {
+            List<OrderItem> items = _orderItemService.GetOrderItemsByOrderId(id);
+
+            return View("OrderItem", items);
         }
     }
 }
-
 
 
 

@@ -1,4 +1,4 @@
-﻿@model Chapeau.ViewModels.MenuViewModel
+﻿@model Chapeau.ViewModels.MenuManagementViewModel
 <style>
     h2 {
         color: #5a3e2b;
@@ -86,13 +86,13 @@
         <div class="form-group">
             <label>Menu Card</label>
             <select name="MenuId">
-                @if (Model.ItemToEdit.MenuId == 1)
+                @if (Model.ItemToEdit.Menu.MenuId == 1)
                 {
                     <option value="1" selected>Lunch</option>
                     <option value="2">Dinner</option>
                     <option value="3">Drinks</option>
                 }
-                else if (Model.ItemToEdit.MenuId == 2)
+                else if (Model.ItemToEdit.Menu.MenuId == 2)
                 {
                     <option value="1">Lunch</option>
                     <option value="2" selected>Dinner</option>

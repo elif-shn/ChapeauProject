@@ -1,5 +1,5 @@
 ﻿@using Chapeau.Enums 
-@model Chapeau.ViewModels.MenuViewModel
+@model Chapeau.ViewModels.MenuManagementViewModel
 <style>
     h2 {
         color: #5a3e2b;
@@ -191,8 +191,8 @@
     <tbody>
         @foreach (var item in Model.MenuItems)
         {
-            string menuLabel = item.MenuId == 1 ? "Lunch" : item.MenuId == 2 ? "Dinner" : "Drinks";
-            string badgeClass = item.MenuId == 1 ? "badge-lunch" : item.MenuId == 2 ? "badge-dinner" : "badge-drinks";
+            string menuLabel = item.Menu.MenuId == 1 ? "Lunch" : item.Menu.MenuId == 2 ? "Dinner" : "Drinks";
+            string badgeClass = item.Menu.MenuId == 1 ? "badge-lunch" : item.Menu.MenuId == 2 ? "badge-dinner" : "badge-drinks";
             <tr class="@(item.IsActive ? "" : "inactive-row")">
                 <td>@item.MenuItemId</td>
                 <td><strong>@item.MenuItemName</strong></td>

@@ -19,20 +19,31 @@ namespace Chapeau.Controllers
             _menuListService = menuListService;
         }
 
-        public ActionResult Index(MenuViewModel menuViewModel)
+        public ActionResult Index(MenuDisplayViewModel menuViewModel)
         {
-            menuViewModel.Categories = Enum.GetValues(typeof(Category)).Cast<Category>().ToList();
-
             menuViewModel.Menus = _menuListService.GetAllMenus();
+            menuViewModel.Categories = _menuListService.GetCategoriesByMenu(menuViewModel.SelectedMenuId);
+            bool categoryExists = false;
+            foreach (var category in menuViewModel.Categories)
+            {
+                if (category == menuViewModel.SelectedCategory)
+                {
+                    categoryExists = true;
+                }
+            }
 
+            if (!categoryExists)
+            {
+                menuViewModel.SelectedCategory = null;
+            }
 
-            List<MenuItem> menuItems = _menuService.GetAllByFilter(menuViewModel);
+            List<MenuItem> menuItems = _menuService.GetActiveItems(menuViewModel.SelectedMenuId, menuViewModel.SelectedCategory);
 
 
             menuViewModel.MenuItems = menuItems;
 
             return View(menuViewModel);
         }
-
+       
     }
 }
