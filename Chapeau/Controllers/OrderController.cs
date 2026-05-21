@@ -24,14 +24,6 @@ namespace Chapeau.Controllers
 
             return View(runningOrdersViewModel);
         }
-
-        public IActionResult RunningOrders()
-        {
-            List<RunningOrderViewModel> runningOrdersViewModel = _orderServices.GetRunningOrders();
-
-            return View(runningOrdersViewModel);
-        }
-
         public IActionResult ViewOrderItems(int id)
         {
             List<OrderItem> items = _orderItemService.GetOrderItemsByOrderId(id);
