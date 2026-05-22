@@ -49,6 +49,7 @@ namespace Chapeau.Repositories
                     }
 
                     MenuItem item = ReadMenuItem(reader);
+                    item.Menu = menus[menuId];
                     menus[menuId].MenuItems.Add(item);
                 }
             }
@@ -73,7 +74,6 @@ namespace Chapeau.Repositories
             item.MenuItemId = (int)reader["MenuItemId"];
             item.MenuItemName = (string)reader["MenuItemName"];
             item.MenuItemPrice = (decimal)reader["MenuItemPrice"];
-            item.MenuId = (int)reader["MenuId"];
             item.VatPercentage = (int)reader["VatPercentage"];
             item.Stock = (int)reader["Stock"];
             item.IsActive = (bool)reader["IsActive"];

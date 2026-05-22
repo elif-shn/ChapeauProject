@@ -11,6 +11,8 @@ namespace Chapeau
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddScoped<IMenuRepository, MenuRepository>();
             builder.Services.AddScoped<IOrderRepository, DbOrderRepository>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IMenuService, MenuService>();
@@ -27,13 +29,11 @@ namespace Chapeau
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
-            builder.Services.AddScoped<IMenuRepository, MenuRepository>();
             builder.Services.AddSession();
             
 
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddSession();
             var app = builder.Build();
             app.UseSession();
 
