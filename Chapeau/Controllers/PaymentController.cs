@@ -33,7 +33,7 @@ namespace Chapeau.Controllers
                 orderId = int.Parse(activeOrders[0].Value);
             }
 
-            var orderItems = _paymentRepository.GetOrderItemsByOrderId(orderId);
+            var orderItems = _paymentRepository.Getbyid(orderId);
             if (orderItems == null)
             {
                 orderItems = new List<OrderItem>();
@@ -101,7 +101,7 @@ namespace Chapeau.Controllers
 
             User employee = new User { Id = 0 };
 
-            var order = new Order(orderId, table, employee, DateTime.Now, null, "settled");
+            var order = new Order(orderId, table, employee, DateTime.Now, null, OrderStatus.Completed);
 
             var payment = new Payment
             {

@@ -1,4 +1,4 @@
-﻿@model List<Chapeau.Models.OrderItem>
+﻿@model List<OrderItem>
 
 @{
     ViewData["Title"] = "Order Items";
@@ -7,18 +7,23 @@
 <div class="container mt-4 bg-white p-4 rounded shadow-sm">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
+
         <h1 class="fw-bold">Order Items</h1>
 
         <a asp-controller="Order"
            asp-action="Index"
-           class="btn btn-success">
+           class="btn"
+           style="background-color:#4A565E; color:white;">
             Back to Orders
         </a>
+
     </div>
 
-    <table class="table table-hover table-bordered">
-        <thead class="table-secondary">
+    <table class="table table-hover table-bordered w-100">
+
+        <thead style="background-color:#e9ecef;"
             <tr>
+                <th>Course</th>
                 <th>Item</th>
                 <th>Quantity</th>
                 <th>Comment</th>
@@ -27,11 +32,16 @@
         </thead>
 
         <tbody>
+
             @foreach (var item in Model)
             {
                 <tr>
+
                     <td>
-                        @item.MenuItem.Category -
+                        @item.MenuItem.Category
+                    </td>
+
+                    <td>
                         @item.MenuItem.MenuItemName
                     </td>
 
@@ -44,11 +54,14 @@
                     </td>
 
                     <td>
-                        @item.OrderItemsStatus
+                        @item.OrderItemStatus
                     </td>
+
                 </tr>
             }
+
         </tbody>
+
     </table>
 
 </div>
