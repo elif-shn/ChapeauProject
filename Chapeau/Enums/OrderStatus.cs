@@ -2,7 +2,7 @@
 {
     public enum OrderStatus
     {
-       
+        Ordered,
         Pending,
         Preparing,
         Ready,

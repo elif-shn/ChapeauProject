@@ -27,9 +27,18 @@ public class OrderService : IOrderService
     {
         _orderRepository.UpdateOrderStatus(orderId, status);
     }
+    public List<Order> GetFinishedOrders()
+    {
+        return _orderRepository.GetFinishedOrders();
+    }
 
     List<OrderItem> IOrderService.GetOrderItemsByOrderId(int orderId)
     {
         return _orderRepository.GetOrderItemsByOrderId(orderId);
     }
+    public void UpdateOrderItemStatus(int orderItemId, OrderStatus status)
+    {
+        _orderRepository.UpdateOrderItemStatus(orderItemId, status);
+    }
+    
 }

@@ -25,7 +25,7 @@ namespace Chapeau.Repositories
                 {
                     string query = @"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.WaitingTime, o.ServedTime, o.OrderStatus
                                   FROM [Order] o JOIN [Table] t ON o.TableId = t.TableId
-                                  WHERE o.OrderStatus NOT IN ('Served', 'Completed', 'Cancelled') ORDER BY o.OrderTime ASC";
+                                  WHERE o.OrderStatus NOT IN ('Completed', 'Cancelled') ORDER BY o.OrderTime ASC";
                     SqlCommand command = new SqlCommand(query, connection);
                     connection.Open();
 
@@ -103,11 +103,9 @@ namespace Chapeau.Repositories
             {
                 try
                 {
-                    string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemStatus,
-                                    mi.MenuItemId, mi.MenuItemName, mi.category
-                             FROM OrderItem oi 
-                             JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
-                             WHERE oi.OrderId = @OrderId";
+                    string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemStatus, mi.MenuItemId, mi.MenuItemName 
+                                   FROM OrderItem oi JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
+                                   WHERE oi.OrderId = @OrderId";
 
                     SqlCommand command = new SqlCommand(query, connection);
                     command.Parameters.AddWithValue("@OrderId", orderId);
@@ -131,6 +129,48 @@ namespace Chapeau.Repositories
             }
 
             return items;
+        }
+        public void UpdateOrderItemStatus(int orderItemId, OrderStatus status)
+        {
+            using SqlConnection connection = new SqlConnection(_connectionString);
+
+            string query = @"UPDATE OrderItem SET OrderItemStatus = @Status WHERE OrderItemId = @OrderItemId";
+
+            SqlCommand command = new SqlCommand(query, connection);
+
+            command.Parameters.AddWithValue("@Status", status.ToString());
+            command.Parameters.AddWithValue("@OrderItemId", orderItemId);
+
+            connection.Open();
+            command.ExecuteNonQuery();
+        }
+        public List<Order> GetFinishedOrders()
+        {
+            List<Order> orders = new List<Order>();
+
+            using (SqlConnection connection =
+                   new SqlConnection(_connectionString))
+            {
+                string query = @"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.WaitingTime, o.ServedTime, o.OrderStatus
+                               FROM [Order] o JOIN [Table] t ON o.TableId = t.TableId
+                               WHERE o.OrderStatus IN ('Served', 'Completed') ORDER BY o.OrderTime DESC";
+                SqlCommand command =
+                    new SqlCommand(query, connection);
+
+                connection.Open();
+
+                SqlDataReader reader =
+                    command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    orders.Add(ReadOrder(reader));
+                }
+
+                reader.Close();
+            }
+
+            return orders;
         }
 
         private Order ReadOrder(SqlDataReader reader)
@@ -158,12 +198,11 @@ namespace Chapeau.Repositories
                 OrderItemId = (int)reader["OrderItemId"],
                 OrderItemQuantity = (int)reader["OrderItemQuantity"],
                 Comment = reader["Comment"].ToString(),
-                OrderItemStatus = (OrderStatus)(int)reader["OrderItemStatus"],
+                OrderItemStatus = Enum.Parse<OrderStatus>(reader["OrderItemStatus"].ToString()),
                 MenuItem = new MenuItem
                 {
                     MenuItemId = (int)reader["MenuItemId"],
-                    MenuItemName = (string)reader["MenuItemName"],
-                    Category = (Category)(int)reader["category"]
+                    MenuItemName = (string)reader["MenuItemName"],                 
                 }
             };
         }

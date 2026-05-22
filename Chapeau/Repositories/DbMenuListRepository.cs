@@ -1,4 +1,5 @@
-﻿using Chapeau.Models;
+﻿using Chapeau.Enums;
+using Chapeau.Models;
 using Microsoft.Data.SqlClient;
 
 namespace Chapeau.Repositories
@@ -19,7 +20,7 @@ namespace Chapeau.Repositories
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string query = "SELECT MenuId, MenuName FROM Menu";
+                string query = "SELECT MenuId, category FROM Menu";
 
                 SqlCommand command = new SqlCommand(query, connection);
                 command.Connection.Open();
@@ -31,7 +32,7 @@ namespace Chapeau.Repositories
                     menus.Add(new Menu
                     {
                         MenuId = (int)reader["MenuId"],
-                        MenuName = (string)reader["MenuName"]
+                        Category = (Category)(int)reader["Category"]
                     });
                 }
 
