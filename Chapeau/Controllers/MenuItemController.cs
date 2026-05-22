@@ -19,25 +19,33 @@ namespace Chapeau.Controllers
 
         public IActionResult Index(Card? selectedCard, Category? selectedCategory)
         {
-
-            List<Category> categories = _menuService.GetCategoriesByCard(_menuService.GetActiveItems(selectedCard, null), selectedCard);
-
-            ViewBag.Categories = categories;
-
-            if (selectedCategory != null &&
-                !categories.Contains(selectedCategory.Value))
+            try
             {
-                selectedCategory = null;
+                List<Category> categories = _menuService.GetCategoriesByCard(_menuService.GetActiveItems(selectedCard, null), selectedCard);
+
+                ViewBag.Categories = categories;
+
+                if (selectedCategory != null &&
+                    !categories.Contains(selectedCategory.Value))
+                {
+                    selectedCategory = null;
+                }
+                var menuItems = _menuService.GetActiveItems(selectedCard, selectedCategory);
+                var viewModel = new MenuDisplayViewModel
+                {
+                    Menu = menuItems,
+                    SelectedCard = selectedCard,
+                    SelectedCategory = selectedCategory
+                };
+
+                return View(viewModel);
             }
-            var menuItems = _menuService.GetActiveItems(selectedCard, selectedCategory);
-            var viewModel = new MenuDisplayViewModel
+            catch (Exception ex)
             {
-                Menu = menuItems,
-                SelectedCard = selectedCard,
-                SelectedCategory = selectedCategory
-            };
-
-            return View(viewModel);
+                ViewData["ErrorMessage"] = " " + ex.Message;
+                return View("Index");
+            }
+           
         }
 
     }
