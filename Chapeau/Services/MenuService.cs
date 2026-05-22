@@ -1,7 +1,6 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
 using Chapeau.Repositories;
-using Chapeau.ViewModels;
 namespace Chapeau.Services
 {
     public class MenuService : IMenuService
@@ -14,7 +13,15 @@ namespace Chapeau.Services
         }
         public List<Menu> GetAllByFilter(Card? card, Category? category)
         {
-            return _menuRepository.GetAllByFilter(card, category);
+            try
+            {
+                return _menuRepository.GetAllByFilter(card, category);
+            }
+            catch
+            {
+                throw;
+            }
+            
         }
         public MenuItem GetMenuItemById(int id)
         {
@@ -43,49 +50,67 @@ namespace Chapeau.Services
 
         public List<Menu> GetActiveItems(Card? card, Category? category)
         {
-            List<Menu> menus = _menuRepository.GetAllByFilter(card, category);
-
-            List<Menu> filteredMenus = new List<Menu>();
-
-            foreach (var menu in menus)
+            try
             {
-                Menu newMenu = new Menu
-                {
-                    MenuId = menu.MenuId,
-                    Card = menu.Card,
-                    Category = menu.Category,
-                    MenuItems = new List<MenuItem>()
-                };
 
-                foreach (var item in menu.MenuItems)
+                List<Menu> menus = _menuRepository.GetAllByFilter(card, category);
+
+                List<Menu> filteredMenus = new List<Menu>();
+
+                foreach (var menu in menus)
                 {
-                    if (item.IsActive)
+                    Menu newMenu = new Menu
                     {
-                        newMenu.MenuItems.Add(item);
+                        MenuId = menu.MenuId,
+                        Card = menu.Card,
+                        Category = menu.Category,
+                        MenuItems = new List<MenuItem>()
+                    };
+
+                    foreach (var item in menu.MenuItems)
+                    {
+                        if (item.IsActive)
+                        {
+                            newMenu.MenuItems.Add(item);
+                        }
                     }
+
+                    filteredMenus.Add(newMenu);
                 }
 
-                filteredMenus.Add(newMenu);
-            }
+                return filteredMenus;
 
-            return filteredMenus;
+            }
+            catch
+            {
+                throw;
+            }
         }
         public List<Category> GetCategoriesByCard(List<Menu> menus, Card? selectedCard)
         {
-            List<Category> categories = new List<Category>();
-
-            foreach (var menu in menus)
+            try
             {
-                if (selectedCard == null || menu.Card == selectedCard)
+                List<Category> categories = new List<Category>();
+
+                foreach (var menu in menus)
                 {
-                    if (!categories.Contains(menu.Category))
+                    if (selectedCard == null || menu.Card == selectedCard)
                     {
-                        categories.Add(menu.Category);
+                        if (!categories.Contains(menu.Category))
+                        {
+                            categories.Add(menu.Category);
+                        }
                     }
                 }
-            }
 
-            return categories;
+                return categories;
+
+            }
+            catch
+            {
+                throw;
+            }
+            
         }
     }
 }
