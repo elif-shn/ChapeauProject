@@ -143,6 +143,7 @@ namespace Chapeau.Repositories
             order.OrderId = (int)reader["OrderId"];
             order.Table = table;
             order.Employee = employee;
+
             order.OrderTime = (DateTime)reader["OrderTime"];
             order.WaitingTime = reader["WaitingTime"].ToString();
             order.ServedTime = reader["ServedTime"] == DBNull.Value ? (DateTime?)null : (DateTime)reader["ServedTime"];
