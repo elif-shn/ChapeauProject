@@ -33,5 +33,20 @@ namespace Chapeau.Controllers
 
             return RedirectToAction("Index");
         }
+        [HttpPost]
+        public IActionResult UpdateItemStatus(int orderItemId, string status)
+        {
+            OrderStatus newStatus = Enum.Parse<OrderStatus>(status);
+
+            _orderServices.UpdateOrderItemStatus(orderItemId, newStatus);
+
+            return RedirectToAction("Index");
+        }
+        public IActionResult FinishedOrders()
+        {
+            List<Order> finishedOrders =_orderServices.GetFinishedOrders();
+
+            return View(finishedOrders);
+        }
     }
 }

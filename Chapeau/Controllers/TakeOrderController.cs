@@ -52,7 +52,7 @@ namespace Chapeau.Controllers
             return View(model);
         }
 
-        [HttpPost]
+    
         [HttpPost]
         public IActionResult AddToCurrentOrder(TakeOrderActionViewModel model)
         {

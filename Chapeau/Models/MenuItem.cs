@@ -1,6 +1,8 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
 
+namespace Chapeau.Models;
+
 public class MenuItem
 {
     public int MenuItemId { get; set; }
@@ -12,6 +14,7 @@ public class MenuItem
     public int VatPercentage { get; set; }
     public int Stock { get; set; }
     public bool IsActive { get; set; }
+    public MenuItem() { }
 
     public StockStatus StockStatus
     {

@@ -13,5 +13,7 @@ namespace Chapeau.Services
         void DeactivateMenuItem(int id);
         List<Menu> GetActiveItems(Card? card, Category? category);
         List<Category> GetCategoriesByCard(List<Menu> menus, Card? selectedCard);
+        List<MenuItem> GetAllByFilter(int? selectedMenuId, Category? selectedCategory);
+        List<MenuItem> GetActiveItems(int? selectedMenuId, Category? selectedCategory);
     }
 }

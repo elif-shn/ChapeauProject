@@ -1,4 +1,7 @@
-﻿@model List<OrderItem>
+﻿@using Chapeau.Enums
+@using Chapeau.Models
+
+@model List<OrderItem>
 
 @{
     ViewData["Title"] = "Order Items";
@@ -8,12 +11,12 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
 
-        <h1 class="fw-bold">Order Items</h1>
+        <h1 class="mb-0">Order Items</h1>
 
         <a asp-controller="Order"
            asp-action="Index"
-           class="btn"
-           style="background-color:#4A565E; color:white;">
+           class="btn btn-sm"
+           style="background-color:#4a565e; color:white;">
             Back to Orders
         </a>
 
@@ -21,15 +24,16 @@
 
     <table class="table table-hover table-bordered w-100">
 
-        <thead style="background-color:#e9ecef;">
-    <tr>
-        <th>Course</th>
-        <th>Item</th>
-        <th>Quantity</th>
-        <th>Comment</th>
-        <th>Status</th>
-    </tr>
-</thead>
+        <thead style="background-color:#dce4ef;">
+            <tr>
+                <th>Course</th>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Comment</th>
+                <th>Status</th>
+                <th>Update Status</th>
+            </tr>
+        </thead>
 
         <tbody>
 
@@ -38,7 +42,7 @@
                 <tr>
 
                     <td>
-                        @item.MenuItem.Category
+                        @item.MenuItem.MenuItemId
                     </td>
 
                     <td>
@@ -55,6 +59,59 @@
 
                     <td>
                         @item.OrderItemStatus
+                    </td>
+
+                    <td>
+
+                        @if (item.OrderItemStatus == OrderStatus.Ordered)
+                        {
+                            <form asp-action="UpdateItemStatus" method="post">
+
+                                <input type="hidden"
+                                       name="orderItemId"
+                                       value="@item.OrderItemId" />
+
+                                <button type="submit"
+                                        name="status"
+                                        value="Preparing"
+                                        class="btn btn-sm"
+                                        style="background-color:orangered; border:none; color:white; width:170px;">
+
+                                    Start Preparing
+
+                                </button>
+
+                            </form>
+                        }
+
+                        else if (item.OrderItemStatus == OrderStatus.Preparing)
+                        {
+                            <form asp-action="UpdateItemStatus" method="post">
+
+                                <input type="hidden"
+                                       name="orderItemId"
+                                       value="@item.OrderItemId" />
+
+                                <button type="submit"
+                                        name="status"
+                                        value="Ready"
+                                        class="btn btn-sm"
+                                        style="background-color:#4a565e; border:none; color:white; width:170px;">
+
+                                    Mark Ready
+
+                                </button>
+
+                            </form>
+                        }
+
+                        else if (item.OrderItemStatus == OrderStatus.Ready)
+                        {
+                            <span class="badge bg-success">
+                                Ready To Be Served
+                            </span>
+                        }
+
                     </td>
 
                 </tr>
