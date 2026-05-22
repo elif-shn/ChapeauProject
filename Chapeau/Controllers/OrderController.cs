@@ -1,4 +1,5 @@
-﻿using Chapeau.Models;
+﻿using Chapeau.Enums;
+using Chapeau.Models;
 using Chapeau.Services;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -9,48 +10,43 @@ namespace Chapeau.Controllers
     {
         private readonly IOrderService _orderServices;
 
-        private readonly IOrderItemService _orderItemService;
-
-        public OrderController(IOrderService orderServices, IOrderItemService orderItemService)
+        public OrderController(IOrderService orderServices)
         {
             _orderServices = orderServices;
-
-            _orderItemService = orderItemService;
         }
-
         public IActionResult Index()
         {
-            List<RunningOrderViewModel> runningOrdersViewModel = _orderServices.GetRunningOrders();
+            List<Order> orders = _orderServices.GetAllOrders();
 
-            return View(runningOrdersViewModel);
+            return View(orders);
         }
-        public IActionResult ViewOrderItems(int id)
+        public IActionResult OrderItems(int orderId)
         {
-            List<OrderItem> items = _orderItemService.GetOrderItemsByOrderId(id);
+            List<OrderItem> orderItems = _orderServices.GetOrderItemsByOrderId(orderId);
 
-            return View("OrderItem", items);
+            return View(orderItems);
+        }
+        [HttpPost]
+        public IActionResult UpdateStatus(int orderId,   OrderStatus status)
+        {
+           _orderServices.UpdateOrderStatus(orderId,status);
+
+            return RedirectToAction("Index");
+        }
+        [HttpPost]
+        public IActionResult UpdateItemStatus(int orderItemId, string status)
+        {
+            OrderStatus newStatus = Enum.Parse<OrderStatus>(status);
+
+            _orderServices.UpdateOrderItemStatus(orderItemId, newStatus);
+
+            return RedirectToAction("Index");
+        }
+        public IActionResult FinishedOrders()
+        {
+            List<Order> finishedOrders =_orderServices.GetFinishedOrders();
+
+            return View(finishedOrders);
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

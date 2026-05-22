@@ -10,7 +10,7 @@ namespace Chapeau.Services
 
         public List<OrderItem> GetOrderBillDetails(int orderId)
         {
-            return _paymentRepository.GetOrderItemsByOrderId(orderId);
+            return _paymentRepository.Getbyid(orderId);
         }
 
         public void ProcessPayment(Payment payment)

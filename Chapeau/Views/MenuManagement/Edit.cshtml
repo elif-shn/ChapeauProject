@@ -1,4 +1,7 @@
-﻿@model Chapeau.ViewModels.MenuManagementViewModel
+﻿@*@model Chapeau.ViewModels.MenuManagementViewModel
+
+@using Chapeau.Enums
+
 <style>
     h2 {
         color: #5a3e2b;
@@ -14,7 +17,7 @@
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
-    .form-group {
+    .form-group {   
         margin-bottom: 18px;
     }
 
@@ -86,13 +89,13 @@
         <div class="form-group">
             <label>Menu Card</label>
             <select name="MenuId">
-                @if (Model.ItemToEdit.Menu.MenuId == 1)
+                @if (Model.ItemToEdit.MenuId == 1)
                 {
                     <option value="1" selected>Lunch</option>
                     <option value="2">Dinner</option>
                     <option value="3">Drinks</option>
                 }
-                else if (Model.ItemToEdit.Menu.MenuId == 2)
+                else if (Model.ItemToEdit.MenuId == 2)
                 {
                     <option value="1">Lunch</option>
                     <option value="2" selected>Dinner</option>
@@ -110,86 +113,15 @@
         <div class="form-group">
             <label>Category</label>
             <select name="Category">
-                @if (Model.ItemToEdit.Category == Chapeau.Enums.Category.Starters)
-                {
-                    <option value="1" selected>Starters</option>
-                }
-                else
-                {
-                    <option value="1">Starters</option>
-                }
-
-                @if (Model.ItemToEdit.Category == Chapeau.Enums.Category.Entremets)
-                {
-                    <option value="2" selected>Entremets</option>
-                }
-                else
-                {
-                    <option value="2">Entremets</option>
-                }
-
-                @if (Model.ItemToEdit.Category == Chapeau.Enums.Category.Mains)
-                {
-                    <option value="3" selected>Mains</option>
-                }
-                else
-                {
-                    <option value="3">Mains</option>
-                }
-
-                @if (Model.ItemToEdit.Category == Chapeau.Enums.Category.Desserts)
-                {
-                    <option value="4" selected>Desserts</option>
-                }
-                else
-                {
-                    <option value="4">Desserts</option>
-                }
-
-                @if (Model.ItemToEdit.Category == Chapeau.Enums.Category.SoftDrinks)
-                {
-                    <option value="5" selected>Soft Drinks</option>
-                }
-                else
-                {
-                    <option value="5">Soft Drinks</option>
-                }
-
-                @if (Model.ItemToEdit.Category == Chapeau.Enums.Category.Beers)
-                {
-                    <option value="6" selected>Beers</option>
-                }
-                else
-                {
-                    <option value="6">Beers</option>
-                }
-
-                @if (Model.ItemToEdit.Category == Chapeau.Enums.Category.Wines)
-                {
-                    <option value="7" selected>Wines</option>
-                }
-                else
-                {
-                    <option value="7">Wines</option>
-                }
-
-                @if (Model.ItemToEdit.Category == Chapeau.Enums.Category.SpiritDrinks)
-                {
-                    <option value="8" selected>Spirit Drinks</option>
-                }
-                else
-                {
-                    <option value="8">Spirit Drinks</option>
-                }
-
-                @if (Model.ItemToEdit.Category == Chapeau.Enums.Category.CoffeeAndTea)
-                {
-                    <option value="9" selected>Coffee and Tea</option>
-                }
-                else
-                {
-                    <option value="9">Coffee and Tea</option>
-                }
+                <option value="1">Starters</option>
+                <option value="2">Entremets</option>
+                <option value="3">Mains</option>
+                <option value="4">Desserts</option>
+                <option value="5">Soft Drinks</option>
+                <option value="6">Beers</option>
+                <option value="7">Wines</option>
+                <option value="8">Spirit Drinks</option>
+                <option value="9">Coffee and Tea</option>
             </select>
         </div>
 
@@ -204,4 +136,4 @@
         </div>
 
     </form>
-</div>
+</div>*@

@@ -1,4 +1,4 @@
-﻿@using Chapeau.Enums 
+﻿@*@using Chapeau.Enums 
 @model Chapeau.ViewModels.MenuManagementViewModel
 <style>
     h2 {
@@ -150,7 +150,7 @@
         @foreach (var menu in Model.Menus)
         {
             <option value="@menu.MenuId" selected="@(Model.SelectedMenuId == menu.MenuId)">
-                @menu.MenuName.ToString().ToUpper()
+                @menu.ToString().ToUpper()
             </option>
         }
     </select>
@@ -191,16 +191,15 @@
     <tbody>
         @foreach (var item in Model.MenuItems)
         {
-            string menuLabel = item.Menu.MenuId == 1 ? "Lunch" : item.Menu.MenuId == 2 ? "Dinner" : "Drinks";
-            string badgeClass = item.Menu.MenuId == 1 ? "badge-lunch" : item.Menu.MenuId == 2 ? "badge-dinner" : "badge-drinks";
+            string menuLabel = item.MenuId == 1 ? "Lunch" : item.MenuId == 2 ? "Dinner" : "Drinks";
+            string badgeClass = item.MenuId == 1 ? "badge-lunch" : item.MenuId == 2 ? "badge-dinner" : "badge-drinks";
             <tr class="@(item.IsActive ? "" : "inactive-row")">
                 <td>@item.MenuItemId</td>
                 <td><strong>@item.MenuItemName</strong></td>
                 <td>€ @item.MenuItemPrice.ToString("0.00")</td>
                 <td>@item.Stock</td>
                 <td><span class="badge @badgeClass">@menuLabel</span></td>
-                <td>@item.Category.ToString()</td>
-                <td>@item.VatPercentage%</td>
+                 <td>@item.VatPercentage%</td>
                 <td>@(item.IsActive ? "Active" : "Inactive")</td>
                 <td>
                     <div class="action-buttons">
@@ -218,4 +217,4 @@
             </tr>
         }
     </tbody>
-</table>
+</table>*@
