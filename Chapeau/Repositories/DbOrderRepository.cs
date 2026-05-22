@@ -1,8 +1,8 @@
-﻿using Chapeau.Models;
-using Chapeau.ViewModels;
+﻿using Chapeau.Enums;
+using Chapeau.Models;
 using Chapeau.Repositories;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 
 namespace Chapeau.Repositories
 {
@@ -15,43 +15,168 @@ namespace Chapeau.Repositories
             _connectionString = configuration.GetConnectionString("ChapeauDatabase");
         }
 
-        public List<RunningOrderViewModel> GetRunningOrder()
+        public List<Order> GetAllOrders()
         {
-            List<RunningOrderViewModel> orders = new List<RunningOrderViewModel>();
+            List<Order> orders = new List<Order>();
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string query = "SELECT * FROM [Order] WHERE OrderStatus NOT IN ('Completed', 'Served', 'Cancelled') ORDER BY OrderTime ASC";
-                SqlCommand command = new SqlCommand(query, connection);
-                connection.Open();
-
-                SqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
+                try
                 {
-                    RunningOrderViewModel order = ReadRunningOrder(reader);
+                    string query = @"SELECT OrderId, TableId, EmployeeId, OrderTime, WaitingTime, ServedTime, OrderStatus FROM [Order] 
+                                     WHERE OrderStatus NOT IN ('Served', 'Completed', 'Cancelled') ORDER BY OrderTime ASC";
+                    SqlCommand command = new SqlCommand(query, connection);
+                    connection.Open();
 
-                    orders.Add(order);
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        Order order = ReadOrder(reader);
+                        orders.Add(order);
+                    }
                 }
-
-                reader.Close();
+                catch (SqlException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
             }
             return orders;
         }
-        private RunningOrderViewModel ReadRunningOrder(SqlDataReader reader)
+
+        public Order? GetOrderById(int id)
+        {
+            Order order = null;
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = @"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.WaitingTime, o.ServedTime, o.OrderStatus
+                                 FROM [Order] o
+                                 WHERE o.OrderId = @OrderId";
+
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@OrderId", id);
+                connection.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    order = ReadOrder(reader);
+                }
+            }
+
+            return order;
+        }
+        public void UpdateOrderStatus(int orderId, OrderStatus status)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    string query = @"UPDATE [Order] SET OrderStatus = @Status WHERE OrderId = @OrderId";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+
+                    command.Parameters.AddWithValue("@Status", status.ToString());
+
+                    command.Parameters.AddWithValue("@OrderId", orderId);
+
+                    connection.Open();
+
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    if (rowsAffected == 0)
+                    {
+                        throw new Exception("Order not found.");
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }
+        public List<OrderItem> GetOrderItemsByOrderId(int orderId)
+        {
+            List<OrderItem> items = new List<OrderItem>();
+
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemStatus,
+                                    mi.MenuItemId, mi.MenuItemName, mi.category
+                             FROM OrderItem oi 
+                             JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
+                             WHERE oi.OrderId = @OrderId";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@OrderId", orderId);
+                        
+                    connection.Open();
+
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        OrderItem item = ReadOrderItem(reader);
+                        items.Add(item);
+                    }
+
+                    reader.Close();
+                }
+                catch (SqlException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+
+            return items;
+        }
+
+        private Order ReadOrder(SqlDataReader reader)
         {
             Table table = new Table();
-            table.TableId = (int)reader["TableId"];
             User employee = new User();
+            Order order = new Order();
+            table.TableId = (int)reader["TableId"];
             employee.Id = (int)reader["EmployeeId"];
-            Order order = new Order((int)reader["OrderId"], table, employee, (DateTime)reader["OrderTime"],
-            reader["ServedTime"] as DateTime?, reader["OrderStatus"].ToString());
-            string displayTime = reader["WaitingTime"].ToString();
+            order.OrderId = (int)reader["OrderId"];
+            order.Table = table;
+            order.Employee = employee;
+            order.OrderTime = (DateTime)reader["OrderTime"];
+            order.WaitingTime = reader["WaitingTime"].ToString();
+            order.ServedTime = reader["ServedTime"] == DBNull.Value ? (DateTime?)null : (DateTime)reader["ServedTime"];
+            order.OrderStatus = Enum.Parse<OrderStatus>(reader["OrderStatus"].ToString());
 
-            return new RunningOrderViewModel(order, table, order.OrderTime, displayTime, order.OrderStatus);
+            return order;
+        }
+        private OrderItem ReadOrderItem(SqlDataReader reader)
+        {
+            return new OrderItem
+            {
+                OrderItemId = (int)reader["OrderItemId"],
+                OrderItemQuantity = (int)reader["OrderItemQuantity"],
+                Comment = reader["Comment"].ToString(),
+                OrderItemStatus = (OrderStatus)(int)reader["OrderItemStatus"],
+                MenuItem = new MenuItem
+                {
+                    MenuItemId = (int)reader["MenuItemId"],
+                    MenuItemName = (string)reader["MenuItemName"],
+                    Category = (Category)(int)reader["category"]
+                }
+            };
         }
     }
-}
+ } 
+
+
+
+
+
+
+
+
+
+
 
 
 

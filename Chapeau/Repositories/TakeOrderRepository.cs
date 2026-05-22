@@ -1,4 +1,5 @@
-﻿using Chapeau.Models;
+﻿using Chapeau.Enums;
+using Chapeau.Models;
 using Microsoft.Data.SqlClient;
 
 namespace Chapeau.Repositories
@@ -32,7 +33,7 @@ namespace Chapeau.Repositories
                     return new Order
                     {
                         OrderId = (int)reader["OrderId"],
-                        OrderStatus = reader["OrderStatus"].ToString()
+                        OrderStatus = Enum.Parse<OrderStatus>(reader["OrderStatus"].ToString())
                     };
                 }
             }

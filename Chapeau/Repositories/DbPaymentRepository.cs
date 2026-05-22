@@ -14,30 +14,6 @@ namespace Chapeau.Repositories
             _connectionString = configuration.GetConnectionString("DefaultConnection")!;
         }
 
-        public List<OrderItem> GetOrderItemsByOrderId(int orderId)
-        {
-            var list = new List<OrderItem>();
-            using var connection = new SqlConnection(_connectionString);
-            string query = "SELECT OrderItemId, MenuItemId, OrderItemQuantity, Comment, OrderItemsStatus FROM OrderItem WHERE OrderId = @OrderId";
-            var command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@OrderId", orderId);
-
-            connection.Open();
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                list.Add(new OrderItem(
-                    orderItemId: reader["OrderItemId"] is int id ? id : (int)reader.GetInt32(reader.GetOrdinal("OrderItemId")),
-                    order: null,
-                    menuItem: new MenuItem { MenuItemId = (int)reader["MenuItemId"] },
-                    orderItemQuantity: (int)reader["OrderItemQuantity"],
-                    comment: reader["Comment"].ToString()!,
-                    orderItemsStatus: reader["OrderItemsStatus"].ToString()!
-                ));
-            }
-            return list;
-        }
-
         public void InsertPayment(Payment payment)
         {
             using var connection = new SqlConnection(_connectionString);
@@ -68,16 +44,9 @@ namespace Chapeau.Repositories
             command.ExecuteNonQuery();
         }
 
-        public void UpdateOrderStatus(int orderId, string status)
+        List<OrderItem> IPaymentRepository.Getbyid(int orderId)
         {
-            using var connection = new SqlConnection(_connectionString);
-            string query = "UPDATE [Order] SET OrderStatus = @Status WHERE OrderId = @OrderId";
-            var command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@Status", status);
-            command.Parameters.AddWithValue("@OrderId", orderId);
-
-            connection.Open();
-            command.ExecuteNonQuery();
+            throw new NotImplementedException();
         }
     }
 }

@@ -5,8 +5,6 @@ namespace Chapeau.Repositories
 {
     public class DbMenuListRepository : IMenuListRepository
 
-
-
     {
         private readonly string _connectionString;
 

@@ -1,4 +1,6 @@
-﻿using Chapeau.Repositories;
+﻿using Chapeau.Enums;
+using Chapeau.Models;
+using Chapeau.Repositories;
 using Chapeau.Services;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -6,14 +8,28 @@ using Microsoft.AspNetCore.Mvc;
 public class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
-
     public OrderService(IOrderRepository orderRepository)
     {
         _orderRepository = orderRepository;
     }
 
-    public List<RunningOrderViewModel> GetRunningOrders()
+    public List<Order> GetAllOrders()
     {
-        return _orderRepository.GetRunningOrder();
+        return _orderRepository.GetAllOrders();
+    }
+    
+    public Order?GetOrderById(int id)
+    {
+        return _orderRepository.GetOrderById(id);
+    }
+
+    public void UpdateOrderStatus(int orderId, OrderStatus status)
+    {
+        _orderRepository.UpdateOrderStatus(orderId, status);
+    }
+
+    List<OrderItem> IOrderService.GetOrderItemsByOrderId(int orderId)
+    {
+        return _orderRepository.GetOrderItemsByOrderId(orderId);
     }
 }
