@@ -12,23 +12,10 @@ namespace Chapeau.Services
         {
             _menuRepository = menuRepository;
         }
-        public List<MenuItem> GetAllByFilter(int? menuId, Category? category)
+        public List<Menu> GetAllByFilter(Card? card, Category? category)
         {
-            return _menuRepository.GetAllByFilter(menuId, category);
+            return _menuRepository.GetAllByFilter(card, category);
         }
-
-        /*public List<MenuItem> GetAllMenuItems()
-        {
-            return _menuRepository.GetAll();
-        }
-
-        public List<MenuItem> GetFilteredMenuItems(int menuId, int category)
-        {
-            if (menuId == 0 && category == 0)
-                return _menuRepository.GetAll();
-            return _menuRepository.GetByFilter(menuId, category);
-        }*/
-
         public MenuItem GetMenuItemById(int id)
         {
             return _menuRepository.GetById(id);
@@ -54,21 +41,51 @@ namespace Chapeau.Services
             _menuRepository.SetActive(id, false);
         }
 
-        public List<MenuItem> GetActiveItems(int? menuId, Category? category)
+        public List<Menu> GetActiveItems(Card? card, Category? category)
         {
-            List<MenuItem> allItems = _menuRepository.GetAllByFilter(menuId, category);
+            List<Menu> menus = _menuRepository.GetAllByFilter(card, category);
 
-            List<MenuItem> filtered = new List<MenuItem>();
+            List<Menu> filteredMenus = new List<Menu>();
 
-            foreach (var item in allItems)
+            foreach (var menu in menus)
             {
-                if (item.IsActive)
+                Menu newMenu = new Menu
                 {
-                    filtered.Add(item);
+                    MenuId = menu.MenuId,
+                    Card = menu.Card,
+                    Category = menu.Category,
+                    MenuItems = new List<MenuItem>()
+                };
+
+                foreach (var item in menu.MenuItems)
+                {
+                    if (item.IsActive)
+                    {
+                        newMenu.MenuItems.Add(item);
+                    }
+                }
+
+                filteredMenus.Add(newMenu);
+            }
+
+            return filteredMenus;
+        }
+        public List<Category> GetCategoriesByCard(List<Menu> menus, Card? selectedCard)
+        {
+            List<Category> categories = new List<Category>();
+
+            foreach (var menu in menus)
+            {
+                if (selectedCard == null || menu.Card == selectedCard)
+                {
+                    if (!categories.Contains(menu.Category))
+                    {
+                        categories.Add(menu.Category);
+                    }
                 }
             }
 
-            return filtered;
+            return categories;
         }
     }
 }
