@@ -13,14 +13,11 @@ namespace Chapeau
             builder.Services.AddControllersWithViews();
             builder.Services.AddScoped<IOrderRepository, DbOrderRepository>();
             builder.Services.AddScoped<IOrderService, OrderService>();
-            builder.Services.AddScoped<IMenuListRepository, DbMenuListRepository>();
             builder.Services.AddScoped<IMenuService, MenuService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<ITableRepository, TableRepository>();
             builder.Services.AddScoped<ITablesService, TableService>();
             builder.Services.AddScoped<IUserService, UserServices>();
-            builder.Services.AddScoped<ITakeOrderService, TakeOrderService>();
-            builder.Services.AddScoped<ITakeOrderRepository, TakeOrderRepository>();
             builder.Services.AddScoped<IPaymentRepository, DbPaymentRepository>();
             builder.Services.AddScoped<PaymentService>();
 
@@ -30,7 +27,6 @@ namespace Chapeau
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
-            builder.Services.AddScoped<IMenuListService, MenuListService>();
             builder.Services.AddScoped<IMenuRepository, MenuRepository>();
             builder.Services.AddSession();
             
