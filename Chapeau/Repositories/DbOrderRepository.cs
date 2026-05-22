@@ -23,8 +23,9 @@ namespace Chapeau.Repositories
             {
                 try
                 {
-                    string query = @"SELECT OrderId, TableId, EmployeeId, OrderTime, WaitingTime, ServedTime, OrderStatus FROM [Order] 
-                                     WHERE OrderStatus NOT IN ('Served', 'Completed', 'Cancelled') ORDER BY OrderTime ASC";
+                    string query = @"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.WaitingTime, o.ServedTime, o.OrderStatus
+                                  FROM [Order] o JOIN [Table] t ON o.TableId = t.TableId
+                                  WHERE o.OrderStatus NOT IN ('Served', 'Completed', 'Cancelled') ORDER BY o.OrderTime ASC";
                     SqlCommand command = new SqlCommand(query, connection);
                     connection.Open();
 
@@ -142,6 +143,7 @@ namespace Chapeau.Repositories
             order.OrderId = (int)reader["OrderId"];
             order.Table = table;
             order.Employee = employee;
+
             order.OrderTime = (DateTime)reader["OrderTime"];
             order.WaitingTime = reader["WaitingTime"].ToString();
             order.ServedTime = reader["ServedTime"] == DBNull.Value ? (DateTime?)null : (DateTime)reader["ServedTime"];
