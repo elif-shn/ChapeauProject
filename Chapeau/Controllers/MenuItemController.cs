@@ -1,6 +1,4 @@
 ﻿using Chapeau.Enums;
-using Chapeau.Models;
-using Chapeau.Repositories;
 using Chapeau.Services;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -43,7 +41,7 @@ namespace Chapeau.Controllers
             catch (Exception ex)
             {
                 ViewData["ErrorMessage"] = " " + ex.Message;
-                return View("Index");
+                return View(new MenuDisplayViewModel());
             }
            
         }
