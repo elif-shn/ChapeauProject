@@ -10,7 +10,9 @@
     Le MENU
 </h1>
 
+
 <form method="get" class="mb-4">
+  
     <div class="row">
 
         <div class="col-md-4">
@@ -174,7 +176,7 @@
             <p>No items yet</p>
         }
 
-        <form method="post" asp-action="">
+        <form method="post" asp-action="SendOrder">
             <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
             <button class="btn btn-success w-100">
                 Submit Order

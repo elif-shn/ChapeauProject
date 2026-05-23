@@ -8,30 +8,38 @@ namespace Chapeau.Services
        
         public List<CurrentOrderModel> AddOrUpdateOrderItem(List<CurrentOrderModel> currentItems, CurrentOrderModel newItem)
         {
-            string comment = newItem.Comment ?? "";
-            CurrentOrderModel existing = null;
-
-            foreach (var item in currentItems)
+            try
             {
-                if (item.MenuItemId == newItem.MenuItemId && item.Comment == comment)
+                string comment = newItem.Comment ?? "";
+                CurrentOrderModel existing = null;
+
+                foreach (var item in currentItems)
                 {
-                    existing = item;
-                    break; 
+                    if (item.MenuItemId == newItem.MenuItemId && item.Comment == comment)
+                    {
+                        existing = item;
+                        break;
+                    }
                 }
-            }
 
-            if (existing != null)
-            {
-                existing.Quantity++;
-            }
-            else
-            {
-                newItem.Comment = comment;
-                newItem.Quantity = 1;
-                currentItems.Add(newItem);
-            }
+                if (existing != null)
+                {
+                    existing.Quantity++;
+                }
+                else
+                {
+                    newItem.Comment = comment;
+                    newItem.Quantity = 1;
+                    currentItems.Add(newItem);
+                }
 
-            return currentItems;
+                return currentItems;
+            }
+            catch
+            {
+                throw;
+            }
+            
         }
     }
 }

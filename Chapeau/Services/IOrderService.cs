@@ -12,5 +12,7 @@ namespace Chapeau.Services
         Order? GetOrderById(int id);
         void UpdateOrderStatus(int orderId, OrderStatus status);
         void UpdateOrderItemStatus(int orderItemId, OrderStatus status);
+        Order? GetActiveOrderForTable(int tableId);
+        void AddItemToTableOrder(int tableId, int menuItemId, string comment);
     }
 }

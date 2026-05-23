@@ -10,5 +10,6 @@ namespace Chapeau.Repositories
         void Add(MenuItem item);
         void Update(MenuItem item);
         void SetActive(int id, bool isActive);
+        void DecreaseStock(int menuItemId, int amount);
     }
 }
