@@ -3,6 +3,7 @@ using Chapeau.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Data.Common;
 namespace Chapeau.Repositories
 {
     public class MenuRepository : IMenuRepository

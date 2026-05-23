@@ -1,6 +1,7 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
 using Chapeau.Repositories;
+using Chapeau.ViewModels;
 namespace Chapeau.Services
 {
     public class MenuService : IMenuService
@@ -111,6 +112,20 @@ namespace Chapeau.Services
                 throw;
             }
             
+        }
+        public (List<Menu> menus, List<Category> categories) GetMenuDisplay(Card? selectedCard, Category? selectedCategory)
+        {
+            var activeMenus = GetActiveItems(selectedCard, null);
+            var categories = GetCategoriesByCard(activeMenus, selectedCard);
+
+            if (selectedCategory != null && !categories.Contains(selectedCategory.Value))
+            {
+                selectedCategory = null;
+            }
+
+            var menuItems = GetActiveItems(selectedCard, selectedCategory);
+
+            return (menuItems, categories);
         }
     }
 }

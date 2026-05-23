@@ -8,6 +8,7 @@ namespace Chapeau.ViewModels
         public List<Menu> Menu { get; set; }
         public Card? SelectedCard { get; set; }
         public Category? SelectedCategory { get; set; }
+        public List<Category> Categories { get; set; }
 
     }
 }
