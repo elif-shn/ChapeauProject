@@ -40,5 +40,47 @@ public class OrderService : IOrderService
     {
         _orderRepository.UpdateOrderItemStatus(orderItemId, status);
     }
-    
+    public Order? GetActiveOrderForTable(int tableId)
+    {
+        try
+        {
+
+            return _orderRepository.GetActiveOrderForTable(tableId);
+        }
+        catch
+        {
+            throw;
+        }
+    }
+    public void AddItemToTableOrder(int tableId, int menuItemId, string comment)
+    {
+        try
+        {
+            Order activeOrder = GetActiveOrderForTable(tableId); int orderId;
+
+            if (activeOrder == null)
+            {
+                orderId = _orderRepository.CreateOrder(tableId);
+            }
+            else
+            {
+                orderId = activeOrder.OrderId;
+            }
+
+            bool itemExists = _orderRepository.OrderItemExists(orderId, menuItemId, comment);
+
+            if (itemExists)
+            {
+                _orderRepository.IncreaseQuantity(orderId, menuItemId);
+            }
+            else
+            {
+                _orderRepository.AddOrderItem(orderId, menuItemId, comment);
+            }
+        }
+        catch
+        {
+            throw;
+        }
+    }
 }

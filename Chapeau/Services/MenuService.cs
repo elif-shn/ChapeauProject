@@ -115,17 +115,38 @@ namespace Chapeau.Services
         }
         public (List<Menu> menus, List<Category> categories) GetMenuDisplay(Card? selectedCard, Category? selectedCategory)
         {
-            var activeMenus = GetActiveItems(selectedCard, null);
-            var categories = GetCategoriesByCard(activeMenus, selectedCard);
-
-            if (selectedCategory != null && !categories.Contains(selectedCategory.Value))
+            try
             {
-                selectedCategory = null;
+                var activeMenus = GetActiveItems(selectedCard, null);
+                var categories = GetCategoriesByCard(activeMenus, selectedCard);
+
+                if (selectedCategory != null && !categories.Contains(selectedCategory.Value))
+                {
+                    selectedCategory = null;
+                }
+
+                var menuItems = GetActiveItems(selectedCard, selectedCategory);
+
+                return (menuItems, categories);
             }
+            catch
+            {
+                throw;
+            }
+           
+        }
 
-            var menuItems = GetActiveItems(selectedCard, selectedCategory);
+        public void DecreaseStock(int menuItemId, int amount)
+        {
+            try
+            {
 
-            return (menuItems, categories);
+                _menuRepository.DecreaseStock(menuItemId, amount);
+            }
+            catch
+            {
+                throw;
+            }
         }
     }
 }

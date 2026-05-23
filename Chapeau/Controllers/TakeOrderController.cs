@@ -12,14 +12,16 @@ namespace Chapeau.Controllers
         private readonly IMenuService _menuService;
         private readonly ITablesService _tableService;
         private readonly ITakeOrderService _takeOrderService;
+        private readonly IOrderService _orderService;
 
 
 
-        public TakeOrderController(IMenuService menuService, ITablesService tableService, ITakeOrderService takeOrderService)
+        public TakeOrderController(IMenuService menuService, ITablesService tableService, ITakeOrderService takeOrderService, IOrderService orderService)
         {
             _menuService = menuService;
             _tableService = tableService;
             _takeOrderService = takeOrderService;
+            _orderService = orderService;
         }
 
         public IActionResult Index(Card? selectedCard, Category? selectedCategory, int selectedTableId)
@@ -50,19 +52,69 @@ namespace Chapeau.Controllers
         }
         [HttpPost]
         public IActionResult AddCurrentOrder(CurrentOrderModel model, Card? selectedCard, Category? selectedCategory, int selectedTableId)
-        {           
-            List<CurrentOrderModel> items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder") ?? new List<CurrentOrderModel>();
-
-            items = _takeOrderService.AddOrUpdateOrderItem(items, model);
-
-            HttpContext.Session.SetObject("CurrentOrder", items);
-
-            return RedirectToAction("Index", new
+        {
+            try
             {
-                selectedCard = selectedCard,
-                selectedCategory = selectedCategory,
-                selectedTableId = selectedTableId
-            });
+                List<CurrentOrderModel> items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder") ?? new List<CurrentOrderModel>();
+
+                items = _takeOrderService.AddOrUpdateOrderItem(items, model);
+
+                HttpContext.Session.SetObject("CurrentOrder", items);
+
+                return RedirectToAction("Index", new
+                {
+                    selectedCard = selectedCard,
+                    selectedCategory = selectedCategory,
+                    selectedTableId = selectedTableId
+                });
+            }
+            catch
+            {
+                return RedirectToAction("Index", new
+                {
+                    selectedCard = selectedCard,
+                    selectedCategory = selectedCategory,
+                    selectedTableId = selectedTableId
+                });
+            }
+            
+        }
+        [HttpPost]
+        public IActionResult SendOrder(int selectedTableId)
+        {
+            if (selectedTableId <= 0)
+            {
+                TempData["ErrorMessage"] = "Please select a table before sending the order.";
+                return RedirectToAction("Index");
+            }
+            try
+            {
+                List<CurrentOrderModel> items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder");
+
+                if (items != null && items.Count > 0)
+                {
+                    foreach (var item in items)
+                    {
+                        
+                        int quantity = item.Quantity; 
+
+                        for (int i = 0; i < quantity; i++)
+                        {
+                            _orderService.AddItemToTableOrder(selectedTableId, item.MenuItemId, item.Comment);
+                            _menuService.DecreaseStock(item.MenuItemId, quantity);
+                        }
+                    }
+                    HttpContext.Session.Remove("CurrentOrder");
+                }
+                TempData["SuccessMessage"] = "Order successfully sent to the kitchen!";
+
+                return RedirectToAction("Index", "TakeOrder");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "An error occurred while sending the order: " + ex.Message;
+                return RedirectToAction("Index");
+            }
         }
 
     }
