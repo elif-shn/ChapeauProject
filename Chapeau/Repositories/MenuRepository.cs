@@ -3,6 +3,7 @@ using Chapeau.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Data.Common;
 namespace Chapeau.Repositories
 {
     public class MenuRepository : IMenuRepository
@@ -49,6 +50,7 @@ namespace Chapeau.Repositories
                     }
 
                     MenuItem item = ReadMenuItem(reader);
+                    item.Menu = menus[menuId];
                     menus[menuId].MenuItems.Add(item);
                 }
             }
@@ -73,7 +75,6 @@ namespace Chapeau.Repositories
             item.MenuItemId = (int)reader["MenuItemId"];
             item.MenuItemName = (string)reader["MenuItemName"];
             item.MenuItemPrice = (decimal)reader["MenuItemPrice"];
-            item.MenuId = (int)reader["MenuId"];
             item.VatPercentage = (int)reader["VatPercentage"];
             item.Stock = (int)reader["Stock"];
             item.IsActive = (bool)reader["IsActive"];
@@ -121,6 +122,22 @@ namespace Chapeau.Repositories
             {
                 string sql = "UPDATE MenuItem SET IsActive = @IsActive WHERE MenuItemId = @MenuItemId";
                 conn.Execute(sql, new { MenuItemId = id, IsActive = isActive });
+            }
+        }
+        public void DecreaseStock(int menuItemId, int amount)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = "UPDATE MenuItem " +
+                               "SET Stock = Stock - @Amount " +
+                               "WHERE MenuItemId = @MenuItemId";
+
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@Amount", amount);
+                command.Parameters.AddWithValue("@MenuItemId", menuItemId);
+
+                connection.Open();
+                command.ExecuteNonQuery();
             }
         }
     }

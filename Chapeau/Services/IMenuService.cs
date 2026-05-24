@@ -13,5 +13,8 @@ namespace Chapeau.Services
         void DeactivateMenuItem(int id);
         List<Menu> GetActiveItems(Card? card, Category? category);
         List<Category> GetCategoriesByCard(List<Menu> menus, Card? selectedCard);
+        (List<Menu> menus, List<Category> categories) GetMenuDisplay(Card? selectedCard, Category? selectedCategory);
+
+        void DecreaseStock(int menuItemId, int amount);
     }
 }
