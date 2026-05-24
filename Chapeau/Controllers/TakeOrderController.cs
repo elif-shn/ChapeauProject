@@ -55,29 +55,24 @@ namespace Chapeau.Controllers
         {
             try
             {
+                var menuItem = _menuService.GetMenuItemById(model.MenuItemId);
+
                 List<CurrentOrderModel> items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder") ?? new List<CurrentOrderModel>();
 
-                items = _takeOrderService.AddOrUpdateOrderItem(items, model);
+                items = _takeOrderService.AddOrUpdateOrderItem(items, model, menuItem);
 
                 HttpContext.Session.SetObject("CurrentOrder", items);
-
-                return RedirectToAction("Index", new
-                {
-                    selectedCard = selectedCard,
-                    selectedCategory = selectedCategory,
-                    selectedTableId = selectedTableId
-                });
             }
-            catch
+            catch (Exception ex)
             {
-                return RedirectToAction("Index", new
-                {
-                    selectedCard = selectedCard,
-                    selectedCategory = selectedCategory,
-                    selectedTableId = selectedTableId
-                });
+                TempData["ErrorMessage"] = ex.Message;
             }
-            
+        return RedirectToAction("Index", new
+            {
+                selectedCard = selectedCard,
+                selectedCategory = selectedCategory,
+                selectedTableId = selectedTableId
+            });                       
         }
         [HttpPost]
         public IActionResult SendOrder(int selectedTableId)
@@ -116,7 +111,96 @@ namespace Chapeau.Controllers
                 return RedirectToAction("Index");
             }
         }
+        [HttpPost]
+        public IActionResult IncreaseQuantity(int menuItemId, int selectedTableId)
+        {
+            var menuItem = _menuService.GetMenuItemById(menuItemId);
+            var items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder");
 
+            if (items == null) items = new List<CurrentOrderModel>();
+
+            try
+            {
+                items = _takeOrderService.UpdateItemQuantity(items, menuItemId, 1, menuItem);
+                HttpContext.Session.SetObject("CurrentOrder", items);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+
+            return RedirectToAction("Index", new { selectedTableId });
+        }
+        [HttpPost]
+        public IActionResult DecreaseQuantity(int menuItemId, int selectedTableId)
+        {
+            var items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder");
+
+            if (items != null)
+            {
+                items = _takeOrderService.UpdateItemQuantity(items, menuItemId, -1, null);
+                HttpContext.Session.SetObject("CurrentOrder", items);
+            }
+
+            return RedirectToAction("Index", new { selectedTableId });
+        }
+
+        [HttpPost]
+        public IActionResult RemoveItem(int menuItemId, int selectedTableId)
+        {
+            var items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder");
+
+            if (items != null)
+            {
+                items = _takeOrderService.RemoveItem(items, menuItemId);
+                HttpContext.Session.SetObject("CurrentOrder", items);
+            }
+
+            return RedirectToAction("Index", new { selectedTableId });
+        }
+        [HttpPost]
+        [HttpPost]
+        public IActionResult AddNote(int menuItemId, int selectedTableId, string comment)
+        {
+            var items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder") ?? new List<CurrentOrderModel>();
+
+            CurrentOrderModel itemToUpdate = null;
+
+            foreach (var item in items)
+            {
+                if (item.MenuItemId == menuItemId)
+                {
+                    itemToUpdate = item;
+                }
+            }
+
+            if (itemToUpdate != null)
+            {
+                itemToUpdate.Comment = comment;
+
+                HttpContext.Session.SetObject("CurrentOrder", items);
+            }
+            return RedirectToAction("Index", new { selectedTableId = selectedTableId });
+        }
+        [HttpPost]
+        public IActionResult CancelOrder(int selectedTableId)
+        {
+            try
+            {
+                HttpContext.Session.Remove("CurrentOrder");
+
+                TempData["SuccessMessage"] = "Order cancelled successfully.";
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToAction("Index", new { selectedTableId });
+            }
+        }
+        
     }
 
 }

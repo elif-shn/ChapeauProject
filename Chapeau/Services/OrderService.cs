@@ -40,6 +40,7 @@ public class OrderService : IOrderService
     {
         _orderRepository.UpdateOrderItemStatus(orderItemId, status);
     }
+    //For Take Order Part
     public Order? GetActiveOrderForTable(int tableId)
     {
         try

@@ -12,7 +12,5 @@ namespace Chapeau.ViewModels
         public List<Table> OccupiedTables { get; set; } = new();
         public int? SelectedTableId { get; set; }
         public List<CurrentOrderModel> CurrentOrder { get; set; } = new();
-        // public Order? ActiveOrder { get; set; }
-        //public bool IsTakeOrder { get; set; }
     }
 }

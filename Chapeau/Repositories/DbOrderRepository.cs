@@ -103,7 +103,7 @@ namespace Chapeau.Repositories
             {
                 try
                 {
-                    string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemStatus, mi.MenuItemId, mi.MenuItemName 
+                    string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemsStatus, mi.MenuItemId, mi.MenuItemName 
                                    FROM OrderItem oi JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
                                    WHERE oi.OrderId = @OrderId";
 
@@ -134,7 +134,7 @@ namespace Chapeau.Repositories
         {
             using SqlConnection connection = new SqlConnection(_connectionString);
 
-            string query = @"UPDATE OrderItem SET OrderItemStatus = @Status WHERE OrderItemId = @OrderItemId";
+            string query = @"UPDATE OrderItem SET OrderItemsStatus = @Status WHERE OrderItemId = @OrderItemId";
 
             SqlCommand command = new SqlCommand(query, connection);
 
@@ -197,8 +197,8 @@ namespace Chapeau.Repositories
             {
                 OrderItemId = (int)reader["OrderItemId"],
                 OrderItemQuantity = (int)reader["OrderItemQuantity"],
-                Comment = reader["Comment"].ToString(),
-                OrderItemStatus = Enum.Parse<OrderStatus>(reader["OrderItemStatus"].ToString()),
+                Comment = reader["Comment"] != DBNull.Value ? reader["Comment"].ToString() : "",
+                OrderItemStatus = Enum.Parse<OrderStatus>(reader["OrderItemsStatus"].ToString()),
                 MenuItem = new MenuItem
                 {
                     MenuItemId = (int)reader["MenuItemId"],
@@ -206,6 +206,7 @@ namespace Chapeau.Repositories
                 }
             };
         }
+        //For Take Order Part
         public int CreateOrder(int tableId)
 
         {
