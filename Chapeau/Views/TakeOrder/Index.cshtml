@@ -128,13 +128,6 @@
                                     <button class="btn btn-success">+</button>
                                 </form>
                             </td>
-                            <td>
-                                <form method="post" asp-action="AddNotePage">
-                                    <input type="hidden" name="menuItemId" value="@item.MenuItemId" />
-                                    <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
-                                    <button class="btn btn-sm btn-outline-secondary">Note</button>
-                                </form>
-                            </td>
                         </tr>
                     }
                 }
@@ -158,14 +151,49 @@
 
         @if (Model.CurrentOrder != null && Model.CurrentOrder.Count > 0)
         {
-            <table>
+            <table class="table">
                 <tbody>
                     @foreach (var currentorderItem in Model.CurrentOrder)
                     {
                         <tr>
-                            <td>@currentorderItem.MenuItemName x  @currentorderItem.Quantity</td>
-                            <td>€ @currentorderItem.Price.ToString("0.00")</td>
-                            <td>@currentorderItem.Comment</td>
+                            <td>@currentorderItem.MenuItemName
+                                <form method="post" asp-action="AddNote" class="d-flex mt-1">
+                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItemId" />
+                                    <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                                    <input type="text" name="comment" value="@currentorderItem.Comment" class="form-control form-control-sm me-1" placeholder="Add note..." style="font-size: 0.8rem; max-width: 150px;" />
+                                    <button type="submit" class="btn btn-sm btn-outline-warning" style="font-size: 0.7rem;">Save</button>
+                                </form>
+                            </td>
+
+                            <td style="min-width: 50px; white-space: nowrap;">
+                                <form method="post" asp-action="DecreaseQuantity" style="display:inline;">
+                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItemId" />
+                                    <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-warning">-</button>
+                                </form>
+
+                                <span class="mx-2" style="display:inline-block; width: 20px; text-align: center;">
+                                    @currentorderItem.Quantity
+                                </span>
+
+                                <form method="post" asp-action="IncreaseQuantity" style="display:inline;">
+                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItemId" />
+                                    <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-success">+</button>
+                                </form>
+                            </td>
+
+                            <td style="min-width: 50px; white-space: nowrap;">
+                                € @((currentorderItem.Price * currentorderItem.Quantity).ToString("0.00"))
+                            </td>
+                            <td style="min-width: 50px; white-space: nowrap;">@currentorderItem.Comment</td>
+                            <td>
+                                <form method="post" asp-action="RemoveItem" style="display:inline;">
+                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItemId" />
+                                    <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                                    <button type="submit" class="btn btn-sm btn-danger">x</button>
+                                </form>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -176,12 +204,20 @@
             <p>No items yet</p>
         }
 
-        <form method="post" asp-action="SendOrder">
-            <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
-            <button class="btn btn-success w-100">
-                Submit Order
-            </button>
-        </form>
+        
+        <div class="d-flex gap-2">
+            <form method="post" asp-action="SendOrder">
+                <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                <button class="btn btn-success w-100">
+                    Send Order
+                </button>
+            </form>
+
+            <form method="post" asp-action="CancelOrder" >
+                <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                <button type="submit" class="btn btn-danger">Cancel</button>
+            </form>
+        </div>
 
     </div>
 </div>

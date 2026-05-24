@@ -25,6 +25,7 @@ namespace Chapeau.Controllers
             List<OrderItem> orderItems = _orderServices.GetOrderItemsByOrderId(orderId);
 
             return View(orderItems);
+
         }
         [HttpPost]
         public IActionResult UpdateStatus(int orderId,   OrderStatus status)
