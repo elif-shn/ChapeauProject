@@ -103,9 +103,9 @@ namespace Chapeau.Repositories
             {
                 try
                 {
-                    string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemStatus, mi.MenuItemId, mi.MenuItemName 
-                                   FROM OrderItem oi JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
-                                   WHERE oi.OrderId = @OrderId";
+                    string query = @"SELECT OrderItemId, OrderItemQuantity, Comment, OrderItemStatus, MenuItemId, MenuItemName
+                                     FROM OrderItem oi JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
+                                     WHERE oi.OrderId = @OrderId";
 
                     SqlCommand command = new SqlCommand(query, connection);
                     command.Parameters.AddWithValue("@OrderId", orderId);

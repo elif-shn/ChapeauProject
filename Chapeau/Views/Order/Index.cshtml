@@ -11,6 +11,7 @@
     <h1 class="mb-4">Running Orders</h1>
 
     <div class="text-end mb-3">
+
         <button class="btn btn-sm"
                 onclick="location.reload()"
                 style="background-color:lightseagreen; border:none; color:white;">
@@ -18,16 +19,17 @@
         </button>
 
         <a asp-action="FinishedOrders"
-            class="btn btn-sm"
-            style="background-color:#4a565e; border:none; color:white;">
-			View Finished Orders
+           class="btn btn-sm"
+           style="background-color:#4a565e; border:none; color:white;">
+            View Finished Orders
         </a>
+
     </div>
 
     <div class="table-responsive">
 
         <table class="table table-hover table-bordered w-100">
-            <thead>
+
             <thead class="table-secondary">
                 <tr>
                     <th>Table Number</th>
@@ -38,14 +40,21 @@
                     <th>Update Status</th>
                 </tr>
             </thead>
+
             <tbody>
+
                 @foreach (Order order in Model)
                 {
                     <tr>
+
                         <td>@order.Table.TableId</td>
+
                         <td>@order.OrderTime.ToShortTimeString()</td>
+
                         <td>@order.WaitingTime</td>
+
                         <td>@order.OrderStatus</td>
+
                         <td>
                             <a asp-controller="Order"
                                asp-action="OrderItems"
@@ -55,11 +64,16 @@
                                 View Items
                             </a>
                         </td>
+
                         <td>
+
                             @if (order.OrderStatus == OrderStatus.Pending)
                             {
                                 <form asp-action="UpdateStatus" method="post">
-                                    <input type="hidden" name="orderId" value="@order.OrderId" />
+
+                                    <input type="hidden"
+                                           name="orderId"
+                                           value="@order.OrderId" />
 
                                     <button type="submit"
                                             name="status"
@@ -68,12 +82,17 @@
                                             style="background-color:orangered; border:none; color:white; width:170px;">
                                         Start Preparing
                                     </button>
+
                                 </form>
                             }
+
                             else if (order.OrderStatus == OrderStatus.Preparing)
                             {
                                 <form asp-action="UpdateStatus" method="post">
-                                    <input type="hidden" name="orderId" value="@order.OrderId" />
+
+                                    <input type="hidden"
+                                           name="orderId"
+                                           value="@order.OrderId" />
 
                                     <button type="submit"
                                             name="status"
@@ -82,12 +101,17 @@
                                             style="background-color:#4a565e; border:none; color:white; width:170px;">
                                         Mark Ready
                                     </button>
+
                                 </form>
                             }
+
                             else if (order.OrderStatus == OrderStatus.Ready)
                             {
                                 <form asp-action="UpdateStatus" method="post">
-                                    <input type="hidden" name="orderId" value="@order.OrderId" />
+
+                                    <input type="hidden"
+                                           name="orderId"
+                                           value="@order.OrderId" />
 
                                     <button type="submit"
                                             name="status"
@@ -96,13 +120,19 @@
                                             style="background-color:green; border:none; color:white; width:170px;">
                                         Serve
                                     </button>
+
                                 </form>
                             }
+
                         </td>
+
                     </tr>
                 }
+
             </tbody>
+
         </table>
 
     </div>
+
 </div>
