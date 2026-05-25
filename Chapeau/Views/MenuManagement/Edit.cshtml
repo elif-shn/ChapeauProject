@@ -95,6 +95,7 @@
 <div class="title-line"></div>
 
 <div class="form-card">
+
     <form method="post" asp-action="Edit">
 
         <input type="hidden" asp-for="ItemToEdit.MenuItemId" />
@@ -106,37 +107,41 @@
 
         <div class="form-group">
             <label>Price (€)</label>
-            <input asp-for="ItemToEdit.MenuItemPrice" class="input-box" step="0.01" min="0" required />
+            <input asp-for="ItemToEdit.MenuItemPrice" class="input-box" type="number" step="0.01" min="0" required />
         </div>
 
         <div class="form-group">
             <label>Stock</label>
-            <input asp-for="ItemToEdit.Stock" class="input-box" min="0" required />
+            <input asp-for="ItemToEdit.Stock" class="input-box" type="number" min="0" required />
         </div>
 
         <div class="form-group">
-            <label>Menu Type</label>
-            <select asp-for="ItemToEdit.Card" class="input-box">
-                @foreach (var card in Model.Cards)
+            <label>Card</label>
+            <select asp-for="SelectedCard" class="input-box" required>
+                @foreach (Card card in Enum.GetValues(typeof(Card)))
                 {
-                    <option value="@card">@card</option>
+                    <option value="@((int)card)">
+                        @card
+                    </option>
                 }
             </select>
         </div>
 
         <div class="form-group">
             <label>Category</label>
-            <select asp-for="ItemToEdit.Category" class="input-box">
-                @foreach (var category in Model.Categories)
+            <select asp-for="SelectedCategory" class="input-box" required>
+                @foreach (Category category in Enum.GetValues(typeof(Category)))
                 {
-                    <option value="@category">@category</option>
+                    <option value="@((int)category)">
+                        @category
+                    </option>
                 }
             </select>
         </div>
 
         <div class="form-group">
             <label>VAT Percentage</label>
-            <input asp-for="ItemToEdit.VatPercentage" class="input-box" min="0" required />
+            <input asp-for="ItemToEdit.VatPercentage" class="input-box" type="number" min="0" required />
         </div>
 
         <div class="btn-row">

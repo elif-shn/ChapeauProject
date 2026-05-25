@@ -7,17 +7,13 @@ namespace Chapeau.Services
     {
         List<Menu> GetAllByFilter(Card? card, Category? category);
         MenuItem GetMenuItemById(int id);
-        void AddMenuItem(MenuItem item);
-        void UpdateMenuItem(MenuItem item);
+        void AddMenuItem(MenuItem item, int selectedCard, int selectedCategory);
+        void UpdateMenuItem(MenuItem item, int selectedCard, int selectedCategory);
         void ActivateMenuItem(int id);
         void DeactivateMenuItem(int id);
         List<Menu> GetActiveItems(Card? card, Category? category);
         List<Category> GetCategoriesByCard(List<Menu> menus, Card? selectedCard);
         (List<Menu> menus, List<Category> categories) GetMenuDisplay(Card? selectedCard, Category? selectedCategory);
-        List<Menu> GetAllMenus();
-        List<Menu> GetMenusWithItems(int? menuId, Category? category);
-
-
 
         void DecreaseStock(int menuItemId, int amount);
     }

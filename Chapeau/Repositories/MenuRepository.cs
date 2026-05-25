@@ -1,7 +1,9 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Data.Common;
 namespace Chapeau.Repositories
 {
     public class MenuRepository : IMenuRepository
@@ -79,209 +81,104 @@ namespace Chapeau.Repositories
 
             return item;
         }
-
-        public List<Menu> GetAllMenus()
-        {
-            List<Menu> menus = new List<Menu>();
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            {
-                string query =
-                    "SELECT m.MenuId, m.Card, m.Category " +
-                    "FROM Menu m";
-
-                SqlCommand command = new SqlCommand(query, connection);
-
-                connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    Menu menu = new Menu
-                    {
-                        MenuId = (int)reader["MenuId"],
-                        Card = (Card)(int)reader["Card"],
-                        Category = (Category)(int)reader["Category"],
-                        MenuItems = new List<MenuItem>()
-                    };
-
-                    menus.Add(menu);
-                }
-            }
-
-            return menus;
-        }
-
         public MenuItem GetById(int id)
         {
-            MenuItem item = null;
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            using (SqlConnection conn = new SqlConnection(_connectionString))
             {
-                try
+                string sql = "SELECT * FROM MenuItem WHERE MenuItemId = @MenuItemId";
+                return conn.QuerySingleOrDefault<MenuItem>(sql, new { MenuItemId = id });
+            }
+        }
+
+        public void Add(MenuItem item, int selectedCard, int selectedCategory)
+        {
+            string sql = @"
+        INSERT INTO MenuItem (MenuItemName, MenuItemPrice, MenuId, VatPercentage, Stock, IsActive)
+        SELECT @MenuItemName, @MenuItemPrice, m.MenuId, @VatPercentage, @Stock, 1
+        FROM Menu m
+        WHERE m.Card = @SelectedCard AND m.Category = @SelectedCategory";
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
-                    string query =
-                        "SELECT mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.MenuId, " +
-                        "mi.VatPercentage, mi.Stock, mi.IsActive, " +
-                        "m.Card, m.Category " +
-                        "FROM MenuItem mi " +
-                        "INNER JOIN Menu m ON mi.MenuId = m.MenuId " +
-                        "WHERE mi.MenuItemId = @MenuItemId";
+                    cmd.Parameters.AddWithValue("@MenuItemName", item.MenuItemName);
+                    cmd.Parameters.AddWithValue("@MenuItemPrice", item.MenuItemPrice);
+                    cmd.Parameters.AddWithValue("@VatPercentage", item.VatPercentage);
+                    cmd.Parameters.AddWithValue("@Stock", item.Stock);
 
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@MenuItemId", id);
+                    cmd.Parameters.AddWithValue("@SelectedCard", selectedCard);
+                    cmd.Parameters.AddWithValue("@SelectedCategory", selectedCategory);
 
-                    connection.Open();
-                    SqlDataReader reader = command.ExecuteReader();
-
-                    if (reader.Read())
+                    if (conn.State == ConnectionState.Closed)
                     {
-                        item = ReadMenuItem(reader);
-                        item.Menu = ReadMenu(reader, (int)reader["MenuId"]);
+                        conn.Open();
                     }
-                }
-                catch (SqlException ex)
-                {
-                    Console.WriteLine(ex.Message);
+
+                    cmd.ExecuteNonQuery();
                 }
             }
-
-            return item;
         }
-        public void Add(MenuItem item)
+
+        public void Update(MenuItem item, int selectedCard, int selectedCategory)
         {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            // Doğru SQL: MenuId'yi Card ve Category'ye göre subquery ile Menu tablosundan çekiyoruz
+            string sql = @"
+        UPDATE MenuItem 
+        SET MenuItemName = @MenuItemName,
+            MenuItemPrice = @MenuItemPrice,
+            MenuId = (SELECT m.MenuId FROM Menu m WHERE m.Card = @SelectedCard AND m.Category = @SelectedCategory),
+            VatPercentage = @VatPercentage,
+            Stock = @Stock
+        WHERE MenuItemId = @MenuItemId";
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
             {
-                try
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
-                    int menuId = GetMenuId(item.Card, item.Category);
+                    // Güncellenecek MenuItem verileri ve ID'si
+                    cmd.Parameters.AddWithValue("@MenuItemId", item.MenuItemId);
+                    cmd.Parameters.AddWithValue("@MenuItemName", item.MenuItemName);
+                    cmd.Parameters.AddWithValue("@MenuItemPrice", item.MenuItemPrice);
+                    cmd.Parameters.AddWithValue("@VatPercentage", item.VatPercentage);
+                    cmd.Parameters.AddWithValue("@Stock", item.Stock);
 
-                    string query =
-                        "INSERT INTO MenuItem (MenuItemName, MenuItemPrice, MenuId, VatPercentage, Stock, IsActive) " +
-                        "VALUES (@MenuItemName, @MenuItemPrice, @MenuId, @VatPercentage, @Stock, 1)";
+                    // Yeni MenuId'yi bulmak için ekrandan gelen Card ve Category bilgileri
+                    cmd.Parameters.AddWithValue("@SelectedCard", selectedCard);
+                    cmd.Parameters.AddWithValue("@SelectedCategory", selectedCategory);
 
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@MenuItemName", item.MenuItemName);
-                    command.Parameters.AddWithValue("@MenuItemPrice", item.MenuItemPrice);
-                    command.Parameters.AddWithValue("@MenuId", menuId);
-                    command.Parameters.AddWithValue("@VatPercentage", item.VatPercentage);
-                    command.Parameters.AddWithValue("@Stock", item.Stock);
+                    if (conn.State == ConnectionState.Closed)
+                    {
+                        conn.Open();
+                    }
 
-                    connection.Open();
-                    command.ExecuteNonQuery();
-                }
-                catch (SqlException ex)
-                {
-                    Console.WriteLine(ex.Message);
+                    cmd.ExecuteNonQuery();
                 }
             }
         }
-
-        public void Update(MenuItem item)
-        {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            {
-                try
-                {
-                    int menuId = GetMenuId(item.Card, item.Category);
-
-                    string query =
-                        "UPDATE MenuItem " +
-                        "SET MenuItemName = @MenuItemName, " +
-                        "MenuItemPrice = @MenuItemPrice, " +
-                        "MenuId = @MenuId, " +
-                        "VatPercentage = @VatPercentage, " +
-                        "Stock = @Stock " +
-                        "WHERE MenuItemId = @MenuItemId";
-
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@MenuItemName", item.MenuItemName);
-                    command.Parameters.AddWithValue("@MenuItemPrice", item.MenuItemPrice);
-                    command.Parameters.AddWithValue("@MenuId", menuId);
-                    command.Parameters.AddWithValue("@VatPercentage", item.VatPercentage);
-                    command.Parameters.AddWithValue("@Stock", item.Stock);
-                    command.Parameters.AddWithValue("@MenuItemId", item.MenuItemId);
-
-                    connection.Open();
-                    command.ExecuteNonQuery();
-                }
-                catch (SqlException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
-        }
-
-        private int GetMenuId(Card card, Category category)
-        {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            {
-                string query = "SELECT MenuId FROM Menu WHERE Card = @Card AND Category = @Category";
-
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@Card", (int)card);
-                command.Parameters.AddWithValue("@Category", (int)category);
-
-                connection.Open();
-                object result = command.ExecuteScalar();
-
-                if (result == null)
-                    throw new Exception("MenuId not found for selected Card/Category");
-
-                return (int)result;
-            }
-        }
-
 
         public void SetActive(int id, bool isActive)
         {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            using (SqlConnection conn = new SqlConnection(_connectionString))
             {
-                try
-                {
-                    string query =
-                        "UPDATE MenuItem SET IsActive = @IsActive " +
-                        "WHERE MenuItemId = @MenuItemId";
-
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@IsActive", isActive);
-                    command.Parameters.AddWithValue("@MenuItemId", id);
-
-                    connection.Open();
-                    command.ExecuteNonQuery();
-                }
-                catch (SqlException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-
-
+                string sql = "UPDATE MenuItem SET IsActive = @IsActive WHERE MenuItemId = @MenuItemId";
+                conn.Execute(sql, new { MenuItemId = id, IsActive = isActive });
             }
-
         }
-
         public void DecreaseStock(int menuItemId, int amount)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                try
-                {
-                    string query =
-                        "UPDATE MenuItem " +
-                        "SET Stock = Stock - @Amount " +
-                        "WHERE MenuItemId = @MenuItemId";
+                string query = "UPDATE MenuItem " +
+                               "SET Stock = Stock - @Amount " +
+                               "WHERE MenuItemId = @MenuItemId";
 
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@Amount", amount);
-                    command.Parameters.AddWithValue("@MenuItemId", menuItemId);
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@Amount", amount);
+                command.Parameters.AddWithValue("@MenuItemId", menuItemId);
 
-                    connection.Open();
-                    command.ExecuteNonQuery();
-                }
-                catch (SqlException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                connection.Open();
+                command.ExecuteNonQuery();
             }
         }
     }

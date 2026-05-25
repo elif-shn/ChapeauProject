@@ -2,6 +2,7 @@
 @using Chapeau.Enums
 
 <style>
+
     body {
         background-color: #f8f6f3;
         font-family: 'Segoe UI', sans-serif;
@@ -89,12 +90,14 @@
         .btn-cancel:hover {
             background-color: #b92e22;
         }
+
 </style>
 
 <h2>Add New Menu Item</h2>
 <div class="title-line"></div>
 
 <div class="form-card">
+
     <form method="post" asp-action="Add">
 
         <div class="form-group">
@@ -112,25 +115,21 @@
             <input asp-for="ItemToEdit.Stock" class="input-box" min="0" required />
         </div>
 
-        <div class="form-group">
-            <label>Menu Type</label>
-            <select asp-for="ItemToEdit.Card" class="input-box">
-                @foreach (var card in Model.Cards)
-                {
-                    <option value="@card">@card</option>
-                }
-            </select>
-        </div>
+        <select asp-for="SelectedCard" class="input-box" required>
+            <option value="">-- Select Card --</option>
+            @foreach (Card card in Enum.GetValues(typeof(Card)))
+            {
+                <option value="@((int)card)">@card</option>
+            }
+        </select>
 
-        <div class="form-group">
-            <label>Category</label>
-            <select asp-for="ItemToEdit.Category" class="input-box">
-                @foreach (var category in Model.Categories)
-                {
-                    <option value="@category">@category</option>
-                }
-            </select>
-        </div>
+        <select asp-for="SelectedCategory" class="input-box" required>
+            <option value="">-- Select Category --</option>
+            @foreach (Category category in Enum.GetValues(typeof(Category)))
+            {
+                <option value="@((int)category)">@category</option>
+            }
+        </select>
 
         <div class="form-group">
             <label>VAT Percentage</label>
@@ -143,4 +142,5 @@
         </div>
 
     </form>
+
 </div>
