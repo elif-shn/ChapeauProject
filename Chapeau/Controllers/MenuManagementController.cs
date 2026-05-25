@@ -18,7 +18,7 @@ namespace Chapeau.Controllers
             _menuListService = menuListService;
         }
 
-        public ActionResult Index(MenuManagementViewModel menuViewModel)
+        public ActionResult Index(MenuViewModel menuViewModel)
         {
             menuViewModel.Categories = Enum.GetValues(typeof(Category)).Cast<Category>().ToList();
 
