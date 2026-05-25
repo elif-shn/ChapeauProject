@@ -1,119 +1,110 @@
 ﻿@using Chapeau.Enums
-@model Chapeau.ViewModels.MenuViewModel
+@using Chapeau.Extensions
+@model Chapeau.ViewModels.MenuDisplayViewModel
 
 @{
     ViewData["Title"] = "MenuItems";
 }
+@{
+    User loggedInUser = Context.Session.GetObject<User>("LoggedInUser");
+}
+<h1 class="display-4 pb-4" style="font-family: Arial, sans-serif; font-weight: 300;">Le MENU</h1>
+@if (loggedInUser != null && loggedInUser.Role == "Waiter")
+{
+    <form asp-controller="TakeOrder" asp-action="Index" method="get" class="mb-4">
 
-<h1 class="display-4 pb-4">Le MENU</h1>
+        <div class="d-flex gap-3 align-items-center">
+            <button type="submit" class="btn btn-dark">
+                Take Order
+            </button>
+        </div>
+
+    </form>
+}
 
 <form method="get" class="mb-4">
     <div class="row">
         <div class="col-md-4">
-            <select name="selectedMenuId" class="form-select">
+            <select name="selectedCard" class="form-select" onchange="this.form.submit()">
                 <option value="">All Menus</option>
-
-                @foreach (var menu in Model.Menus)
+                @foreach (var card in Enum.GetValues(typeof(Card)))
                 {
-                    <option value="@menu.MenuId" selected="@(Model.SelectedMenuId == menu.MenuId)">
-                        @menu.MenuName.ToString().ToUpper()
+                    <option value="@((int)card)" selected="@(Model.SelectedCard == (Card)card)">
+                        @card.ToString()
                     </option>
                 }
             </select>
         </div>
+
         <div class="col-md-4">
-            <select name="selectedCategory" class="form-select">
+            <select name="selectedCategory" class="form-select" onchange="this.form.submit()">
                 <option value="">All Categories</option>
-                @foreach (var category in Model.Categories)
+
+                @foreach (Category category in Model.Categories)
                 {
-                <option value="@((int)category)"
-                        selected="@(Model.SelectedCategory == category)">
-                        @category.ToString().Replace("CoffeeAndTea", "Coffee & Tea").ToUpper()
-                </option>
-                                
+                    <option value="@((int)category)" selected="@(Model.SelectedCategory == category)">
+                        @category.ToString().Replace("CoffeeAndTea", "Coffee & Tea")
+                    </option>
                 }
             </select>
-        </div>
-        <div class="col-md-4">
-            <button type="submit" class="btn btn-primary">Filter</button>
         </div>
     </div>
 </form>
 
+@{
+    Chapeau.Enums.Card? previousCard = null;
+}
+
 <table>
     <tbody>
 
-        @foreach (var menu in Model.Menus)
+        @foreach (var menu in Model.Menu)
         {
-
-            if (Model.SelectedMenuId != null && Model.SelectedMenuId != menu.MenuId)
+            if (previousCard != menu.Card)
             {
-                continue;
+                <tr style="height:35px;"></tr>
+                <tr>
+                    <td colspan="2">
+                        <strong>@menu.Card.ToString().ToUpper()</strong>
+                    </td>
+                </tr>
+
+                previousCard = menu.Card;
             }
             <tr style="height:35px;"></tr>
             <tr>
                 <td colspan="2">
-                    <strong>@menu.MenuName.ToUpper()</strong>
+                    <em>@menu.Category.ToString().Replace("CoffeeAndTea", "Coffee & Tea").ToUpper()</em>
                 </td>
             </tr>
 
-            @foreach (var category in Model.Categories)
+            @foreach (var item in menu.MenuItems)
             {
-                if (Model.SelectedCategory != null && Model.SelectedCategory != category)
-                {
-                    continue;
-                }
+                <tr>
+                    <td class="pe-3">
+                        @item.MenuItemName
+                    </td>
 
-                var hasItems = false;
-
-                foreach (var item in Model.MenuItems)
-                {
-                    if (item.MenuId == menu.MenuId && item.Category == category)
-                    {
-                        hasItems = true;
-                        break;
-                    }
-                }
-
-                if (hasItems)
-                {
-                    <tr style="height:35px;"></tr>
-                    <tr>
-                        <td colspan="2">
-                            <em>@category.ToString().Replace("CoffeeAndTea", "Coffee & Tea").ToUpper()</em>
-                        </td>
-                    </tr>
-
-                    foreach (var item in Model.MenuItems)
-                    {
-                        if (item.MenuId == menu.MenuId && item.Category == category && item.IsActive == true)
+                    <td class="pe-3">
+                        @if (item.StockStatus == Chapeau.Enums.StockStatus.OutOfStock)
                         {
-                            string status;
-
-                            if (item.Stock == 0)
-                                status = "OUT OF STOCK";
-                            else if (item.Stock <= 10)
-                                status = "ALMOST OUT OF STOCK";
-                            else
-                                status = "IN STOCK";
-
-                            var stockClass =
-                            status == "OUT OF STOCK" ? "text-danger" :
-                            status == "ALMOST OUT OF STOCK" ? "text-warning" :
-                            "text-success";
-
-                            <tr>
-                                <td class="pe-3">@item.MenuItemName</td>
-                                <td class="pe-3">
-                                    <small class="@stockClass">@status</small>
-                                </td>
-                                <td>€ @item.MenuItemPrice.ToString("0.00")</td>
-                            </tr>
+                            <span style="color:red;">Out of stock</span>
                         }
-                    }
-                }
+                        else if (item.StockStatus == Chapeau.Enums.StockStatus.AlmostOutOfStock)
+                        {
+                            <span style="color:orange;">Almost out of Stock</span>
+                        }
+                        else
+                        {
+                            <span style="color:green;">In stock</span>
+                        }
+                    </td>
+                    <td class="pe-3">
+                        € @item.MenuItemPrice.ToString("0.00")
+                    </td>
+                </tr>
             }
         }
-
     </tbody>
 </table>
+

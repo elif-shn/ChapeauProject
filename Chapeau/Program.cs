@@ -11,15 +11,18 @@ namespace Chapeau
 
            
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddScoped<IMenuRepository, MenuRepository>();
             builder.Services.AddScoped<IOrderRepository, DbOrderRepository>();
-            builder.Services.AddScoped<IOrderServices, OrderService>();
-            builder.Services.AddScoped<IMenuListRepository, DbMenuListRepository>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IMenuService, MenuService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<ITableRepository, TableRepository>();
             builder.Services.AddScoped<ITablesService, TableService>();
             builder.Services.AddScoped<IUserService, UserServices>();
-            
+            builder.Services.AddScoped<IPaymentRepository, DbPaymentRepository>();
+            builder.Services.AddScoped<PaymentService>();
+            builder.Services.AddScoped<ITakeOrderService, TakeOrderService>();
 
             builder.Services.AddSession(options =>
             {
@@ -27,14 +30,11 @@ namespace Chapeau
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
-            builder.Services.AddScoped<IMenuListService, MenuListService>();
-            builder.Services.AddScoped<IMenuRepository, MenuRepository>();
             builder.Services.AddSession();
             
 
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddSession();
             var app = builder.Build();
             app.UseSession();
 

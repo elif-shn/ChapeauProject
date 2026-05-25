@@ -1,4 +1,4 @@
-﻿using Chapeau.Enums;
+﻿/*using Chapeau.Enums;
 using Chapeau.Models;
 using Chapeau.Repositories;
 using Chapeau.Services;
@@ -26,7 +26,7 @@ namespace Chapeau.Controllers
 
 
 
-            List<MenuItem> menuItems = _menuService.GetAllByFilter(menuViewModel);
+            List<MenuItem> menuItems = _menuService.GetAllByFilter(menuViewModel.SelectedMenuId, menuViewModel.SelectedCategory);
 
 
             menuViewModel.MenuItems = menuItems;
@@ -47,7 +47,7 @@ namespace Chapeau.Controllers
 
         public IActionResult Edit(int id)
         {
-            MenuViewModel vm = new MenuViewModel();
+            MenuManagementViewModel vm = new MenuManagementViewModel();
             vm.ItemToEdit = _menuService.GetMenuItemById(id);
             return View(vm);
         }
@@ -71,4 +71,4 @@ namespace Chapeau.Controllers
             return RedirectToAction("Index");
         }
     }
-}
+}*/
