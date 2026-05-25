@@ -16,17 +16,7 @@ namespace Chapeau.Services
             return _menuRepository.GetAllByFilter(menuItems);
         }
 
-        /*public List<MenuItem> GetAllMenuItems()
-        {
-            return _menuRepository.GetAll();
-        }
-
-        public List<MenuItem> GetFilteredMenuItems(int menuId, int category)
-        {
-            if (menuId == 0 && category == 0)
-                return _menuRepository.GetAll();
-            return _menuRepository.GetByFilter(menuId, category);
-        }*/
+       
 
         public MenuItem GetMenuItemById(int id)
         {

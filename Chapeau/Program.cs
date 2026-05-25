@@ -19,6 +19,7 @@ namespace Chapeau
             builder.Services.AddScoped<ITableRepository, TableRepository>();
             builder.Services.AddScoped<ITablesService, TableService>();
             builder.Services.AddScoped<IUserService, UserServices>();
+            
 
             builder.Services.AddSession(options =>
             {
