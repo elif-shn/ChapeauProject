@@ -148,5 +148,15 @@ namespace Chapeau.Services
                 throw;
             }
         }
+
+        public List<MenuItem> GetAllByFilter(int? selectedMenuId, Category? selectedCategory)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<MenuItem> GetActiveItems(int? selectedMenuId, Category? selectedCategory)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
