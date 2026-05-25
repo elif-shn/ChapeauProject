@@ -1,23 +1,38 @@
-﻿<h2>Login</h2>
+﻿@model Chapeau.Models.LoginModel
 
-<form method="post">
+<h2>Login</h2>
 
-    <div>
-        <label>Username</label>
-        <input type="text" name="username" />
+<form asp-action="Login"
+      method="post">
+
+    <div class="mb-3">
+
+        <label asp-for="Username"></label>
+
+        <input asp-for="Username"
+               class="form-control" />
+
     </div>
 
-    <div>
-        <label>Password/Employee Number</label>
-        <input type="password" name="password" />
+    <div class="mb-3">
+
+        <label asp-for="Password"></label>
+
+        <input asp-for="Password"
+               type="password"
+               class="form-control" />
+
     </div>
 
-    <button type="submit">
+    <button type="submit"
+            class="btn btn-primary">
+
         Login
+
     </button>
 
 </form>
 
-<p style="color:red">
+<p class="text-danger">
     @ViewBag.Error
 </p>

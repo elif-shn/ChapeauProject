@@ -3,25 +3,16 @@
 @using Chapeau.Enums
 
 @{
-    ViewData["Title"] = "Running Orders";
+    ViewData["Title"] = "Finished Orders";
 }
 
 <div class="container mt-4">
 
     <h1 class="mb-4">Running Orders</h1>
-
-    <div class="text-end mb-3">
-        <button class="btn btn-sm"
-                onclick="location.reload()"
-                style="background-color:lightseagreen; border:none; color:white;">
-            Refresh Orders
-        </button>
-
-        <a asp-action="FinishedOrders"
-            class="btn btn-sm"
-            style="background-color:#4a565e; border:none; color:white;">
-			View Finished Orders
-        </a>
+ <a asp-action="Index"
+	   class="btn btn-sm">
+    View Orders
+</a>
     </div>
 
     <div class="table-responsive">
@@ -49,7 +40,7 @@
                         <td>
                             <a asp-controller="Order"
                                asp-action="OrderItems"
-                               asp-route-orderId="@order.OrderId"
+                               asp-route-id="@order.OrderId"
                                class="btn btn-sm"
                                style="background-color:darkcyan; border:none; color:white;">
                                 View Items
