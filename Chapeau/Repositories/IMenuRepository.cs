@@ -7,6 +7,8 @@ namespace Chapeau.Repositories
     {
         List<Menu> GetAllByFilter(Card? Card, Category? category);
         MenuItem GetById(int id);
+        List<Menu> GetAllMenus();
+
         void Add(MenuItem item);
         void Update(MenuItem item);
         void SetActive(int id, bool isActive);
