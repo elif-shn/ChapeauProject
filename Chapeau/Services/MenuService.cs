@@ -22,21 +22,21 @@ namespace Chapeau.Services
             {
                 throw;
             }
-            
+
         }
         public MenuItem GetMenuItemById(int id)
         {
             return _menuRepository.GetById(id);
         }
 
-        public void AddMenuItem(MenuItem item)
+        public void AddMenuItem(MenuItem item, int selectedCard, int selectedCategory)
         {
-            _menuRepository.Add(item);
+            _menuRepository.Add(item, selectedCard, selectedCategory);
         }
 
-        public void UpdateMenuItem(MenuItem item)
+        public void UpdateMenuItem(MenuItem item, int selectedCard, int selectedCategory)
         {
-            _menuRepository.Update(item);
+            _menuRepository.Update(item, selectedCard, selectedCategory);
         }
 
         public void ActivateMenuItem(int id)
@@ -111,7 +111,7 @@ namespace Chapeau.Services
             {
                 throw;
             }
-            
+
         }
         public (List<Menu> menus, List<Category> categories) GetMenuDisplay(Card? selectedCard, Category? selectedCategory)
         {
@@ -133,7 +133,7 @@ namespace Chapeau.Services
             {
                 throw;
             }
-           
+
         }
 
         public void DecreaseStock(int menuItemId, int amount)

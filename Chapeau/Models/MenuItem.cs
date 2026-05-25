@@ -9,14 +9,14 @@ public class MenuItem
     public string MenuItemName { get; set; }
     public decimal MenuItemPrice { get; set; }
     public Menu Menu { get; set; }
-    public Card Card { get; set; }
+    
     public int VatPercentage { get; set; }
     public int Stock { get; set; }
     public bool IsActive { get; set; }
 
     public MenuItem() { }
     public int MenuId { get; set; }
-    public Category Category { get; set; }
+  
 
 
     public StockStatus StockStatus
