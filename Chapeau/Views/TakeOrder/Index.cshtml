@@ -1,234 +1,223 @@
 ﻿@using Chapeau.Enums
+@using Chapeau.Extensions
 @model Chapeau.ViewModels.TakeOrderViewModel
 
 @{
     ViewData["Title"] = "Take Order";
 }
-<h1 class="display-4 pb-4">Le MENU</h1>
 
-<div class="row">
+<h1 class="display-4 pb-4" style="font-family: Arial, sans-serif; font-weight: 300;">
+    Le MENU
+</h1>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-        </div>
-    }
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show"role="alert">
-            @TempData["ErrorMessage"]
-        </div>
-    }
-    <div class="col-md-8">
-        <form method="get" class="mb-3">
-            <select name="SelectedTableId" class="form-select" onchange="this.form.submit()">
-                <option value="0">Select Table</option>
-                @foreach (var table in Model.Tables)
+
+<form method="get" class="mb-4">
+  
+    <div class="row">
+
+        <div class="col-md-4">
+            <select name="selectedCard" class="form-select" onchange="this.form.submit()">
+                <option value="">All Menus</option>
+                @foreach (var card in Enum.GetValues(typeof(Card)))
                 {
-                    <option value="@table.TableId" selected="@(Model.SelectedTableId == table.TableId)">
-                        Table @table.TableId
+                    <option value="@((int)card)" selected="@(Model.SelectedCard == (Card)card)">
+                        @card.ToString()
                     </option>
                 }
             </select>
-        </form>
-        <form method="get" class="mb-3">
-            <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
-            <div class="row">
-                <div class="col-md-6">
-                    <select name="SelectedMenuId" class="form-select" onchange="this.form.submit()">
-                        <option value="">All Menus</option>
-                        @foreach (var menu in Model.Menus)
-                        {
-                            <option value="@menu.MenuId"
-                                    selected="@(Model.SelectedMenuId == menu.MenuId)">
-                                @menu.MenuName.ToUpper()
-                            </option>
-                        }
-                    </select>
-                </div>
+        </div>
 
-                <div class="col-md-6">
-                    <select name="SelectedCategory" class="form-select" onchange="this.form.submit()">
-                        <option value="">All Categories</option>
-                        @foreach (var category in Model.Categories)
-                        {
-                            <option value="@((int)category)"
-                                    selected="@(Model.SelectedCategory == category)">
-                                @category.ToString().ToUpper()
-                            </option>
-                        }
-                    </select>
-                </div>
-            </div>
-        </form>
+        <div class="col-md-4">
+            <select name="selectedCategory" class="form-select" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                @if (Model.Categories != null)
+                {
+                    @foreach (Category category in Model.Categories)
+                    {
+                        <option value="@((int)category)" selected="@(Model.SelectedCategory == category)">
+                            @category.ToString().Replace("CoffeeAndTea", "Coffee & Tea")
+                        </option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <select name="SelectedTableId" class="form-select" onchange="this.form.submit()">
+                <option value="">Select Table</option>
+                @if (Model.OccupiedTables != null)
+                {
+                    @foreach (var table in Model.OccupiedTables)
+                    {
+                        <option value="@table.TableId" selected="@(Model.SelectedTableId == table.TableId)">
+                            Table @table.TableId
+                        </option>
+                    }
+                }
+            </select>
+        </div>
+
+    </div>
+</form>
+
+<div class="row">
+    <div class="col-md-8">
+
+        @{
+            Chapeau.Enums.Card? previousCard = null;
+        }
 
         <table>
             <tbody>
-                @foreach (var menu in Model.Menus)
+
+                @foreach (var menu in Model.Menu)
                 {
-                    if (Model.SelectedMenuId != null && Model.SelectedMenuId != menu.MenuId)
-                        continue;
+                    if (previousCard != menu.Card)
+                    {
+                        <tr style="height:35px;"></tr>
+                        <tr>
+                            <td colspan="4">
+                                <strong>@menu.Card.ToString().ToUpper()</strong>
+                            </td>
+                        </tr>
+                        previousCard = menu.Card;
+                    }
 
                     <tr style="height:35px;"></tr>
                     <tr>
-                        <td colspan="2">
-                            <strong>@menu.MenuName.ToUpper()</strong>
+                        <td colspan="4">
+                            <em>@menu.Category.ToString().Replace("CoffeeAndTea", "Coffee & Tea").ToUpper()</em>
                         </td>
                     </tr>
 
-                    @foreach (var category in Model.Categories)
+                    @foreach (var item in menu.MenuItems)
                     {
-                        if (Model.SelectedCategory != null && Model.SelectedCategory != category)
-                            continue;
-
-                        List<MenuItem> itemsInGroup = new List<MenuItem>();
-
-                        foreach (var x in Model.MenuItems)
-                        {
-                            if (x.Menu.MenuId == menu.MenuId && x.Category == category)
-                            {
-                                itemsInGroup.Add(x);
-                            }
-                        }
-
-                        if (itemsInGroup.Count == 0)
-                            continue;
-
-                        <tr style="height:35px;"></tr>
                         <tr>
-                            <td colspan="2">
-                                <em>@category.ToString().Replace("CoffeeAndTea", "Coffee & Tea").ToUpper()</em>
+                            <td>
+                                @item.MenuItemName
+                            </td>
+
+                            <td>
+                                @if (item.StockStatus == Chapeau.Enums.StockStatus.OutOfStock)
+                                {
+                                    <span style="color:red;">Out of stock</span>
+                                }
+                                else if (item.StockStatus == Chapeau.Enums.StockStatus.AlmostOutOfStock)
+                                {
+                                    <span style="color:orange;">Almost out of stock</span>
+                                }
+                                else
+                                {
+                                    <span style="color:green;">In stock</span>
+                                }
+                            </td>
+
+                            <td>
+                                € @item.MenuItemPrice.ToString("0.00")
+                            </td>
+                            <td>
+                                <form method="post" asp-action="AddCurrentOrder">
+                                    <input type="hidden" name="selectedCard" value="@Model.SelectedCard" />
+                                    <input type="hidden" name="selectedCategory" value="@Model.SelectedCategory" />
+                                    <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+
+                                    <input type="hidden" name="MenuItemId" value="@item.MenuItemId" />
+                                    <input type="hidden" name="MenuItemName" value="@item.MenuItemName" />
+                                    <input type="hidden" name="Price" value="@item.MenuItemPrice" />
+
+                                    <button class="btn btn-success">+</button>
+                                </form>
                             </td>
                         </tr>
-
-                        foreach (var item in itemsInGroup)
-                        {
-                            <tr>
-                                <td class="pe-3">@item.MenuItemName</td>
-                                <td class="pe-3 align-middle">
-                                    <small class="@item.StockCssClass text-nowrap">
-                                        @item.StockStatus
-                                    </small>
-                                </td>
-                                <td class="pe-3">€@item.MenuItemPrice.ToString("0.00")</td>
-                                <td class="pe-3">
-                                    <form method="post" asp-controller="TakeOrder" asp-action="AddToCurrentOrder">
-                                        <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
-                                        <input type="hidden" name="menuItemId" value="@item.MenuItemId" />
-                                        <input type="hidden" name="SelectedMenuId" value="@Model.SelectedMenuId" />
-                                        <input type="hidden" name="SelectedCategory" value="@Model.SelectedCategory" />
-
-                                        <button class="btn btn-sm @(item.Stock == 0 ? "btn-secondary" : "btn-success")" disabled="@(item.Stock == 0)">
-                                            +
-                                        </button>
-                                    </form>
-                                </td>
-                                <td class="pe-3">
-                                    <button type="button" class="btn btn-sm btn-secondary text-nowrap"
-                                            data-bs-toggle="collapse"
-                                            data-bs-target="#noteSection-@item.MenuItemId">
-                                        Note
-                                    </button>
-                                    <div class="collapse mt-2" id="noteSection-@item.MenuItemId" style="min-width: 200px;">
-                                        <div class="card card-body p-2 bg-light">
-                                            <form method="post" asp-controller="TakeOrder" asp-action="AddToCurrentOrder">
-                                                <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
-                                                <input type="hidden" name="menuItemId" value="@item.MenuItemId" />
-                                                <input type="hidden" name="SelectedMenuId" value="@Model.SelectedMenuId" />
-                                                <input type="hidden" name="SelectedCategory" value="@Model.SelectedCategory" />
-
-                                                <div class="mb-2">
-                                                    <textarea name="comment" class="form-control form-control-sm" rows="2"></textarea>
-                                                </div>
-                                                <button type="submit" class="btn btn-success btn-sm w-100" @(item.Stock == 0 ? "btn-secondary" : "btn-success")" disabled="@(item.Stock == 0)">
-                                                    Add with Note
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </td>
-
-                            </tr>
-                        }
                     }
                 }
+
             </tbody>
         </table>
 
     </div>
 
     <div class="col-md-4">
-        <div style="position: sticky; top: 20px;">
-            <h3>Current Order</h3>
+        <h4>Order</h4>
 
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+
+        @if (Model.CurrentOrder != null && Model.CurrentOrder.Count > 0)
+        {
             <table class="table">
-                @{
-                    decimal totalAmount = 0;
-                }
-                @foreach (var item in Model.CurrentOrderItems)
-                {
-                    totalAmount += item.MenuItem.MenuItemPrice * item.OrderItemQuantity;
-                    <tr>
-                        <td>
-                            <div class="fw-semibold">
-                                @item.MenuItem.MenuItemName
-                            </div>
+                <tbody>
+                    @foreach (var currentorderItem in Model.CurrentOrder)
+                    {
+                        <tr>
+                            <td>@currentorderItem.MenuItemName
+                                <form method="post" asp-action="AddNote" class="d-flex mt-1">
+                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItemId" />
+                                    <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                                    <input type="text" name="comment" value="@currentorderItem.Comment" class="form-control form-control-sm me-1" placeholder="Add note..." style="font-size: 0.8rem; max-width: 150px;" />
+                                    <button type="submit" class="btn btn-sm btn-outline-warning" style="font-size: 0.7rem;">Save</button>
+                                </form>
+                            </td>
 
-                            @if (!string.IsNullOrWhiteSpace(item.Comment))
-                            {
-                                <div class="small text-muted" style="font-size:0.75rem; opacity:0.7;">
-                                    📝 @item.Comment
-                                </div>
-                            }
-                        </td>
-                        <td>
-                            <form method="post" asp-controller="TakeOrder" asp-action="AddToCurrentOrder">
-                                <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
-                                <input type="hidden" name="menuItemId" value="@item.MenuItem.MenuItemId" />
-                                <input type="hidden" name="comment" value="@item.Comment" />
-                                <input type="hidden" name="SelectedMenuId" value="@Model.SelectedMenuId" />
-                                <input type="hidden" name="SelectedCategory" value="@Model.SelectedCategory" />
-                                <button class="btn btn-success btn-sm">+</button>
-                            </form>
-                        </td>
-                        <td>@item.OrderItemQuantity</td>
-                        <td>
-                            <form method="post" asp-action="RemoveFromCurrentOrder">
-                                <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
-                                <input type="hidden" name="menuItemId" value="@item.MenuItem.MenuItemId" />
-                                <input type="hidden" name="comment" value="@item.Comment" />
-                                <input type="hidden" name="SelectedMenuId" value="@Model.SelectedMenuId" />
-                                <input type="hidden" name="SelectedCategory" value="@Model.SelectedCategory" />
-                                <button class="btn btn-danger btn-sm">-</button>
-                            </form>
-                        </td>
-                    </tr>
-                }
-                <tr>
-                    <td colspan="3"><strong>Total</strong></td>
-                    <td colspan="6">
-                        <strong>€@totalAmount.ToString("0.00")</strong>
-                    </td>
-                </tr>
+                            <td style="min-width: 50px; white-space: nowrap;">
+                                <form method="post" asp-action="DecreaseQuantity" style="display:inline;">
+                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItemId" />
+                                    <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-warning">-</button>
+                                </form>
+
+                                <span class="mx-2" style="display:inline-block; width: 20px; text-align: center;">
+                                    @currentorderItem.Quantity
+                                </span>
+
+                                <form method="post" asp-action="IncreaseQuantity" style="display:inline;">
+                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItemId" />
+                                    <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-success">+</button>
+                                </form>
+                            </td>
+
+                            <td style="min-width: 50px; white-space: nowrap;">
+                                € @((currentorderItem.Price * currentorderItem.Quantity).ToString("0.00"))
+                            </td>
+                            <td style="min-width: 50px; white-space: nowrap;">@currentorderItem.Comment</td>
+                            <td>
+                                <form method="post" asp-action="RemoveItem" style="display:inline;">
+                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItemId" />
+                                    <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                                    <button type="submit" class="btn btn-sm btn-danger">x</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
             </table>
+        }
+        else
+        {
+            <p>No items yet</p>
+        }
 
-            <form method="post" asp-controller="TakeOrder" asp-action="SendOrder">
-                <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
-
-                <button class="btn btn-success w-100"
-                        disabled="@(Model.SelectedTableId == null || Model.SelectedTableId == 0 ? "disabled" : null)">
+        
+        <div class="d-flex gap-2">
+            <form method="post" asp-action="SendOrder">
+                <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                <button class="btn btn-success w-100">
                     Send Order
                 </button>
             </form>
 
-            <form method="get" asp-controller="TakeOrder" asp-action="CancelOrder">
-                <button class="btn btn-success w-100">
-                    Cancel
-                </button>
+            <form method="post" asp-action="CancelOrder" >
+                <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                <button type="submit" class="btn btn-danger">Cancel</button>
             </form>
-
         </div>
-    </div>
 
+    </div>
 </div>

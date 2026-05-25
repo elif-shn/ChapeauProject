@@ -1,6 +1,5 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
-using Chapeau.Repositories;
 using Chapeau.Services;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -19,25 +18,25 @@ namespace Chapeau.Controllers
 
         public IActionResult Index(Card? selectedCard, Category? selectedCategory)
         {
-
-            List<Category> categories = _menuService.GetCategoriesByCard(_menuService.GetActiveItems(selectedCard, null), selectedCard);
-
-            ViewBag.Categories = categories;
-
-            if (selectedCategory != null &&
-                !categories.Contains(selectedCategory.Value))
+            try
             {
-                selectedCategory = null;
+                return View(new MenuDisplayViewModel
+                {
+                    Menu = _menuService.GetMenuDisplay(selectedCard, selectedCategory).menus,
+                    Categories = _menuService.GetMenuDisplay(selectedCard, selectedCategory).categories,
+                    SelectedCard = selectedCard,
+                    SelectedCategory = selectedCategory,
+                });
             }
-            var menuItems = _menuService.GetActiveItems(selectedCard, selectedCategory);
-            var viewModel = new MenuDisplayViewModel
+            catch (Exception ex)
             {
-                Menu = menuItems,
-                SelectedCard = selectedCard,
-                SelectedCategory = selectedCategory
-            };
+                return View(new MenuDisplayViewModel
+                {
+                    Menu = new List<Menu>(),
+                    Categories = new List<Category>()
+                });
+            }
 
-            return View(viewModel);
         }
 
     }

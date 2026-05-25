@@ -1,4 +1,5 @@
-﻿using Chapeau.Extensions;
+﻿using Chapeau.Enums;
+using Chapeau.Extensions;
 using Chapeau.Models;
 using Chapeau.Services;
 using Chapeau.ViewModels;
@@ -9,183 +10,198 @@ namespace Chapeau.Controllers
     public class TakeOrderController : Controller
     {
         private readonly IMenuService _menuService;
-        private readonly IMenuListService _menuListService;
         private readonly ITablesService _tableService;
         private readonly ITakeOrderService _takeOrderService;
+        private readonly IOrderService _orderService;
 
 
-        public TakeOrderController(IMenuService menuService, IMenuListService menuListService, ITablesService tableService, ITakeOrderService takeOrderService)
+
+        public TakeOrderController(IMenuService menuService, ITablesService tableService, ITakeOrderService takeOrderService, IOrderService orderService)
         {
             _menuService = menuService;
-            _menuListService = menuListService;
             _tableService = tableService;
             _takeOrderService = takeOrderService;
-        }
-        public ActionResult Index(TakeOrderViewModel model)
-        {
-            model.Menus = _menuListService.GetAllMenus();
-            model.Categories = _menuListService.GetCategoriesByMenu(model.SelectedMenuId);
-
-            bool categoryExists = false;
-
-            foreach (var category in model.Categories)
-            {
-                if (category == model.SelectedCategory)
-                {
-                    categoryExists = true;
-                    break;
-                }
-            }
-
-            if (!categoryExists)
-            {
-                model.SelectedCategory = null;
-            }
-
-            model.MenuItems = _menuService.GetActiveItems(model.SelectedMenuId, model.SelectedCategory);
-            model.CurrentOrderItems = HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder") ?? new List<OrderItem>();
-            model.Tables = _tableService.GetOccupiedTables();
-
-            model.IsTakeOrder = true;
-            model.ActiveOrderId = model.OrderId;
-
-            return View(model);
+            _orderService = orderService;
         }
 
-    
-        [HttpPost]
-        public IActionResult AddToCurrentOrder(TakeOrderActionViewModel model)
-        {
-            string comment = model.Comment ?? "";
-
-            List<OrderItem> items =
-                HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder")
-                ?? new List<OrderItem>();
-
-            OrderItem existing = null;
-
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].MenuItem.MenuItemId == model.MenuItemId &&
-                    items[i].Comment == comment)
-                {
-                    existing = items[i];
-                    break;
-                }
-            }
-
-            if (existing != null)
-            {
-                existing.OrderItemQuantity++;
-            }
-            else
-            {
-                MenuItem menuItem = _menuService.GetMenuItemById(model.MenuItemId);
-
-                items.Add(new OrderItem
-                {
-                    MenuItem = menuItem,
-                    OrderItemQuantity = 1,
-                    Comment = comment
-                });
-            }
-
-            HttpContext.Session.SetObject("CurrentOrder", items);
-
-            return RedirectToAction("Index", new { SelectedTableId = model.SelectedTableId });
-        }
-
-        [HttpPost]
-        public IActionResult RemoveFromCurrentOrder(TakeOrderActionViewModel model)
-        {
-            if (string.IsNullOrEmpty(model.Comment))
-            {
-                model.Comment = "";
-            }
-
-            List<OrderItem> items =
-                HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder")
-                ?? new List<OrderItem>();
-
-            OrderItem existing = null;
-
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].MenuItem.MenuItemId == model.MenuItemId &&
-                    items[i].Comment == model.Comment)
-                {
-                    existing = items[i];
-                    break;
-                }
-            }
-
-            if (existing != null)
-            {
-                existing.OrderItemQuantity--;
-
-                if (existing.OrderItemQuantity <= 0)
-                {
-                    items.Remove(existing);
-                }
-            }
-
-            HttpContext.Session.SetObject("CurrentOrder", items);
-
-            return RedirectToAction("Index", new { SelectedTableId = model.SelectedTableId });
-        }
-        [HttpPost]
-        [HttpPost]
-        public IActionResult SendOrder(TakeOrderActionViewModel model)
+        public IActionResult Index(Card? selectedCard, Category? selectedCategory, int selectedTableId)
         {
             try
             {
-                List<OrderItem> currentItems =
-                    HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder")
-                    ?? new List<OrderItem>();
-
-                if (currentItems.Count == 0 || model.SelectedTableId == 0)
+                return View(new TakeOrderViewModel
                 {
-                    TempData["ErrorMessage"] = "Please select a table.";
-
-                    return RedirectToAction("Index",new { SelectedTableId = model.SelectedTableId });
-                }
-
-                foreach (var item in currentItems)
+                    Menu = _menuService.GetMenuDisplay(selectedCard, selectedCategory).menus,
+                    Categories = _menuService.GetMenuDisplay(selectedCard, selectedCategory).categories,
+                    OccupiedTables = _tableService.GetOccupiedTables(),
+                    SelectedTableId = selectedTableId,
+                    SelectedCard = selectedCard,
+                    SelectedCategory = selectedCategory,
+                    CurrentOrder = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder") ?? new List<CurrentOrderModel>()
+                });
+            }
+            catch (Exception ex)
+            {
+                return View(new TakeOrderViewModel
                 {
-                    for (int i = 0; i < item.OrderItemQuantity; i++)
+                    Menu = new List<Menu>(),
+                    SelectedCard = selectedCard,
+
+                });
+            }
+
+        }
+        [HttpPost]
+        public IActionResult AddCurrentOrder(CurrentOrderModel model, Card? selectedCard, Category? selectedCategory, int selectedTableId)
+        {
+            try
+            {
+                var menuItem = _menuService.GetMenuItemById(model.MenuItemId);
+
+                List<CurrentOrderModel> items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder") ?? new List<CurrentOrderModel>();
+
+                items = _takeOrderService.AddOrUpdateOrderItem(items, model, menuItem);
+
+                HttpContext.Session.SetObject("CurrentOrder", items);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+        return RedirectToAction("Index", new
+            {
+                selectedCard = selectedCard,
+                selectedCategory = selectedCategory,
+                selectedTableId = selectedTableId
+            });                       
+        }
+        [HttpPost]
+        public IActionResult SendOrder(int selectedTableId)
+        {
+            if (selectedTableId <= 0)
+            {
+                TempData["ErrorMessage"] = "Please select a table before sending the order.";
+                return RedirectToAction("Index");
+            }
+            try
+            {
+                List<CurrentOrderModel> items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder");
+
+                if (items != null && items.Count > 0)
+                {
+                    foreach (var item in items)
                     {
-                        _takeOrderService.AddItemToTable(
-                            model.SelectedTableId,
-                            item.MenuItem.MenuItemId,
-                            item.Comment
-                        );
-                    }
-                }
+                        
+                        int quantity = item.Quantity; 
 
+                        for (int i = 0; i < quantity; i++)
+                        {
+                            _orderService.AddItemToTableOrder(selectedTableId, item.MenuItemId, item.Comment);
+                            _menuService.DecreaseStock(item.MenuItemId, quantity);
+                        }
+                    }
+                    HttpContext.Session.Remove("CurrentOrder");
+                }
+                TempData["SuccessMessage"] = "Order successfully sent to the kitchen!";
+
+                return RedirectToAction("Index", "TakeOrder");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "An error occurred while sending the order: " + ex.Message;
+                return RedirectToAction("Index");
+            }
+        }
+        [HttpPost]
+        public IActionResult IncreaseQuantity(int menuItemId, int selectedTableId)
+        {
+            var menuItem = _menuService.GetMenuItemById(menuItemId);
+            var items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder");
+
+            if (items == null) items = new List<CurrentOrderModel>();
+
+            try
+            {
+                items = _takeOrderService.UpdateItemQuantity(items, menuItemId, 1, menuItem);
+                HttpContext.Session.SetObject("CurrentOrder", items);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+
+            return RedirectToAction("Index", new { selectedTableId });
+        }
+        [HttpPost]
+        public IActionResult DecreaseQuantity(int menuItemId, int selectedTableId)
+        {
+            var items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder");
+
+            if (items != null)
+            {
+                items = _takeOrderService.UpdateItemQuantity(items, menuItemId, -1, null);
+                HttpContext.Session.SetObject("CurrentOrder", items);
+            }
+
+            return RedirectToAction("Index", new { selectedTableId });
+        }
+
+        [HttpPost]
+        public IActionResult RemoveItem(int menuItemId, int selectedTableId)
+        {
+            var items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder");
+
+            if (items != null)
+            {
+                items = _takeOrderService.RemoveItem(items, menuItemId);
+                HttpContext.Session.SetObject("CurrentOrder", items);
+            }
+
+            return RedirectToAction("Index", new { selectedTableId });
+        }
+        [HttpPost]
+        [HttpPost]
+        public IActionResult AddNote(int menuItemId, int selectedTableId, string comment)
+        {
+            var items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder") ?? new List<CurrentOrderModel>();
+
+            CurrentOrderModel itemToUpdate = null;
+
+            foreach (var item in items)
+            {
+                if (item.MenuItemId == menuItemId)
+                {
+                    itemToUpdate = item;
+                }
+            }
+
+            if (itemToUpdate != null)
+            {
+                itemToUpdate.Comment = comment;
+
+                HttpContext.Session.SetObject("CurrentOrder", items);
+            }
+            return RedirectToAction("Index", new { selectedTableId = selectedTableId });
+        }
+        [HttpPost]
+        public IActionResult CancelOrder(int selectedTableId)
+        {
+            try
+            {
                 HttpContext.Session.Remove("CurrentOrder");
 
-                TempData["SuccessMessage"] = "Order sent successfully!";
+                TempData["SuccessMessage"] = "Order cancelled successfully.";
 
-                return RedirectToAction("Index",
-                    new { SelectedTableId = model.SelectedTableId });
+                return RedirectToAction("Index");
             }
-            catch
+            catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Something went wrong while sending the order.";
+                TempData["ErrorMessage"] = ex.Message;
 
-                return RedirectToAction("Index",
-                    new { SelectedTableId = model.SelectedTableId });
+                return RedirectToAction("Index", new { selectedTableId });
             }
         }
-        public IActionResult CancelOrder()
-        {
-            List<OrderItem> items = HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder") ?? new List<OrderItem>();
-
-
-            HttpContext.Session.Remove("CurrentOrder");
-
-            return RedirectToAction("Index");
-        }
+        
     }
 
 }
+

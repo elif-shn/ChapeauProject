@@ -1,41 +1,111 @@
 ﻿using Chapeau.Enums;
-using Chapeau.Repositories;
+using Chapeau.Models;
+using System.Collections.Generic;
 
 namespace Chapeau.Services
 {
     public class TakeOrderService : ITakeOrderService
     {
-        private readonly ITakeOrderRepository _takeOrderRepository;
-
-        public TakeOrderService(ITakeOrderRepository takeOrderRepository)
+       
+        public List<CurrentOrderModel> AddOrUpdateOrderItem(List<CurrentOrderModel> currentItems, CurrentOrderModel newItem, MenuItem menuItem)
         {
-            _takeOrderRepository = takeOrderRepository;
+            
+            try
+            {
+                if (menuItem.StockStatus == StockStatus.OutOfStock)
+                {
+                    throw new Exception("This item is currently out of stock!");
+                }
+                string comment = newItem.Comment ?? "";
+                CurrentOrderModel existing = null;
+
+                foreach (var item in currentItems)
+                {
+                    if (item.MenuItemId == newItem.MenuItemId && item.Comment == comment)
+                    {
+                        existing = item;
+                        break;
+                    }
+                }
+
+                if (existing != null)
+                {
+                    if (existing.Quantity + 1 > menuItem.Stock)
+                    {
+                        throw new Exception("Not enough stock available!");
+                    }
+                    existing.Quantity++;
+                }
+                else
+                {
+                    newItem.Comment = comment;
+                    newItem.Quantity = 1;
+                    currentItems.Add(newItem);
+                }
+
+                return currentItems;
+            }
+            catch
+            {
+                throw;
+            }
+            
+        }
+        public List<CurrentOrderModel> UpdateItemQuantity(List<CurrentOrderModel> items, int menuItemId, int change, MenuItem menuItem)
+        {
+            CurrentOrderModel itemToUpdate = null;
+            try
+            {
+                foreach (var item in items)
+                {
+                    if (item.MenuItemId == menuItemId)
+                    {
+                        itemToUpdate = item;
+                        break;
+                    }
+                }
+
+                if (itemToUpdate != null)
+                {
+                    if (change > 0 && (itemToUpdate.Quantity + 1) > menuItem.Stock)
+                    {
+                        throw new Exception("Not enough stock available!");
+                    }
+
+                    itemToUpdate.Quantity += change;
+
+                    if (itemToUpdate.Quantity <= 0)
+                    {
+                        items.Remove(itemToUpdate);
+                    }
+                }
+                return items;
+            }
+            catch
+            {
+                throw;
+            }
+           
         }
 
-        public void AddItemToTable(int tableId, int menuItemId, string comment)
+        public List<CurrentOrderModel> RemoveItem(List<CurrentOrderModel> items, int menuItemId)
         {
-            Order order = _takeOrderRepository.GetActiveOrderByTable(tableId);
-
-            if (order == null || order.OrderStatus == OrderStatus.Completed)
+            try
             {
-                int newOrderId = _takeOrderRepository.CreateOrder(tableId);
-
-                _takeOrderRepository.AddOrderItem(newOrderId, menuItemId, comment);
-
-                return;
+                for (int i = 0; i < items.Count; i++)
+                {
+                    if (items[i].MenuItemId == menuItemId)
+                    {
+                        items.RemoveAt(i);
+                        i--;
+                    }
+                }
+                return items;
             }
-
-            bool exists = _takeOrderRepository.OrderItemExists(order.OrderId, menuItemId, comment);
-
-            if (exists)
+            catch
             {
-                _takeOrderRepository.IncreaseQuantity(order.OrderId, menuItemId);
+                throw;
             }
-            else
-            {
-                _takeOrderRepository.AddOrderItem(order.OrderId, menuItemId, comment);
-            }
-            _takeOrderRepository.DecreaseStock(menuItemId, 1);
         }
     }
 }

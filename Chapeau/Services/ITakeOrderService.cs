@@ -1,7 +1,13 @@
-﻿namespace Chapeau.Services
+﻿using Chapeau.Models;
+
+namespace Chapeau.Services
 {
     public interface ITakeOrderService
     {
-        void AddItemToTable(int tableId, int menuItemId, string comment);
+        List<CurrentOrderModel> AddOrUpdateOrderItem(List<CurrentOrderModel> currentItems, CurrentOrderModel newItem, MenuItem menuItem);
+        List<CurrentOrderModel> UpdateItemQuantity(List<CurrentOrderModel> items, int menuItemId, int change, MenuItem menuItem);
+        List<CurrentOrderModel> RemoveItem(List<CurrentOrderModel> items, int menuItemId);
     }
+
 }
+

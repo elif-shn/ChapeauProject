@@ -27,14 +27,8 @@ namespace Chapeau.Controllers
                 List<OrderItem> orderItems =
                     _orderServices.GetOrderItemsByOrderId(orderId);
 
-                return View(orderItems);
-            }
-            catch (Exception ex)
-            {
-                ViewBag.ErrorMessage = ex.Message;
+            return View(orderItems);
 
-                return View("Error");
-            }
         }
 
         [HttpPost]

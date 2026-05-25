@@ -8,13 +8,16 @@ public class MenuItem
     public int MenuItemId { get; set; }
     public string MenuItemName { get; set; }
     public decimal MenuItemPrice { get; set; }
-
-    public int MenuId { get; set; }
-
+    public Menu Menu { get; set; }
+    
     public int VatPercentage { get; set; }
     public int Stock { get; set; }
     public bool IsActive { get; set; }
+
     public MenuItem() { }
+    public int MenuId { get; set; }
+  
+
 
     public StockStatus StockStatus
     {

@@ -5,7 +5,7 @@ public class Order
 {
     public int OrderId { get; set; }
     public Table Table { get; set; }
-    public User Employee { get; set; }
+    public User Employee { get; set; } 
     public string WaitingTime { get; set; }
     public DateTime OrderTime { get; set; }
     public DateTime?ServedTime { get; set; }
