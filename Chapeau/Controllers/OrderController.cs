@@ -22,31 +22,69 @@ namespace Chapeau.Controllers
         }
         public IActionResult OrderItems(int orderId)
         {
-            List<OrderItem> orderItems = _orderServices.GetOrderItemsByOrderId(orderId);
+            try
+            {
+                List<OrderItem> orderItems =
+                    _orderServices.GetOrderItemsByOrderId(orderId);
 
             return View(orderItems);
-        }
-        [HttpPost]
-        public IActionResult UpdateStatus(int orderId,   OrderStatus status)
-        {
-           _orderServices.UpdateOrderStatus(orderId,status);
 
-            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult UpdateStatus(int orderId, OrderStatus status)
+        {
+            try
+            {
+                _orderServices.UpdateOrderStatus(orderId, status);
+
+                TempData["SuccessMessage"] = "Order status updated successfully.";
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToAction("Index");
+            }
         }
         [HttpPost]
         public IActionResult UpdateItemStatus(int orderItemId, string status)
         {
-            OrderStatus newStatus = Enum.Parse<OrderStatus>(status);
+            try
+            {
+                OrderStatus newStatus = Enum.Parse<OrderStatus>(status);
 
-            _orderServices.UpdateOrderItemStatus(orderItemId, newStatus);
+                _orderServices.UpdateOrderItemStatus(orderItemId, newStatus);
 
-            return RedirectToAction("Index");
+                TempData["SuccessMessage"] = "Item status updated.";
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToAction("Index");
+            }
         }
         public IActionResult FinishedOrders()
         {
-            List<Order> finishedOrders =_orderServices.GetFinishedOrders();
+            try
+            {
+                List<Order> finishedOrders = _orderServices.GetFinishedOrders();
 
-            return View(finishedOrders);
+                TempData["SuccessMessage"] = "Finished orders retrieved successfully.";
+
+                return View(finishedOrders);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction("Error");
+            }
         }
     }
 }
+

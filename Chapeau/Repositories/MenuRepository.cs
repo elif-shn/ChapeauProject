@@ -3,6 +3,7 @@ using Chapeau.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Data.Common;
 namespace Chapeau.Repositories
 {
     public class MenuRepository : IMenuRepository
@@ -89,29 +90,70 @@ namespace Chapeau.Repositories
             }
         }
 
-        public void Add(MenuItem item)
+        public void Add(MenuItem item, int selectedCard, int selectedCategory)
         {
+            string sql = @"
+        INSERT INTO MenuItem (MenuItemName, MenuItemPrice, MenuId, VatPercentage, Stock, IsActive)
+        SELECT @MenuItemName, @MenuItemPrice, m.MenuId, @VatPercentage, @Stock, 1
+        FROM Menu m
+        WHERE m.Card = @SelectedCard AND m.Category = @SelectedCategory";
+
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
-                string sql = @"INSERT INTO MenuItem (MenuItemName, MenuItemPrice, MenuId, Category, VatPercentage, Stock, IsActive)
-                               VALUES (@MenuItemName, @MenuItemPrice, @MenuId, @Category, @VatPercentage, @Stock, 1)";
-                conn.Execute(sql, item);
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@MenuItemName", item.MenuItemName);
+                    cmd.Parameters.AddWithValue("@MenuItemPrice", item.MenuItemPrice);
+                    cmd.Parameters.AddWithValue("@VatPercentage", item.VatPercentage);
+                    cmd.Parameters.AddWithValue("@Stock", item.Stock);
+
+                    cmd.Parameters.AddWithValue("@SelectedCard", selectedCard);
+                    cmd.Parameters.AddWithValue("@SelectedCategory", selectedCategory);
+
+                    if (conn.State == ConnectionState.Closed)
+                    {
+                        conn.Open();
+                    }
+
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
 
-        public void Update(MenuItem item)
+        public void Update(MenuItem item, int selectedCard, int selectedCategory)
         {
+            // Doğru SQL: MenuId'yi Card ve Category'ye göre subquery ile Menu tablosundan çekiyoruz
+            string sql = @"
+        UPDATE MenuItem 
+        SET MenuItemName = @MenuItemName,
+            MenuItemPrice = @MenuItemPrice,
+            MenuId = (SELECT m.MenuId FROM Menu m WHERE m.Card = @SelectedCard AND m.Category = @SelectedCategory),
+            VatPercentage = @VatPercentage,
+            Stock = @Stock
+        WHERE MenuItemId = @MenuItemId";
+
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
-                string sql = @"UPDATE MenuItem 
-                               SET MenuItemName = @MenuItemName,
-                                   MenuItemPrice = @MenuItemPrice,
-                                   MenuId = @MenuId,
-                                   Category = @Category,
-                                   VatPercentage = @VatPercentage,
-                                   Stock = @Stock
-                               WHERE MenuItemId = @MenuItemId";
-                conn.Execute(sql, item);
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    // Güncellenecek MenuItem verileri ve ID'si
+                    cmd.Parameters.AddWithValue("@MenuItemId", item.MenuItemId);
+                    cmd.Parameters.AddWithValue("@MenuItemName", item.MenuItemName);
+                    cmd.Parameters.AddWithValue("@MenuItemPrice", item.MenuItemPrice);
+                    cmd.Parameters.AddWithValue("@VatPercentage", item.VatPercentage);
+                    cmd.Parameters.AddWithValue("@Stock", item.Stock);
+
+                    // Yeni MenuId'yi bulmak için ekrandan gelen Card ve Category bilgileri
+                    cmd.Parameters.AddWithValue("@SelectedCard", selectedCard);
+                    cmd.Parameters.AddWithValue("@SelectedCategory", selectedCategory);
+
+                    if (conn.State == ConnectionState.Closed)
+                    {
+                        conn.Open();
+                    }
+
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
 
@@ -121,6 +163,22 @@ namespace Chapeau.Repositories
             {
                 string sql = "UPDATE MenuItem SET IsActive = @IsActive WHERE MenuItemId = @MenuItemId";
                 conn.Execute(sql, new { MenuItemId = id, IsActive = isActive });
+            }
+        }
+        public void DecreaseStock(int menuItemId, int amount)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = "UPDATE MenuItem " +
+                               "SET Stock = Stock - @Amount " +
+                               "WHERE MenuItemId = @MenuItemId";
+
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@Amount", amount);
+                command.Parameters.AddWithValue("@MenuItemId", menuItemId);
+
+                connection.Open();
+                command.ExecuteNonQuery();
             }
         }
     }

@@ -9,7 +9,7 @@ namespace Chapeau
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+           
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddScoped<IMenuRepository, MenuRepository>();
@@ -22,6 +22,7 @@ namespace Chapeau
             builder.Services.AddScoped<IUserService, UserServices>();
             builder.Services.AddScoped<IPaymentRepository, DbPaymentRepository>();
             builder.Services.AddScoped<PaymentService>();
+            builder.Services.AddScoped<ITakeOrderService, TakeOrderService>();
 
             builder.Services.AddSession(options =>
             {
@@ -37,11 +38,11 @@ namespace Chapeau
             var app = builder.Build();
             app.UseSession();
 
-            // Configure the HTTP request pipeline.
+            
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            
                 app.UseHsts();
             }
 
