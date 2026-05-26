@@ -1,7 +1,7 @@
 ﻿using Chapeau.Models;
 using Chapeau.ViewModels;
 
-namespace Chapeau.Services
+namespace Chapeau.Services.Interfaces
 {
     public interface IPaymentService
     {

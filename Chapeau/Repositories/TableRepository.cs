@@ -1,5 +1,5 @@
 ﻿using Chapeau.Models;
-using Chapeau.Repositories;
+using Chapeau.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 
 

@@ -1,6 +1,6 @@
 ﻿using Chapeau.Models;
 
-namespace Chapeau.Repositories
+namespace Chapeau.Repositories.Interfaces
 {
     public interface IUserRepository
     {

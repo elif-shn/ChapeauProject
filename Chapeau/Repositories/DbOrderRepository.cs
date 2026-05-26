@@ -1,5 +1,6 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
+using Chapeau.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 
@@ -86,104 +87,233 @@ namespace Chapeau.Repositories
         }
 
 
-
         public void UpdateOrderItemStatus(int orderItemId, OrderStatus status)
         {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            {
-                string query = "UPDATE OrderItem SET OrderItemsStatus = @Status WHERE OrderItemId = @OrderItemId";
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@Status", status.ToString());
-                command.Parameters.AddWithValue("@OrderItemId", orderItemId);
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
-        }
+            using SqlConnection connection = new SqlConnection(_connectionString);
 
+            string query = @"UPDATE OrderItem SET OrderItemsStatus = @Status WHERE OrderItemId = @OrderItemId";
+
+            SqlCommand command = new SqlCommand(query, connection);
+
+            command.Parameters.AddWithValue("@Status", status.ToString());
+            command.Parameters.AddWithValue("@OrderItemId", orderItemId);
+
+            connection.Open();
+            command.ExecuteNonQuery();
+        }
         public List<Order> GetFinishedOrders()
         {
             List<Order> orders = new List<Order>();
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+
+            using (SqlConnection connection =
+                   new SqlConnection(_connectionString))
             {
-                string query = "SELECT OrderId, TableId, OrderStatus FROM [Order] WHERE OrderStatus IN ('Served', 'Completed')";
-                SqlCommand command = new SqlCommand(query, connection);
+                string query = @"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.WaitingTime, o.ServedTime, o.OrderStatus
+                               FROM [Order] o JOIN [Table] t ON o.TableId = t.TableId
+                               WHERE o.OrderStatus IN ('Served', 'Completed') ORDER BY o.OrderTime DESC";
+                SqlCommand command =
+                    new SqlCommand(query, connection);
+
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+
+                SqlDataReader reader =
+                    command.ExecuteReader();
+
                 while (reader.Read())
                 {
-                    orders.Add(new Order { OrderId = (int)reader["OrderId"] });
+                    orders.Add(ReadOrder(reader));
                 }
+
+                reader.Close();
             }
+
             return orders;
         }
 
-        public int CreateOrder(int tableId)
+        private Order ReadOrder(SqlDataReader reader)
         {
+            Table table = new Table();
+            User employee = new User();
+            Order order = new Order();
+            table.TableId = (int)reader["TableId"];
+            employee.Id = (int)reader["EmployeeId"];
+            order.OrderId = (int)reader["OrderId"];
+            order.Table = table;
+            order.Employee = employee;
+
+            order.OrderTime = (DateTime)reader["OrderTime"];
+            order.WaitingTime = reader["WaitingTime"].ToString();
+            order.ServedTime = reader["ServedTime"] == DBNull.Value ? (DateTime?)null : (DateTime)reader["ServedTime"];
+            order.OrderStatus = Enum.Parse<OrderStatus>(reader["OrderStatus"].ToString());
+
+            return order;
+        }
+        //For Take Order Part
+        public int CreateOrder(int tableId)
+
+        {
+
             using (SqlConnection connection = new SqlConnection(_connectionString))
+
             {
-                string query = "INSERT INTO [Order] (TableId, OrderTime, OrderStatus) VALUES (@TableId, GETDATE(), 'Ordered'); SELECT SCOPE_IDENTITY();";
-                SqlCommand command = new SqlCommand(query, connection);
+
+                string query = "INSERT INTO [Order] (TableId, EmployeeId, OrderTime, ServedTime, OrderStatus) " +
+
+                                "VALUES (@TableId, @EmployeeId, GETDATE(), NULL, 'Ordered') " +
+
+                                "SELECT SCOPE_IDENTITY();";
+
+
+
+                SqlCommand command =
+
+                    new SqlCommand(query, connection);
+
+
+
                 command.Parameters.AddWithValue("@TableId", tableId);
+
+                command.Parameters.AddWithValue("@EmployeeId", 1);
+
+
+
                 connection.Open();
+
+
+
                 return Convert.ToInt32(command.ExecuteScalar());
+
             }
+
         }
 
         public bool OrderItemExists(int orderId, int menuItemId, string comment)
+
         {
+
             using (SqlConnection connection = new SqlConnection(_connectionString))
+
             {
-                string query = "SELECT 1 FROM OrderItem WHERE OrderId = @OrderId AND MenuItemId = @MenuItemId AND Comment = @Comment";
+
+                string query = "SELECT 1 FROM OrderItem " +
+
+                               "WHERE OrderId = @OrderId " +
+
+                               "AND MenuItemId = @MenuItemId " +
+
+                               "AND Comment = @Comment";
+
+
+
                 SqlCommand command = new SqlCommand(query, connection);
+
                 command.Parameters.AddWithValue("@OrderId", orderId);
+
                 command.Parameters.AddWithValue("@MenuItemId", menuItemId);
+
                 command.Parameters.AddWithValue("@Comment", comment ?? "");
+
+
+
                 connection.Open();
-                return command.ExecuteScalar() != null;
+
+                object result = command.ExecuteScalar();
+
+
+
+                return result != null;
+
             }
+
         }
 
         public void IncreaseQuantity(int orderId, int menuItemId)
+
         {
+
             using (SqlConnection connection = new SqlConnection(_connectionString))
+
             {
-                string query = "UPDATE OrderItem SET OrderItemQuantity = OrderItemQuantity + 1 WHERE OrderId = @OrderId AND MenuItemId = @MenuItemId";
+
+                string query = "UPDATE OrderItem SET OrderItemQuantity = OrderItemQuantity + 1 " +
+
+                               "WHERE OrderId = @OrderId " +
+
+                               "AND MenuItemId = @MenuItemId";
+
+
+
                 SqlCommand command = new SqlCommand(query, connection);
+
                 command.Parameters.AddWithValue("@OrderId", orderId);
+
                 command.Parameters.AddWithValue("@MenuItemId", menuItemId);
+
+
+
                 connection.Open();
+
                 command.ExecuteNonQuery();
+
             }
+
         }
 
-        public void AddOrderItem(int orderId, int menuItemId, string comment)
+        public void AddOrderItemToOrder(int orderId, int menuItemId, string comment)
+
         {
+
             using (SqlConnection connection = new SqlConnection(_connectionString))
+
             {
-                string query = "INSERT INTO OrderItem (OrderId, MenuItemId, OrderItemQuantity, Comment, OrderItemsStatus) VALUES (@OrderId, @MenuItemId, 1, @Comment, 'Ordered')";
+
+                string query = "INSERT INTO OrderItem (OrderId, MenuItemId, OrderItemQuantity, Comment, OrderItemsStatus) " +
+
+                               "VALUES (@OrderId, @MenuItemId, 1, @Comment, 'Ordered')";
+
+
+
                 SqlCommand command = new SqlCommand(query, connection);
+
                 command.Parameters.AddWithValue("@OrderId", orderId);
+
                 command.Parameters.AddWithValue("@MenuItemId", menuItemId);
+
                 command.Parameters.AddWithValue("@Comment", comment ?? "");
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
-        }
 
+
+
+                connection.Open();
+
+                command.ExecuteNonQuery();
+
+            }
+
+        }
         public Order GetActiveOrderForTable(int tableId)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string query = "SELECT TOP 1 OrderId, OrderStatus FROM [Order] WHERE TableId = @TableId AND OrderStatus NOT IN ('Completed', 'Cancelled')";
+                string query = "SELECT TOP 1 * FROM [Order] WHERE TableId = @TableId " +
+                               "AND OrderStatus NOT IN ('Completed', 'Cancelled') ";
+
                 SqlCommand command = new SqlCommand(query, connection);
                 command.Parameters.AddWithValue("@TableId", tableId);
+
                 connection.Open();
                 SqlDataReader reader = command.ExecuteReader();
-                if (reader.Read()) return new Order { OrderId = (int)reader["OrderId"] };
+
+                if (reader.Read())
+                {
+                    return new Order
+                    {
+                        OrderId = (int)reader["OrderId"],
+                        OrderStatus = Enum.Parse<OrderStatus>(reader["OrderStatus"].ToString())
+                    };
+                }
             }
             return null;
         }
-
         private OrderItem ReadOrderItem(SqlDataReader reader)
         {
             return new OrderItem

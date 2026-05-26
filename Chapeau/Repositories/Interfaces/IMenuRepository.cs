@@ -1,7 +1,7 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
 using Chapeau.ViewModels;
-namespace Chapeau.Repositories
+namespace Chapeau.Repositories.Interfaces
 {
     public interface IMenuRepository
     {
