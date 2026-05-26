@@ -1,0 +1,63 @@
+﻿<div class="container mt-4">
+    <h2>Payment Syastem</h2>
+
+    <div class="search-container" style="position: relative; max-width: 400px;">
+        <input type="text" id="orderSearch" class="form-control" placeholder="Search by Order ID..." autocomplete="off">
+        <div id="orderDropdown" style="display:none; border:1px solid #ddd; background:white; position:absolute; width:100%; z-index:1000; padding:10px; max-height:200px; overflow-y:auto;">
+            <ul id="orderList" style="list-style:none; padding:0; margin:0;"></ul>
+        </div>
+    </div>
+
+    <div class="table-responsive mt-3">
+        <table class="table table-hover" id="orderTable">
+            <thead class="table-dark">
+                <tr>
+                    <th>Order ID</th>
+                    <th>Table ID</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr>
+                        <td>@order.OrderId</td>
+                        <td>@order.TableId</td>
+                        <td>
+                            <a asp-controller="Payment" asp-action="Summary" asp-route-orderId="@order.OrderId" class="btn btn-primary btn-sm">Load Bill</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const searchInput = document.getElementById("orderSearch");
+    const dropdown = document.getElementById("orderDropdown");
+    const orderList = document.getElementById("orderList");
+
+    searchInput.addEventListener("click", function() {
+        if (dropdown.style.display === "none") {
+            fetch('/Payment/GetOrdersJson')
+                .then(response => response.json())
+                .then(data => {
+                    orderList.innerHTML = '';
+                    data.forEach(order => {
+                        let li = document.createElement('li');
+                        li.style.padding = "8px";
+                        li.style.borderBottom = "1px solid #eee";
+                        li.innerHTML = `<a href="/Payment/Summary?orderId=${order.orderId}" style="text-decoration:none; color:black;">Order #${order.orderId}</a>`;
+                        orderList.appendChild(li);
+                    });
+                    dropdown.style.display = "block";
+                });
+        }
+    });
+    document.addEventListener("click", function(e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = "none";
+        }
+    });
+</script>

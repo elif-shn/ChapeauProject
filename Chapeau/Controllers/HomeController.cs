@@ -2,7 +2,7 @@ using System.Diagnostics;
 using Chapeau.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Chapeau.Controllers  ijgkfdn
+namespace Chapeau.Controllers  
 {
     public class HomeController : Controller 
     {
@@ -13,6 +13,7 @@ namespace Chapeau.Controllers  ijgkfdn
             _logger = logger;
         }
 
+        //test
         public IActionResult Index()
         {
             return View();
