@@ -27,8 +27,14 @@ namespace Chapeau.Controllers
                 List<OrderItem> orderItems =
                     _orderServices.GetOrderItemsByOrderId(orderId);
 
-            return View(orderItems);
+                return View(orderItems);
 
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction("Index");
+            }
         }
 
         [HttpPost]
@@ -49,6 +55,7 @@ namespace Chapeau.Controllers
                 return RedirectToAction("Index");
             }
         }
+
         [HttpPost]
         public IActionResult UpdateItemStatus(int orderItemId, string status)
         {
@@ -69,6 +76,7 @@ namespace Chapeau.Controllers
                 return RedirectToAction("Index");
             }
         }
+
         public IActionResult FinishedOrders()
         {
             try
