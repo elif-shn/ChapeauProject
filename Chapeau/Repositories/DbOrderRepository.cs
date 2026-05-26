@@ -69,10 +69,12 @@ namespace Chapeau.Repositories
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemsStatus, 
-                                        mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.VatPercentage 
+                                        mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.VatPercentage, mi.MenuId,m.Card, m.Category
                                  FROM OrderItem oi 
                                  JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
+                                 INNER JOIN Menu m ON mi.MenuId = m.MenuId
                                  WHERE oi.OrderId = @OrderId";
+
 
                 SqlCommand command = new SqlCommand(query, connection);
                 command.Parameters.AddWithValue("@OrderId", orderId);
@@ -82,6 +84,8 @@ namespace Chapeau.Repositories
             }
             return items;
         }
+
+
 
         public void UpdateOrderItemStatus(int orderItemId, OrderStatus status)
         {
@@ -193,8 +197,18 @@ namespace Chapeau.Repositories
                     MenuItemId = (int)reader["MenuItemId"],
                     MenuItemName = (string)reader["MenuItemName"],
                     MenuItemPrice = Convert.ToDecimal(reader["MenuItemPrice"]),
-                    VatPercentage = Convert.ToInt32(reader["VatPercentage"])
+                    VatPercentage = Convert.ToInt32(reader["VatPercentage"]),
+                    Menu = ReadMenu(reader, (int)reader["MenuId"])
                 }
+            };
+        }
+        private Menu ReadMenu(SqlDataReader reader, int menuId)
+        {
+            return new Menu
+            {
+                MenuId = menuId,
+                Card = Enum.Parse<Card>(reader["Card"].ToString()),
+                Category = Enum.Parse<Category>(reader["Category"].ToString())
             };
         }
     }
