@@ -101,35 +101,25 @@ namespace Chapeau.Repositories
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                try
-                {
-                    string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemsStatus, mi.MenuItemId, mi.MenuItemName 
-                                   FROM OrderItem oi JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
-                                   WHERE oi.OrderId = @OrderId";
+                string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemsStatus, 
+                                        mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.VatPercentage, mi.MenuId,m.Card, m.Category
+                                 FROM OrderItem oi 
+                                 JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
+                                 INNER JOIN Menu m ON mi.MenuId = m.MenuId
+                                 WHERE oi.OrderId = @OrderId";
 
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@OrderId", orderId);
-                        
-                    connection.Open();
 
-                    SqlDataReader reader = command.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        OrderItem item = ReadOrderItem(reader);
-                        items.Add(item);
-                    }
-
-                    reader.Close();
-                }
-                catch (SqlException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@OrderId", orderId);
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read()) items.Add(ReadOrderItem(reader));
             }
-
             return items;
         }
+
+
+
         public void UpdateOrderItemStatus(int orderItemId, OrderStatus status)
         {
             using SqlConnection connection = new SqlConnection(_connectionString);
@@ -361,16 +351,32 @@ namespace Chapeau.Repositories
                 connection.Open();
                 SqlDataReader reader = command.ExecuteReader();
 
-                if (reader.Read())
+        private OrderItem ReadOrderItem(SqlDataReader reader)
+        {
+            return new OrderItem
+            {
+                OrderItemId = (int)reader["OrderItemId"],
+                OrderItemQuantity = (int)reader["OrderItemQuantity"],
+                Comment = reader["Comment"]?.ToString() ?? "",
+                OrderItemStatus = Enum.Parse<OrderStatus>(reader["OrderItemsStatus"].ToString()),
+                MenuItem = new MenuItem
                 {
-                    return new Order
-                    {
-                        OrderId = (int)reader["OrderId"],
-                        OrderStatus = Enum.Parse<OrderStatus>(reader["OrderStatus"].ToString())
-                    };
+                    MenuItemId = (int)reader["MenuItemId"],
+                    MenuItemName = (string)reader["MenuItemName"],
+                    MenuItemPrice = Convert.ToDecimal(reader["MenuItemPrice"]),
+                    VatPercentage = Convert.ToInt32(reader["VatPercentage"]),
+                    Menu = ReadMenu(reader, (int)reader["MenuId"])
                 }
-            }
-            return null;
+            };
+        }
+        private Menu ReadMenu(SqlDataReader reader, int menuId)
+        {
+            return new Menu
+            {
+                MenuId = menuId,
+                Card = Enum.Parse<Card>(reader["Card"].ToString()),
+                Category = Enum.Parse<Category>(reader["Category"].ToString())
+            };
         }
     }
 } 
