@@ -1,9 +1,8 @@
 ﻿using Chapeau.Models;
 
-
-namespace Chapeau.Services
+namespace Chapeau.Repositories.Interfaces
 {
-    public interface ITablesService
+    public interface ITableRepository
     {
         List<Table> GetAllTables();
         List<Table> GetOccupiedTables();

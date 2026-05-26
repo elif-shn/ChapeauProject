@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using Chapeau.Models;
+using Chapeau.Repositories.Interfaces;
 
 namespace Chapeau.Repositories
 {

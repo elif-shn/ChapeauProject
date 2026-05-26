@@ -1,7 +1,7 @@
 ﻿using Chapeau.Extensions;
 using Chapeau.Models;
 using Chapeau.Repositories;
-using Chapeau.Services;
+using Chapeau.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chapeau.Controllers

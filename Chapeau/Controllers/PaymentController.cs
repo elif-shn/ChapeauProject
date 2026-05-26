@@ -1,11 +1,11 @@
 ﻿using Chapeau.Models;
-using Chapeau.Services;
 using Chapeau.ViewModels;
 using Chapeau.Enums;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Chapeau.Services.Interfaces;
 
 namespace Chapeau.Controllers
 {

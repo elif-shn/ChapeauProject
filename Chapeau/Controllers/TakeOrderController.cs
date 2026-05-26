@@ -1,7 +1,7 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Extensions;
 using Chapeau.Models;
-using Chapeau.Services;
+using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,16 +11,14 @@ namespace Chapeau.Controllers
     {
         private readonly IMenuService _menuService;
         private readonly ITablesService _tableService;
-        private readonly ITakeOrderService _takeOrderService;
         private readonly IOrderService _orderService;
 
 
 
-        public TakeOrderController(IMenuService menuService, ITablesService tableService, ITakeOrderService takeOrderService, IOrderService orderService)
+        public TakeOrderController(IMenuService menuService, ITablesService tableService, IOrderService orderService)
         {
             _menuService = menuService;
             _tableService = tableService;
-            _takeOrderService = takeOrderService;
             _orderService = orderService;
         }
 
@@ -59,7 +57,7 @@ namespace Chapeau.Controllers
 
                 List<CurrentOrderModel> items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder") ?? new List<CurrentOrderModel>();
 
-                items = _takeOrderService.AddOrUpdateOrderItem(items, model, menuItem);
+                items = _orderService.AddOrUpdateOrderItem(items, model, menuItem);
 
                 HttpContext.Session.SetObject("CurrentOrder", items);
             }
@@ -95,7 +93,7 @@ namespace Chapeau.Controllers
 
                         for (int i = 0; i < quantity; i++)
                         {
-                            _orderService.AddItemToTableOrder(selectedTableId, item.MenuItemId, item.Comment);
+                            _orderService.AddOrderItemToOrder(selectedTableId, item.MenuItemId, item.Comment);
                             _menuService.DecreaseStock(item.MenuItemId, quantity);
                         }
                     }
@@ -121,7 +119,7 @@ namespace Chapeau.Controllers
 
             try
             {
-                items = _takeOrderService.UpdateItemQuantity(items, menuItemId, 1, menuItem);
+                items = _orderService.UpdateItemQuantity(items, menuItemId, 1, menuItem);
                 HttpContext.Session.SetObject("CurrentOrder", items);
             }
             catch (Exception ex)
@@ -138,7 +136,7 @@ namespace Chapeau.Controllers
 
             if (items != null)
             {
-                items = _takeOrderService.UpdateItemQuantity(items, menuItemId, -1, null);
+                items = _orderService.UpdateItemQuantity(items, menuItemId, -1, null);
                 HttpContext.Session.SetObject("CurrentOrder", items);
             }
 
@@ -152,13 +150,12 @@ namespace Chapeau.Controllers
 
             if (items != null)
             {
-                items = _takeOrderService.RemoveItem(items, menuItemId);
+                items = _orderService.RemoveItem(items, menuItemId);
                 HttpContext.Session.SetObject("CurrentOrder", items);
             }
 
             return RedirectToAction("Index", new { selectedTableId });
         }
-        [HttpPost]
         [HttpPost]
         public IActionResult AddNote(int menuItemId, int selectedTableId, string comment)
         {

@@ -1,6 +1,7 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
-using Chapeau.Repositories;
+using Chapeau.Repositories.Interfaces;
+using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
 namespace Chapeau.Services
 {
