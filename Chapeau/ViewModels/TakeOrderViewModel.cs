@@ -12,5 +12,12 @@ namespace Chapeau.ViewModels
         public List<Table> OccupiedTables { get; set; } = new();
         public int? SelectedTableId { get; set; }
         public List<CurrentOrderModel> CurrentOrder { get; set; } = new();
+
+        public TakeOrderViewModel(Card? selectedCard, Category? selectedCategory,int? selectedTableId) 
+        {
+            SelectedCard = selectedCard;
+            SelectedCategory = selectedCategory;
+            SelectedTableId = selectedTableId;
+        }
     }
 }

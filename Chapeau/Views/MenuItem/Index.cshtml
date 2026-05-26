@@ -11,7 +11,7 @@
 <h1 class="display-4 pb-4" style="font-family: Arial, sans-serif; font-weight: 300;">Le MENU</h1>
 @if (loggedInUser != null && loggedInUser.Role == "Waiter")
 {
-    <form asp-controller="TakeOrder" asp-action="Index" method="get" class="mb-4">
+    <form asp-controller="Order" asp-action="TakeOrder" method="get" class="mb-4">
 
         <div class="d-flex gap-3 align-items-center">
             <button type="submit" class="btn btn-dark">
