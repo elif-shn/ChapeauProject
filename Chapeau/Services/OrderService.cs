@@ -2,86 +2,49 @@
 using Chapeau.Models;
 using Chapeau.Repositories;
 using Chapeau.Services;
-using Chapeau.ViewModels;
-using Microsoft.AspNetCore.Mvc;
 
 public class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
+
     public OrderService(IOrderRepository orderRepository)
     {
         _orderRepository = orderRepository;
     }
 
-    public List<Order> GetAllOrders()
-    {
-        return _orderRepository.GetAllOrders();
-    }
-    
-    public Order?GetOrderById(int id)
-    {
-        return _orderRepository.GetOrderById(id);
-    }
+    public List<Order> GetAllOrders() => _orderRepository.GetAllOrders();
 
-    public void UpdateOrderStatus(int orderId, OrderStatus status)
-    {
-        _orderRepository.UpdateOrderStatus(orderId, status);
-    }
-    public List<Order> GetFinishedOrders()
-    {
-        return _orderRepository.GetFinishedOrders();
-    }
+    public Order? GetOrderById(int id) => _orderRepository.GetOrderById(id);
 
-    List<OrderItem> IOrderService.GetOrderItemsByOrderId(int orderId)
-    {
-        return _orderRepository.GetOrderItemsByOrderId(orderId);
-    }
-    public void UpdateOrderItemStatus(int orderItemId, OrderStatus status)
-    {
-        _orderRepository.UpdateOrderItemStatus(orderItemId, status);
-    }
-    //For Take Order Part
-    public Order? GetActiveOrderForTable(int tableId)
-    {
-        try
-        {
+    public void UpdateOrderStatus(int orderId, OrderStatus status) => _orderRepository.UpdateOrderStatus(orderId, status);
 
-            return _orderRepository.GetActiveOrderForTable(tableId);
-        }
-        catch
-        {
-            throw;
-        }
-    }
+    public List<Order> GetFinishedOrders() => _orderRepository.GetFinishedOrders();
+
+    public List<OrderItem> GetOrderItemsByOrderId(int orderId) => _orderRepository.GetOrderItemsByOrderId(orderId);
+
+    public void UpdateOrderItemStatus(int orderItemId, OrderStatus status) => _orderRepository.UpdateOrderItemStatus(orderItemId, status);
+
+    public Order? GetActiveOrderForTable(int tableId) => _orderRepository.GetActiveOrderForTable(tableId);
+
     public void AddItemToTableOrder(int tableId, int menuItemId, string comment)
     {
-        try
+        Order activeOrder = GetActiveOrderForTable(tableId);
+        int orderId = (activeOrder == null) ? _orderRepository.CreateOrder(tableId) : activeOrder.OrderId;
+
+        if (_orderRepository.OrderItemExists(orderId, menuItemId, comment))
         {
-            Order activeOrder = GetActiveOrderForTable(tableId); int orderId;
-
-            if (activeOrder == null)
-            {
-                orderId = _orderRepository.CreateOrder(tableId);
-            }
-            else
-            {
-                orderId = activeOrder.OrderId;
-            }
-
-            bool itemExists = _orderRepository.OrderItemExists(orderId, menuItemId, comment);
-
-            if (itemExists)
-            {
-                _orderRepository.IncreaseQuantity(orderId, menuItemId);
-            }
-            else
-            {
-                _orderRepository.AddOrderItem(orderId, menuItemId, comment);
-            }
+            _orderRepository.IncreaseQuantity(orderId, menuItemId);
         }
-        catch
+        else
         {
-            throw;
+            _orderRepository.AddOrderItem(orderId, menuItemId, comment);
         }
     }
+    public int CreateOrder(int tableId) => _orderRepository.CreateOrder(tableId);
+
+    public bool OrderItemExists(int orderId, int menuItemId, string comment) => _orderRepository.OrderItemExists(orderId, menuItemId, comment);
+
+    public void IncreaseQuantity(int orderId, int menuItemId) => _orderRepository.IncreaseQuantity(orderId, menuItemId);
+
+    public void AddOrderItem(int orderId, int menuItemId, string comment) => _orderRepository.AddOrderItem(orderId, menuItemId, comment);
 }

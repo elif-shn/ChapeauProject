@@ -14,21 +14,25 @@ namespace Chapeau.Controllers
         {
             _orderServices = orderServices;
         }
+
         public IActionResult Index()
         {
             List<Order> orders = _orderServices.GetAllOrders();
-
             return View(orders);
         }
+
         public IActionResult OrderItems(int orderId)
         {
             try
             {
-                List<OrderItem> orderItems =
-                    _orderServices.GetOrderItemsByOrderId(orderId);
-
-            return View(orderItems);
-
+                List<OrderItem> orderItems = _orderServices.GetOrderItemsByOrderId(orderId);
+                return View(orderItems);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction("Index");
+            }
         }
 
         [HttpPost]
@@ -37,46 +41,39 @@ namespace Chapeau.Controllers
             try
             {
                 _orderServices.UpdateOrderStatus(orderId, status);
-
                 TempData["SuccessMessage"] = "Order status updated successfully.";
-
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-
                 return RedirectToAction("Index");
             }
         }
+
         [HttpPost]
         public IActionResult UpdateItemStatus(int orderItemId, string status)
         {
             try
             {
                 OrderStatus newStatus = Enum.Parse<OrderStatus>(status);
-
                 _orderServices.UpdateOrderItemStatus(orderItemId, newStatus);
-
                 TempData["SuccessMessage"] = "Item status updated.";
-
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-
                 return RedirectToAction("Index");
             }
         }
+
         public IActionResult FinishedOrders()
         {
             try
             {
                 List<Order> finishedOrders = _orderServices.GetFinishedOrders();
-
                 TempData["SuccessMessage"] = "Finished orders retrieved successfully.";
-
                 return View(finishedOrders);
             }
             catch (Exception ex)
@@ -87,4 +84,3 @@ namespace Chapeau.Controllers
         }
     }
 }
-
