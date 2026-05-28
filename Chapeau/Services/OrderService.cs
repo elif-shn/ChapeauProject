@@ -4,6 +4,7 @@ using Chapeau.Repositories;
 using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using System.Xml.Linq;
 
 public class OrderService : IOrderService
 {
@@ -53,30 +54,31 @@ public class OrderService : IOrderService
             throw;
         }
     }
-    public void AddOrderItemToOrder(int tableId, int menuItemId, string comment)
+    public void AddOrderItemToOrder(OrderItem newOrderItem)
     {
         try
         {
-            Order activeOrder = GetActiveOrderForTable(tableId); int orderId;
+            Order activeOrder = GetActiveOrderForTable(newOrderItem.Order.TableId); 
+            Order newOrder;
 
             if (activeOrder == null)
             {
-                orderId = _orderRepository.CreateOrder(tableId);
+                newOrder = _orderRepository.CreateOrder(newOrderItem.Order.TableId);
             }
             else
             {
-                orderId = activeOrder.OrderId;
+                newOrder = activeOrder;
             }
 
-            bool itemExists = _orderRepository.OrderItemExists(orderId, menuItemId, comment);
+            bool itemExists = _orderRepository.OrderItemExists(newOrderItem);
 
             if (itemExists)
             {
-                _orderRepository.IncreaseQuantity(orderId, menuItemId);
+                _orderRepository.IncreaseOrderItemQuantity(newOrderItem);
             }
             else
             {
-                _orderRepository.AddOrderItemToOrder(orderId, menuItemId, comment);
+                _orderRepository.AddOrderItemToOrder(newOrderItem);
             }
         }
         catch
@@ -84,104 +86,41 @@ public class OrderService : IOrderService
             throw;
         }
     }
-    public List<CurrentOrderModel> AddOrUpdateOrderItem(List<CurrentOrderModel> currentItems, CurrentOrderModel newItem, MenuItem menuItem)
+    public List<OrderItem> UpdateAddCurrentOrderItem(List<OrderItem> currentItems,OrderItem newItem, int change)
     {
-
-        try
+        /*if (newItem.MenuItem.StockStatus == StockStatus.OutOfStock)
         {
-            if (menuItem.StockStatus == StockStatus.OutOfStock)
-            {
-                throw new Exception("This item is currently out of stock!");
-            }
-            string comment = newItem.Comment ?? "";
-            CurrentOrderModel existing = null;
+            throw new Exception("This item is currently out of stock!");
+        }*/
 
-            foreach (var item in currentItems)
-            {
-                if (item.MenuItemId == newItem.MenuItemId && item.Comment == comment)
-                {
-                    existing = item;
-                    break;
-                }
-            }
+        newItem.Comment ??= "";
 
-            if (existing != null)
-            {
-                if (existing.Quantity + 1 > menuItem.Stock)
-                {
-                    throw new Exception("Not enough stock available!");
-                }
-                existing.Quantity++;
-            }
-            else
-            {
-                newItem.Comment = comment;
-                newItem.Quantity = 1;
-                currentItems.Add(newItem);
-            }
-
-            return currentItems;
-        }
-        catch
+        foreach (OrderItem item in currentItems)
         {
-            throw;
-        }
-
-    }
-    public List<CurrentOrderModel> UpdateItemQuantity(List<CurrentOrderModel> items, int menuItemId, int change, MenuItem menuItem)
-    {
-        CurrentOrderModel itemToUpdate = null;
-        try
-        {
-            foreach (var item in items)
+            if (item.MenuItem.MenuItemId == newItem.MenuItem.MenuItemId && item.Comment == newItem.Comment)
             {
-                if (item.MenuItemId == menuItemId)
-                {
-                    itemToUpdate = item;
-                    break;
-                }
-            }
-
-            if (itemToUpdate != null)
-            {
-                if (change > 0 && (itemToUpdate.Quantity + 1) > menuItem.Stock)
+                if (change > 0 && item.OrderItemQuantity + change > newItem.MenuItem.Stock)
                 {
                     throw new Exception("Not enough stock available!");
                 }
 
-                itemToUpdate.Quantity += change;
+                item.OrderItemQuantity += change;
 
-                if (itemToUpdate.Quantity <= 0)
+                if (item.OrderItemQuantity <= 0)
                 {
-                    items.Remove(itemToUpdate);
+                    currentItems.Remove(item);
                 }
+
+                return currentItems;
             }
-            return items;
-        }
-        catch
-        {
-            throw;
         }
 
-    }
+        if (change > 0)
+        {
+            newItem.OrderItemQuantity = change;
+            currentItems.Add(newItem);
+        }
 
-    public List<CurrentOrderModel> RemoveItem(List<CurrentOrderModel> items, int menuItemId)
-    {
-        try
-        {
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].MenuItemId == menuItemId)
-                {
-                    items.RemoveAt(i);
-                    i--;
-                }
-            }
-            return items;
-        }
-        catch
-        {
-            throw;
-        }
+        return currentItems;
     }
 }

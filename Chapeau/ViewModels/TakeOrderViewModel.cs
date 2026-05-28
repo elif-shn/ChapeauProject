@@ -9,8 +9,15 @@ namespace Chapeau.ViewModels
         public Card? SelectedCard { get; set; }
         public Category? SelectedCategory { get; set; }
         public List<Category> Categories { get; set; }
-        public List<Table> OccupiedTables { get; set; } = new();
         public int? SelectedTableId { get; set; }
-        public List<CurrentOrderModel> CurrentOrder { get; set; } = new();
+        public List<OrderItem> CurrentOrders { get; set; } = new();
+        public OrderItem NewOrderItem { get; set; }
+
+        /*public TakeOrderViewModel(Card? selectedCard, Category? selectedCategory, int? selectedTableId)
+        { 
+            SelectedCard = selectedCard;
+            SelectedCategory = selectedCategory;    
+            SelectedTableId = selectedTableId;
+        }*/
     }
 }

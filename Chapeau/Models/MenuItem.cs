@@ -14,9 +14,7 @@ public class MenuItem
     public int Stock { get; set; }
     public bool IsActive { get; set; }
 
-    public MenuItem() { }
-    public int MenuId { get; set; }
-  
+    public MenuItem() { } 
 
 
     public StockStatus StockStatus
