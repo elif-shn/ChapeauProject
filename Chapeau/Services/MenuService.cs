@@ -49,14 +49,13 @@ public class MenuService : IMenuService
 
     public List<Category> GetCategoriesByCard(List<Menu> menus, Card? selectedCard)
     {
-        List<Category> categories = new List<Category>();
-        foreach (var menu in menus)
-        {
-            if (!categories.Contains(menu.Category))
-            {
-                categories.Add(menu.Category);
-            }
-        }
-        return categories;
+        // Menü listesi null ise koruma sağlamak için boş liste dönelim
+        if (menus == null) return new List<Category>();
+
+        // LINQ: Menülerin içinden sadece Category değerlerini seç ve benzersiz (tekrarsız) olanları listele
+        return menus.Where(menu => selectedCard == null || menu.Card == selectedCard)
+            .Select(menu => menu.Category)
+            .Distinct()
+            .ToList();
     }
 }

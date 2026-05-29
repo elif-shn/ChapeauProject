@@ -12,7 +12,7 @@
 
 
 <form method="get" class="mb-4">
-  
+
     <div class="row">
 
         <div class="col-md-4">
@@ -138,7 +138,8 @@
                     @foreach (var currentorderItem in Model.CurrentOrders)
                     {
                         <tr>
-                            <td>@currentorderItem.MenuItem.MenuItemName
+                            <td>
+                                @currentorderItem.MenuItem.MenuItemName
                                 <form method="post" asp-action="AddNote" class="d-flex mt-1">
                                     <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItem.MenuItemId" />
                                     <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
@@ -178,13 +179,7 @@
                             <td>
                                 <form method="post" asp-action="RemoveItem" style="display:inline;">
 
-                                    <input type="hidden" name="SelectedCard" value="@Model.SelectedCard" />
-                                    <input type="hidden" name="SelectedCategory" value="@Model.SelectedCategory" />
-                                    <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
-
-                                    <input type="hidden"
-                                           name="NewOrderItem.MenuItemId"
-                                           value="@currentorderItem.MenuItem.MenuItemId" />
+                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItem.MenuItemId" />
 
                                     <input type="hidden"
                                            name="NewOrderItem.Comment"
@@ -203,7 +198,7 @@
             <p>No items yet</p>
         }
 
-        
+
         <div class="d-flex gap-2">
             <form method="post" asp-action="SendOrder">
                 <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
@@ -212,7 +207,7 @@
                 </button>
             </form>
 
-            <form method="post" asp-action="CancelOrder" >
+            <form method="post" asp-action="CancelOrder">
                 <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
                 <button type="submit" class="btn btn-danger">Cancel</button>
             </form>
