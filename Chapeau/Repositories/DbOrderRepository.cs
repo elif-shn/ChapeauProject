@@ -279,7 +279,7 @@ namespace Chapeau.Repositories
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 string query = "SELECT TOP 1 OrderId, OrderStatus FROM [Order] WHERE TableId = @TableId " +
-                               "AND OrderStatus NOT IN ('Completed', 'Cancelled') ";
+                               "AND OrderStatus NOT IN ('Settled', 'Cancelled', 'Paid') ";
 
 
                 SqlCommand command = new SqlCommand(query, connection);
