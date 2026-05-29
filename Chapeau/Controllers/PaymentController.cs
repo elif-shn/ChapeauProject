@@ -53,7 +53,7 @@ namespace Chapeau.Controllers
                 PaymentDate = DateTime.Now
             });
 
-            _orderService.UpdateOrderStatus(vm.OrderId, OrderStatus.Completed);
+            _orderService.UpdateOrderStatus(vm.OrderId, OrderStatus.Settled);
 
             return RedirectToAction("Success");
         }

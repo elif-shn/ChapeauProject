@@ -86,7 +86,7 @@ public class OrderService : IOrderService
             throw;
         }
     }
-    public List<OrderItem> UpdateAddCurrentOrderItem(List<OrderItem> currentItems,OrderItem newItem, int change)
+    public List<OrderItem> ModifyCurrentOrderItem(List<OrderItem> currentItems,OrderItem newItem, int change)
     {
         /*if (newItem.MenuItem.StockStatus == StockStatus.OutOfStock)
         {
@@ -122,5 +122,24 @@ public class OrderService : IOrderService
         }
 
         return currentItems;
+    }
+    public List<OrderItem> RemoveItem(List<OrderItem> currentItems, int menuItemId)
+    {
+        try
+        {
+            for (int i = 0; i < currentItems.Count; i++)
+            {
+                if (currentItems[i].MenuItem.MenuItemId == menuItemId)
+                {
+                    currentItems.RemoveAt(i);
+                    i--;
+                }
+            }
+            return currentItems;
+        }
+        catch
+        {
+            throw;
+        }
     }
 }

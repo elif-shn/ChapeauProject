@@ -7,7 +7,8 @@
         Preparing,
         Ready,
         Served,
-        Completed,
-        Cancelled
+        Settled,
+        Cancelled,
+        Paid
     }
 }
