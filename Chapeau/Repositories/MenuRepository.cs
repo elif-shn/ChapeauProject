@@ -14,8 +14,7 @@ namespace Chapeau.Repositories
         {
             _connectionString = configuration.GetConnectionString("ChapeauDataBase");
         }
-
-        public List<Menu> GetAllByFilter(Card? card, Category? category)
+        public List<Menu> GetMenus(Card? card, Category? category, bool onlyActive)
         {
             Dictionary<int, Menu> menus = new Dictionary<int, Menu>();
 
@@ -28,13 +27,15 @@ namespace Chapeau.Repositories
                     "FROM MenuItem mi " +
                     "INNER JOIN Menu m ON mi.MenuId = m.MenuId " +
                     "WHERE (@Card IS NULL OR m.Card = @Card) " +
-                    "AND (@Category IS NULL OR m.Category = @Category)";
+                    "AND (@Category IS NULL OR m.Category = @Category) "+
+                    "AND (@OnlyActive = 0 OR mi.IsActive = 1)";
 
                 SqlCommand command = new SqlCommand(query, connection);
 
                 command.Parameters.Add("@Card", SqlDbType.Int).Value = (object?)card ?? DBNull.Value;
 
                 command.Parameters.Add("@Category", SqlDbType.Int).Value = (object?)category ?? DBNull.Value;
+                command.Parameters.Add("@OnlyActive", SqlDbType.Bit).Value = onlyActive;
 
                 connection.Open();
 
@@ -122,7 +123,6 @@ namespace Chapeau.Repositories
 
         public void Update(MenuItem item, int selectedCard, int selectedCategory)
         {
-            // Doğru SQL: MenuId'yi Card ve Category'ye göre subquery ile Menu tablosundan çekiyoruz
             string sql = @"
         UPDATE MenuItem 
         SET MenuItemName = @MenuItemName,
@@ -136,14 +136,12 @@ namespace Chapeau.Repositories
             {
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
-                    // Güncellenecek MenuItem verileri ve ID'si
                     cmd.Parameters.AddWithValue("@MenuItemId", item.MenuItemId);
                     cmd.Parameters.AddWithValue("@MenuItemName", item.MenuItemName);
                     cmd.Parameters.AddWithValue("@MenuItemPrice", item.MenuItemPrice);
                     cmd.Parameters.AddWithValue("@VatPercentage", item.VatPercentage);
                     cmd.Parameters.AddWithValue("@Stock", item.Stock);
 
-                    // Yeni MenuId'yi bulmak için ekrandan gelen Card ve Category bilgileri
                     cmd.Parameters.AddWithValue("@SelectedCard", selectedCard);
                     cmd.Parameters.AddWithValue("@SelectedCategory", selectedCategory);
 

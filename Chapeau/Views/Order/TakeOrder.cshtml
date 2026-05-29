@@ -41,22 +41,6 @@
                 }
             </select>
         </div>
-
-        <div class="col-md-4">
-            <select name="SelectedTableId" class="form-select" onchange="this.form.submit()">
-                <option value="">Select Table</option>
-                @if (Model.OccupiedTables != null)
-                {
-                    @foreach (var table in Model.OccupiedTables)
-                    {
-                        <option value="@table.TableId" selected="@(Model.SelectedTableId == table.TableId)">
-                            Table @table.TableId
-                        </option>
-                    }
-                }
-            </select>
-        </div>
-
     </div>
 </form>
 
@@ -116,14 +100,12 @@
                                 € @item.MenuItemPrice.ToString("0.00")
                             </td>
                             <td>
-                                <form method="post" asp-action="AddCurrentOrder">
-                                    <input type="hidden" name="selectedCard" value="@Model.SelectedCard" />
-                                    <input type="hidden" name="selectedCategory" value="@Model.SelectedCategory" />
-                                    <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                                <form method="post" asp-action="AddNewItemToCurrentOrder">
+                                    <input type="hidden" name="SelectedCard" value="@Model.SelectedCard" />
+                                    <input type="hidden" name="SelectedCategory" value="@Model.SelectedCategory" />
+                                    <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
 
-                                    <input type="hidden" name="MenuItemId" value="@item.MenuItemId" />
-                                    <input type="hidden" name="MenuItemName" value="@item.MenuItemName" />
-                                    <input type="hidden" name="Price" value="@item.MenuItemPrice" />
+                                    <input type="hidden" name="NewOrderItem.MenuItem.MenuItemId" value="@item.MenuItemId" />
 
                                     <button class="btn btn-success">+</button>
                                 </form>
@@ -149,16 +131,16 @@
             <div class="alert alert-success">@TempData["SuccessMessage"]</div>
         }
 
-        @if (Model.CurrentOrder != null && Model.CurrentOrder.Count > 0)
+        @if (Model.CurrentOrders != null && Model.CurrentOrders.Count > 0)
         {
             <table class="table">
                 <tbody>
-                    @foreach (var currentorderItem in Model.CurrentOrder)
+                    @foreach (var currentorderItem in Model.CurrentOrders)
                     {
                         <tr>
-                            <td>@currentorderItem.MenuItemName
+                            <td>@currentorderItem.MenuItem.MenuItemName
                                 <form method="post" asp-action="AddNote" class="d-flex mt-1">
-                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItemId" />
+                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItem.MenuItemId" />
                                     <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
                                     <input type="text" name="comment" value="@currentorderItem.Comment" class="form-control form-control-sm me-1" placeholder="Add note..." style="font-size: 0.8rem; max-width: 150px;" />
                                     <button type="submit" class="btn btn-sm btn-outline-warning" style="font-size: 0.7rem;">Save</button>
@@ -167,29 +149,32 @@
 
                             <td style="min-width: 50px; white-space: nowrap;">
                                 <form method="post" asp-action="DecreaseQuantity" style="display:inline;">
-                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItemId" />
+                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItem.MenuItemId" />
                                     <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
                                     <button type="submit" class="btn btn-sm btn-outline-warning">-</button>
                                 </form>
 
                                 <span class="mx-2" style="display:inline-block; width: 20px; text-align: center;">
-                                    @currentorderItem.Quantity
+                                    @currentorderItem.OrderItemQuantity
                                 </span>
 
-                                <form method="post" asp-action="IncreaseQuantity" style="display:inline;">
-                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItemId" />
-                                    <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                                <form method="post" asp-action="AddNewItemToCurrentOrder" style="display:inline;">
+                                    <input type="hidden" name="SelectedCard" value="@Model.SelectedCard" />
+                                    <input type="hidden" name="SelectedCategory" value="@Model.SelectedCategory" />
+                                    <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
+
+                                    <input type="hidden" name="NewOrderItem.MenuItem.MenuItemId" value="@currentorderItem.MenuItem.MenuItemId" />
                                     <button type="submit" class="btn btn-sm btn-outline-success">+</button>
                                 </form>
                             </td>
 
                             <td style="min-width: 50px; white-space: nowrap;">
-                                € @((currentorderItem.Price * currentorderItem.Quantity).ToString("0.00"))
+                                € @((currentorderItem.MenuItem.MenuItemPrice * currentorderItem.OrderItemQuantity).ToString("0.00"))
                             </td>
                             <td style="min-width: 50px; white-space: nowrap;">@currentorderItem.Comment</td>
                             <td>
                                 <form method="post" asp-action="RemoveItem" style="display:inline;">
-                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItemId" />
+                                    <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItem.MenuItemId" />
                                     <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
                                     <button type="submit" class="btn btn-sm btn-danger">x</button>
                                 </form>
