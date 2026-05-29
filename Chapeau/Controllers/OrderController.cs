@@ -137,7 +137,7 @@ namespace Chapeau.Controllers
                     Comment = model.NewOrderItem.Comment
                 };
 
-                currentItems = _orderServices.UpdateAddCurrentOrderItem(currentItems,newItem,1);
+                currentItems = _orderServices.ModifyCurrentOrderItem(currentItems, newItem, 1);
 
                 HttpContext.Session.SetObject("CurrentOrder", currentItems);
             }
@@ -169,7 +169,7 @@ namespace Chapeau.Controllers
 
                         for (int i = 0; i < currentItemsqQantity; i++)
                         {
-                            _orderServices.AddOrderItemToOrder(item);                            
+                            _orderServices.AddOrderItemToOrder(item);
                         }
                         _menuService.DecreaseStock(item.MenuItem.MenuItemId, currentItemsqQantity);
                     }
@@ -186,9 +186,9 @@ namespace Chapeau.Controllers
             }
         }
         [HttpPost]
-        public IActionResult DecreaseQuantity(TakeOrderViewModel model)
+        public IActionResult DecreaseItemQuantityInCurrentOrder(TakeOrderViewModel model)
         {
-             try
+            try
             {
                 List<OrderItem> currentItems = HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder") ?? new List<OrderItem>();
 
@@ -200,7 +200,7 @@ namespace Chapeau.Controllers
                     Comment = model.NewOrderItem.Comment
                 };
 
-                currentItems = _orderServices.UpdateAddCurrentOrderItem(currentItems,newItem,-1);
+                currentItems = _orderServices.ModifyCurrentOrderItem(currentItems, newItem, -1);
 
                 HttpContext.Session.SetObject("CurrentOrder", currentItems);
             }
@@ -216,11 +216,10 @@ namespace Chapeau.Controllers
                 selectedTableId = model.SelectedTableId
             });
         }
-        /*
         [HttpPost]
         public IActionResult RemoveItem(int menuItemId, int selectedTableId)
         {
-            var items = HttpContext.Session.GetObject<List<CurrentOrderModel>>("CurrentOrder");
+            var items = HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder");
 
             if (items != null)
             {
@@ -229,7 +228,7 @@ namespace Chapeau.Controllers
             }
 
             return RedirectToAction("Index", new { selectedTableId });
-        }
+        }/*
         [HttpPost]
         public IActionResult AddNote(int menuItemId, int selectedTableId, string comment)
         {

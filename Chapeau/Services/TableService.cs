@@ -17,9 +17,6 @@ namespace Chapeau.Services
         {
             return _tableRepository.GetAllTables();
         }
-        public List<Table> GetOccupiedTables()
-        {
-            return _tableRepository.GetOccupiedTables();
-        }
+        
     }
 }
