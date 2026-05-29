@@ -1,11 +1,17 @@
-﻿using Chapeau.Models;
-using Chapeau.ViewModels;
+﻿using Chapeau.ViewModels;
 
 namespace Chapeau.Services.Interfaces
 {
     public interface IPaymentService
     {
-        void ProcessPayment(Payment payment);
-        PaymentSummaryViewModel GetOrderSummary(int orderId);
+        PaymentViewModel GetDashboard();
+
+        PaymentViewModel LoadBill(int orderId);
+
+        void FinishPayment(
+            int orderId,
+            decimal tipAmount,
+            string paymentMethod,
+            string feedback);
     }
 }

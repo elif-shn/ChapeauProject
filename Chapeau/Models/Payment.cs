@@ -1,5 +1,4 @@
-﻿using System;
-using Chapeau.Enums;
+﻿using Chapeau.Enums;
 
 namespace Chapeau.Models
 {
@@ -12,8 +11,7 @@ namespace Chapeau.Models
         public decimal Vat9 { get; set; }
         public decimal Vat21 { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
-        public string? Feedback { get; set; }
-
+        public string Feedback { get; set; }
         public DateTime PaymentDate { get; set; }
     }
 }
