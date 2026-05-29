@@ -4,6 +4,6 @@ namespace Chapeau.Repositories.Interfaces
 {
     public interface IPaymentRepository
     {
-        void AddPayment(Payment payment);
+        void SavePayment(Payment payment);
     }
 }

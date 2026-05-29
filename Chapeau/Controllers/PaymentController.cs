@@ -1,61 +1,52 @@
-﻿using Chapeau.Models;
-using Chapeau.ViewModels;
-using Chapeau.Enums;
+﻿using Chapeau.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Chapeau.Services.Interfaces;
 
 namespace Chapeau.Controllers
 {
     public class PaymentController : Controller
     {
         private readonly IPaymentService _paymentService;
-        private readonly IOrderService _orderService;
 
-        public PaymentController(IPaymentService paymentService, IOrderService orderService)
+        public PaymentController(
+            IPaymentService paymentService)
         {
-            _paymentService = paymentService;
-            _orderService = orderService;
+            _paymentService =
+                paymentService;
         }
 
         public IActionResult Index()
         {
-            List<Order> orders = _orderService.GetAllOrders();
-            return View(orders);
-        }
-
-        public JsonResult GetOrdersJson()
-        {
-            var orders = _orderService.GetAllOrders();
-            var orderList = orders.Select(o => new { orderId = o.OrderId }).ToList();
-            return Json(orderList);
-        }
-
-        public IActionResult Summary(int orderId)
-        {
-            return View(_paymentService.GetOrderSummary(orderId));
+            return View(
+                _paymentService
+                .GetDashboard());
         }
 
         [HttpPost]
-        public IActionResult Create(PaymentViewModel vm)
+        public IActionResult LoadBill(
+            int selectedOrderId)
         {
-            _paymentService.ProcessPayment(new Payment
-            {
-                OrderId = vm.OrderId,
-                TotalAmount = vm.TotalAmount,
-                TipAmount = vm.TipAmount,
-                Vat9 = vm.Vat9,
-                Vat21 = vm.Vat21,
-                PaymentMethod = vm.PaymentMethod,
-                Feedback = vm.Feedback,
-                PaymentDate = DateTime.Now
-            });
+            return View(
+                "Index",
+                _paymentService
+                .LoadBill(selectedOrderId));
+        }
 
-            _orderService.UpdateOrderStatus(vm.OrderId, OrderStatus.Settled);
+        [HttpPost]
+        public IActionResult Confirm(
+            int selectedOrderId,
+            decimal tipAmount,
+            string paymentMethod,
+            string feedback)
+        {
+            _paymentService
+                .FinishPayment(
+                    selectedOrderId,
+                    tipAmount,
+                    paymentMethod,
+                    feedback);
 
-            return RedirectToAction("Success");
+            return RedirectToAction(
+                "Success");
         }
 
         public IActionResult Success()
