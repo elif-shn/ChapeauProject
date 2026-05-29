@@ -1,5 +1,6 @@
 ﻿using Chapeau.Models;
-using Chapeau.Repositories;
+using Chapeau.Repositories.Interfaces;
+using Chapeau.Services.Interfaces;
 
 namespace Chapeau.Services
 {
@@ -16,9 +17,6 @@ namespace Chapeau.Services
         {
             return _tableRepository.GetAllTables();
         }
-        public List<Table> GetOccupiedTables()
-        {
-            return _tableRepository.GetOccupiedTables();
-        }
+        
     }
 }

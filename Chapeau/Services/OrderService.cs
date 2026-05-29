@@ -1,9 +1,10 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
 using Chapeau.Repositories;
-using Chapeau.Services;
+using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using System.Xml.Linq;
 
 public class OrderService : IOrderService
 {
@@ -17,8 +18,8 @@ public class OrderService : IOrderService
     {
         return _orderRepository.GetAllOrders();
     }
-    
-    public Order?GetOrderById(int id)
+
+    public Order? GetOrderById(int id)
     {
         return _orderRepository.GetOrderById(id);
     }
@@ -53,31 +54,88 @@ public class OrderService : IOrderService
             throw;
         }
     }
-    public void AddItemToTableOrder(int tableId, int menuItemId, string comment)
+    public void AddOrderItemToOrder(OrderItem newOrderItem)
     {
         try
         {
-            Order activeOrder = GetActiveOrderForTable(tableId); int orderId;
+            Order activeOrder = GetActiveOrderForTable(newOrderItem.Order.TableId); 
+            Order newOrder;
 
             if (activeOrder == null)
             {
-                orderId = _orderRepository.CreateOrder(tableId);
+                newOrder = _orderRepository.CreateOrder(newOrderItem.Order.TableId);
             }
             else
             {
-                orderId = activeOrder.OrderId;
+                newOrder = activeOrder;
             }
 
-            bool itemExists = _orderRepository.OrderItemExists(orderId, menuItemId, comment);
+            bool itemExists = _orderRepository.OrderItemExists(newOrderItem);
 
             if (itemExists)
             {
-                _orderRepository.IncreaseQuantity(orderId, menuItemId);
+                _orderRepository.IncreaseOrderItemQuantity(newOrderItem);
             }
             else
             {
-                _orderRepository.AddOrderItem(orderId, menuItemId, comment);
+                _orderRepository.AddOrderItemToOrder(newOrderItem);
             }
+        }
+        catch
+        {
+            throw;
+        }
+    }
+    public List<OrderItem> ModifyCurrentOrderItem(List<OrderItem> currentItems,OrderItem newItem, int change)
+    {
+        /*if (newItem.MenuItem.StockStatus == StockStatus.OutOfStock)
+        {
+            throw new Exception("This item is currently out of stock!");
+        }*/
+
+        newItem.Comment ??= "";
+
+        foreach (OrderItem item in currentItems)
+        {
+            if (item.MenuItem.MenuItemId == newItem.MenuItem.MenuItemId && item.Comment == newItem.Comment)
+            {
+                if (change > 0 && item.OrderItemQuantity + change > newItem.MenuItem.Stock)
+                {
+                    throw new Exception("Not enough stock available!");
+                }
+
+                item.OrderItemQuantity += change;
+
+                if (item.OrderItemQuantity <= 0)
+                {
+                    currentItems.Remove(item);
+                }
+
+                return currentItems;
+            }
+        }
+
+        if (change > 0)
+        {
+            newItem.OrderItemQuantity = change;
+            currentItems.Add(newItem);
+        }
+
+        return currentItems;
+    }
+    public List<OrderItem> RemoveItem(List<OrderItem> currentItems, int menuItemId)
+    {
+        try
+        {
+            for (int i = 0; i < currentItems.Count; i++)
+            {
+                if (currentItems[i].MenuItem.MenuItemId == menuItemId)
+                {
+                    currentItems.RemoveAt(i);
+                    i--;
+                }
+            }
+            return currentItems;
         }
         catch
         {

@@ -1,152 +1,62 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
-using Chapeau.Repositories;
-using Chapeau.ViewModels;
-namespace Chapeau.Services
+using Chapeau.Repositories.Interfaces;
+using Chapeau.Services.Interfaces;
+
+public class MenuService : IMenuService
 {
-    public class MenuService : IMenuService
+    private readonly IMenuRepository _menuRepository;
+
+    public MenuService(IMenuRepository menuRepository)
     {
-        private IMenuRepository _menuRepository;
+        _menuRepository = menuRepository;
+    }
 
-        public MenuService(IMenuRepository menuRepository)
+    public List<Menu> GetMenus(Card? card, Category? category, bool onlyActive)
+    {
+        return _menuRepository.GetMenus(card, category, onlyActive);
+    }
+
+    public MenuItem GetMenuItemById(int id)
+    {
+        return _menuRepository.GetById(id);
+    }
+
+    public void AddMenuItem(MenuItem item, int selectedCard, int selectedCategory)
+    {
+        _menuRepository.Add(item, selectedCard, selectedCategory);
+    }
+
+    public void UpdateMenuItem(MenuItem item, int selectedCard, int selectedCategory)
+    {
+        _menuRepository.Update(item, selectedCard, selectedCategory);
+    }
+
+    public void ActivateMenuItem(int id)
+    {
+        _menuRepository.SetActive(id, true);
+    }
+
+    public void DeactivateMenuItem(int id)
+    {
+        _menuRepository.SetActive(id, false);
+    }
+
+    public void DecreaseStock(int menuItemId, int amount)
+    {
+        _menuRepository.DecreaseStock(menuItemId, amount);
+    }
+
+    public List<Category> GetCategoriesByCard(List<Menu> menus, Card? selectedCard)
+    {
+        List<Category> categories = new List<Category>();
+        foreach (var menu in menus)
         {
-            _menuRepository = menuRepository;
-        }
-        public List<Menu> GetAllByFilter(Card? card, Category? category)
-        {
-            try
+            if (!categories.Contains(menu.Category))
             {
-                return _menuRepository.GetAllByFilter(card, category);
-            }
-            catch
-            {
-                throw;
-            }
-
-        }
-        public MenuItem GetMenuItemById(int id)
-        {
-            return _menuRepository.GetById(id);
-        }
-
-        public void AddMenuItem(MenuItem item, int selectedCard, int selectedCategory)
-        {
-            _menuRepository.Add(item, selectedCard, selectedCategory);
-        }
-
-        public void UpdateMenuItem(MenuItem item, int selectedCard, int selectedCategory)
-        {
-            _menuRepository.Update(item, selectedCard, selectedCategory);
-        }
-
-        public void ActivateMenuItem(int id)
-        {
-            _menuRepository.SetActive(id, true);
-        }
-
-        public void DeactivateMenuItem(int id)
-        {
-            _menuRepository.SetActive(id, false);
-        }
-
-        public List<Menu> GetActiveItems(Card? card, Category? category)
-        {
-            try
-            {
-
-                List<Menu> menus = _menuRepository.GetAllByFilter(card, category);
-
-                List<Menu> filteredMenus = new List<Menu>();
-
-                foreach (var menu in menus)
-                {
-                    Menu newMenu = new Menu
-                    {
-                        MenuId = menu.MenuId,
-                        Card = menu.Card,
-                        Category = menu.Category,
-                        MenuItems = new List<MenuItem>()
-                    };
-
-                    foreach (var item in menu.MenuItems)
-                    {
-                        if (item.IsActive)
-                        {
-                            newMenu.MenuItems.Add(item);
-                        }
-                    }
-
-                    filteredMenus.Add(newMenu);
-                }
-
-                return filteredMenus;
-
-            }
-            catch
-            {
-                throw;
+                categories.Add(menu.Category);
             }
         }
-        public List<Category> GetCategoriesByCard(List<Menu> menus, Card? selectedCard)
-        {
-            try
-            {
-                List<Category> categories = new List<Category>();
-
-                foreach (var menu in menus)
-                {
-                    if (selectedCard == null || menu.Card == selectedCard)
-                    {
-                        if (!categories.Contains(menu.Category))
-                        {
-                            categories.Add(menu.Category);
-                        }
-                    }
-                }
-
-                return categories;
-
-            }
-            catch
-            {
-                throw;
-            }
-
-        }
-        public (List<Menu> menus, List<Category> categories) GetMenuDisplay(Card? selectedCard, Category? selectedCategory)
-        {
-            try
-            {
-                var activeMenus = GetActiveItems(selectedCard, null);
-                var categories = GetCategoriesByCard(activeMenus, selectedCard);
-
-                if (selectedCategory != null && !categories.Contains(selectedCategory.Value))
-                {
-                    selectedCategory = null;
-                }
-
-                var menuItems = GetActiveItems(selectedCard, selectedCategory);
-
-                return (menuItems, categories);
-            }
-            catch
-            {
-                throw;
-            }
-
-        }
-
-        public void DecreaseStock(int menuItemId, int amount)
-        {
-            try
-            {
-
-                _menuRepository.DecreaseStock(menuItemId, amount);
-            }
-            catch
-            {
-                throw;
-            }
-        }
+        return categories;
     }
 }

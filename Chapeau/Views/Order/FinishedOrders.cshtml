@@ -8,17 +8,21 @@
 
 <div class="container mt-4">
 
-    <h1 class="mb-4">Running Orders</h1>
- <a asp-action="Index"
-	   class="btn btn-sm">
-    View Orders
-</a>
+    <h1 class="mb-4">Finished Orders</h1>
+
+    <div class="d-flex justify-content-end mb-3">
+
+        <a asp-action="Index"
+           class="btn btn-secondary">
+            View Orders
+        </a>
+
     </div>
 
     <div class="table-responsive">
 
         <table class="table table-hover table-bordered w-100">
-            <thead>
+
             <thead class="table-secondary">
                 <tr>
                     <th>Table Number</th>
@@ -26,17 +30,39 @@
                     <th>Waiting Time</th>
                     <th>Status</th>
                     <th>Order Items</th>
-                    <th>Update Status</th>
                 </tr>
             </thead>
+
             <tbody>
+
                 @foreach (Order order in Model)
                 {
                     <tr>
+
                         <td>@order.Table.TableId</td>
+
                         <td>@order.OrderTime.ToShortTimeString()</td>
+
                         <td>@order.WaitingTime</td>
-                        <td>@order.OrderStatus</td>
+
+                        <td>
+
+                            @if (order.OrderStatus == OrderStatus.Served)
+                            {
+                                <span class="badge bg-success">
+                                    Served
+                                </span>
+                            }
+
+                            else if (order.OrderStatus == OrderStatus.Settled)
+                            {
+                                <span class="badge bg-dark">
+                                    Completed
+                                </span>
+                            }
+
+                        </td>
+
                         <td>
                             <a asp-controller="Order"
                                asp-action="OrderItems"
@@ -46,54 +72,14 @@
                                 View Items
                             </a>
                         </td>
-                        <td>
-                            @if (order.OrderStatus == OrderStatus.Pending)
-                            {
-                                <form asp-action="UpdateStatus" method="post">
-                                    <input type="hidden" name="orderId" value="@order.OrderId" />
 
-                                    <button type="submit"
-                                            name="status"
-                                            value="Preparing"
-                                            class="btn btn-sm"
-                                            style="background-color:orangered; border:none; color:white; width:170px;">
-                                        Start Preparing
-                                    </button>
-                                </form>
-                            }
-                            else if (order.OrderStatus == OrderStatus.Preparing)
-                            {
-                                <form asp-action="UpdateStatus" method="post">
-                                    <input type="hidden" name="orderId" value="@order.OrderId" />
-
-                                    <button type="submit"
-                                            name="status"
-                                            value="Ready"
-                                            class="btn btn-sm"
-                                            style="background-color:#4a565e; border:none; color:white; width:170px;">
-                                        Mark Ready
-                                    </button>
-                                </form>
-                            }
-                            else if (order.OrderStatus == OrderStatus.Ready)
-                            {
-                                <form asp-action="UpdateStatus" method="post">
-                                    <input type="hidden" name="orderId" value="@order.OrderId" />
-
-                                    <button type="submit"
-                                            name="status"
-                                            value="Served"
-                                            class="btn btn-sm"
-                                            style="background-color:green; border:none; color:white; width:170px;">
-                                        Serve
-                                    </button>
-                                </form>
-                            }
-                        </td>
                     </tr>
                 }
+
             </tbody>
+
         </table>
 
     </div>
+
 </div>

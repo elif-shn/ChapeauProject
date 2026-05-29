@@ -1,5 +1,6 @@
-﻿using Chapeau.Repositories;
-using Chapeau.Models;
+﻿using Chapeau.Models;
+using Chapeau.Repositories.Interfaces;
+using Chapeau.Services.Interfaces;
 
 namespace Chapeau.Services
 {

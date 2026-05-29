@@ -1,5 +1,5 @@
 ﻿using Chapeau.Models;
-using Chapeau.Repositories;
+using Chapeau.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 
 
@@ -58,31 +58,6 @@ namespace Chapeau.Repositories
 
             return tables;
         }
-        public List<Table> GetOccupiedTables()
-        {
-            List<Table> tables = new List<Table>();
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            {
-                string query = @"SELECT * FROM [Table] WHERE TableStatus = 'Occupied'";
-
-                SqlCommand command = new SqlCommand(query, connection);
-                connection.Open();
-
-                SqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    tables.Add(new Table
-                    {
-                        TableId = Convert.ToInt32(reader["TableId"]),
-                        TableCapacity = Convert.ToInt32(reader["TableCapacity"]),
-                        TableStatus = reader["TableStatus"].ToString()
-                    });
-                }
-            }
-
-            return tables;
-        }
+       
     }
 }

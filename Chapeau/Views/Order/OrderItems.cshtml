@@ -40,18 +40,18 @@
             @foreach (var item in Model)
             {
                 <tr>
-
                     <td>
-                        @item.MenuItem.MenuItemId
+                        @item.MenuItem.Menu.Category
                     </td>
-
                     <td>
                         @item.MenuItem.MenuItemName
                     </td>
 
                     <td>
-                        @item.OrderItemQuantity
+						@item.OrderItemQuantity
                     </td>
+
+                    
 
                     <td>
                         @item.Comment

@@ -1,6 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
-using Chapeau.Services;
+using Chapeau.Services.Interfaces;
 
 namespace Chapeau.Controllers
 {

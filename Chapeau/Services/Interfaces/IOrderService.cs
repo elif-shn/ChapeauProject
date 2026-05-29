@@ -2,7 +2,7 @@
 using Chapeau.Models;
 using Chapeau.ViewModels;
 
-namespace Chapeau.Services
+namespace Chapeau.Services.Interfaces
 {
     public interface IOrderService
     {
@@ -13,6 +13,8 @@ namespace Chapeau.Services
         void UpdateOrderStatus(int orderId, OrderStatus status);
         void UpdateOrderItemStatus(int orderItemId, OrderStatus status);
         Order? GetActiveOrderForTable(int tableId);
-        void AddItemToTableOrder(int tableId, int menuItemId, string comment);
+        void AddOrderItemToOrder(OrderItem newOrderItem);
+        List<OrderItem> ModifyCurrentOrderItem(List<OrderItem> currentItems, OrderItem newItem, int change);
+        List<OrderItem> RemoveItem(List<OrderItem> currentItems, int menuItemId);
     }
 }
