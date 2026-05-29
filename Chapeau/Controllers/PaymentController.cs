@@ -1,4 +1,5 @@
 ﻿using Chapeau.Services.Interfaces;
+using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chapeau.Controllers
@@ -7,46 +8,42 @@ namespace Chapeau.Controllers
     {
         private readonly IPaymentService _paymentService;
 
-        public PaymentController(
-            IPaymentService paymentService)
+        public PaymentController(IPaymentService paymentService)
         {
-            _paymentService =
-                paymentService;
+            _paymentService = paymentService;
         }
 
         public IActionResult Index()
         {
-            return View(
-                _paymentService
-                .GetDashboard());
+            PaymentViewModel viewModel = _paymentService.GetDashboard();
+
+            return View(viewModel);
+        }
+
+        public IActionResult LoadBill(int tableId)
+        {
+            PaymentViewModel viewModel = _paymentService.GetBillByTableId(tableId);
+
+            return View("Index", viewModel);
         }
 
         [HttpPost]
-        public IActionResult LoadBill(
-            int selectedOrderId)
+        public IActionResult ConfirmPayment(PaymentViewModel viewModel)
         {
-            return View(
-                "Index",
-                _paymentService
-                .LoadBill(selectedOrderId));
-        }
+            try
+            {
+                viewModel.OrderItems = _paymentService.GetBillByTableId(viewModel.TableId).OrderItems;
 
-        [HttpPost]
-        public IActionResult Confirm(
-            int selectedOrderId,
-            decimal tipAmount,
-            string paymentMethod,
-            string feedback)
-        {
-            _paymentService
-                .FinishPayment(
-                    selectedOrderId,
-                    tipAmount,
-                    paymentMethod,
-                    feedback);
+                _paymentService.ConfirmPayment(viewModel);
 
-            return RedirectToAction(
-                "Success");
+                return RedirectToAction("Success");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToAction("Index");
+            }
         }
 
         public IActionResult Success()

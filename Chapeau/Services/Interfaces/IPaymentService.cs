@@ -5,13 +5,7 @@ namespace Chapeau.Services.Interfaces
     public interface IPaymentService
     {
         PaymentViewModel GetDashboard();
-
-        PaymentViewModel LoadBill(int orderId);
-
-        void FinishPayment(
-            int orderId,
-            decimal tipAmount,
-            string paymentMethod,
-            string feedback);
+        PaymentViewModel GetBillByTableId(int tableId);
+        void ConfirmPayment(PaymentViewModel viewModel);
     }
 }

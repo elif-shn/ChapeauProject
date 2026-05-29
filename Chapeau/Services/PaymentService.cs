@@ -1,5 +1,4 @@
-﻿using Chapeau.Enums;
-using Chapeau.Models;
+﻿using Chapeau.Models;
 using Chapeau.Repositories.Interfaces;
 using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
@@ -8,117 +7,93 @@ namespace Chapeau.Services
 {
     public class PaymentService : IPaymentService
     {
-        private readonly IOrderService _orderService;
         private readonly IPaymentRepository _paymentRepository;
 
-        public PaymentService(
-            IOrderService orderService,
-            IPaymentRepository paymentRepository)
+        public PaymentService(IPaymentRepository paymentRepository)
         {
-            _orderService = orderService;
             _paymentRepository = paymentRepository;
         }
 
         public PaymentViewModel GetDashboard()
         {
-            PaymentViewModel vm =
-                new PaymentViewModel();
+            PaymentViewModel viewModel = new PaymentViewModel();
 
-            vm.Orders =
-                _orderService.GetAllOrders();
+            viewModel.Tables = _paymentRepository.GetAllTables();
 
-            return vm;
+            return viewModel;
         }
 
-        public PaymentViewModel LoadBill(int orderId)
+        public PaymentViewModel GetBillByTableId(int tableId)
         {
-            PaymentViewModel vm =
-                new PaymentViewModel();
+            PaymentViewModel viewModel = GetDashboard();
 
-            vm.Orders =
-                _orderService.GetAllOrders();
+            Order? order = _paymentRepository.GetActiveOrderByTableId(tableId);
 
-            vm.SelectedOrderId =
-                orderId;
+            if (order == null)
+            {
+                viewModel.TableId = tableId;
+                viewModel.ErrorMessage = "No active order found for this table.";
+                return viewModel;
+            }
 
-            vm.OrderItems =
-                _orderService
-                .GetOrderItemsByOrderId(orderId);
+            List<OrderItem> orderItems = _paymentRepository.GetOrderItemsByOrderId(order.OrderId);
 
-            decimal total = 0;
+            viewModel.TableId = tableId;
+            viewModel.OrderId = order.OrderId;
+            viewModel.OrderItems = orderItems;
+
+            CalculateBill(viewModel);
+
+            return viewModel;
+        }
+
+        public void ConfirmPayment(PaymentViewModel viewModel)
+        {
+            CalculateBill(viewModel);
+
+            Payment payment = new Payment();
+
+            payment.Order = new Order { OrderId = viewModel.OrderId };
+            payment.TotalAmount = viewModel.TotalAmount;
+            payment.TipAmount = viewModel.TipAmount;
+            payment.Vat9 = viewModel.Vat9;
+            payment.Vat21 = viewModel.Vat21;
+            payment.PaymentMethod = viewModel.PaymentMethod;
+            payment.Feedback = viewModel.Feedback ?? "";
+            payment.PaymentDate = DateTime.Now;
+
+            _paymentRepository.SavePayment(payment);
+            _paymentRepository.UpdateOrderStatusToPaid(viewModel.OrderId);
+            _paymentRepository.UpdateTableStatusToFree(viewModel.TableId);
+        }
+
+        private void CalculateBill(PaymentViewModel viewModel)
+        {
+            decimal subTotal = 0;
             decimal vat9 = 0;
             decimal vat21 = 0;
 
-            foreach (var item in vm.OrderItems)
+            foreach (OrderItem item in viewModel.OrderItems)
             {
-                decimal amount =
-                    item.MenuItem.MenuItemPrice
-                    * item.OrderItemQuantity;
+                decimal itemTotal = item.MenuItem.MenuItemPrice * item.OrderItemQuantity;
 
-                total += amount;
+                subTotal += itemTotal;
 
                 if (item.MenuItem.VatPercentage == 9)
                 {
-                    vat9 += amount * 9 / 109;
+                    vat9 += itemTotal - (itemTotal / 1.09m);
                 }
 
                 if (item.MenuItem.VatPercentage == 21)
                 {
-                    vat21 += amount * 21 / 121;
+                    vat21 += itemTotal - (itemTotal / 1.21m);
                 }
             }
 
-            vm.TotalAmount = total;
-            vm.Vat9 = vat9;
-            vm.Vat21 = vat21;
-
-            return vm;
-        }
-
-        public void FinishPayment(
-            int orderId,
-            decimal tipAmount,
-            string paymentMethod,
-            string feedback)
-        {
-            PaymentViewModel vm =
-                LoadBill(orderId);
-
-            Payment payment =
-                new Payment();
-
-            payment.OrderId =
-                orderId;
-
-            payment.TotalAmount =
-                vm.TotalAmount;
-
-            payment.TipAmount =
-                tipAmount;
-
-            payment.Vat9 =
-                vm.Vat9;
-
-            payment.Vat21 =
-                vm.Vat21;
-
-            payment.PaymentMethod =
-                Enum.Parse<PaymentMethod>(
-                    paymentMethod);
-
-            payment.Feedback =
-                feedback;
-
-            payment.PaymentDate =
-                DateTime.Now;
-
-            _paymentRepository
-                .SavePayment(payment);
-
-            _orderService
-                .UpdateOrderStatus(
-                    orderId,
-                    OrderStatus.Completed);
+            viewModel.SubTotal = Math.Round(subTotal, 2);
+            viewModel.Vat9 = Math.Round(vat9, 2);
+            viewModel.Vat21 = Math.Round(vat21, 2);
+            viewModel.TotalAmount = Math.Round(subTotal + viewModel.TipAmount, 2);
         }
     }
 }
