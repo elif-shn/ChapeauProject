@@ -172,75 +172,28 @@ namespace Chapeau.Repositories
             }
         }
 
-        public bool OrderItemExists(OrderItem newOrderItem)
+
+        public void IncreaseOrderItemQuantity(OrderItem newOrderItem, int quantity)
         {
-
             using (SqlConnection connection = new SqlConnection(_connectionString))
-
             {
-
-                string query = "SELECT 1 FROM OrderItem " +
-
-                               "WHERE OrderId = @OrderId " +
-
-                               "AND MenuItemId = @MenuItemId " +
-
-                               "AND Comment = @Comment";
-
-
+                string query = @"
+            UPDATE OrderItem 
+            SET OrderItemQuantity = OrderItemQuantity + @Quantity
+            WHERE OrderId = @OrderId 
+            AND MenuItemId = @MenuItemId
+            AND (Comment = @Comment OR (Comment IS NULL AND @Comment = ''))";
 
                 SqlCommand command = new SqlCommand(query, connection);
 
                 command.Parameters.AddWithValue("@OrderId", newOrderItem.Order.OrderId);
-
                 command.Parameters.AddWithValue("@MenuItemId", newOrderItem.MenuItem.MenuItemId);
-
+                command.Parameters.AddWithValue("@Quantity", quantity);
                 command.Parameters.AddWithValue("@Comment", newOrderItem.Comment ?? "");
 
-
-
                 connection.Open();
-
-                object result = command.ExecuteScalar();
-
-
-
-                return result != null;
-
-            }
-
-        }
-
-        public void IncreaseOrderItemQuantity(OrderItem newOrderItem)
-
-        {
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-
-            {
-
-                string query = "UPDATE OrderItem SET OrderItemQuantity = OrderItemQuantity + 1 " +
-
-                               "WHERE OrderId = @OrderId " +
-
-                               "AND MenuItemId = @MenuItemId";
-
-
-
-                SqlCommand command = new SqlCommand(query, connection);
-
-                command.Parameters.AddWithValue("@OrderId", newOrderItem.Order.OrderId);
-
-                command.Parameters.AddWithValue("@MenuItemId", newOrderItem.MenuItem.MenuItemId);
-
-
-
-                connection.Open();
-
                 command.ExecuteNonQuery();
-
             }
-
         }
 
         public void AddOrderItemToOrder(OrderItem newOrderItem)
@@ -252,17 +205,14 @@ namespace Chapeau.Repositories
             {
 
                 string query = "INSERT INTO OrderItem (OrderId, MenuItemId, OrderItemQuantity, Comment, OrderItemsStatus) " +
-
-                               "VALUES (@OrderId, @MenuItemId, 1, @Comment, 'Ordered')";
-
-
+                               "VALUES (@OrderId, @MenuItemId, @Quantity, @Comment, 'Ordered')";
+                            
 
                 SqlCommand command = new SqlCommand(query, connection);
 
                 command.Parameters.AddWithValue("@OrderId", newOrderItem.Order.OrderId);
-
+                command.Parameters.AddWithValue("@Quantity", newOrderItem.OrderItemQuantity);
                 command.Parameters.AddWithValue("@MenuItemId", newOrderItem.MenuItem.MenuItemId);
-
                 command.Parameters.AddWithValue("@Comment", newOrderItem.Comment ?? "");
 
 
@@ -278,7 +228,7 @@ namespace Chapeau.Repositories
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string query = "SELECT TOP 1 OrderId, OrderStatus FROM [Order] WHERE TableId = @TableId " +
+                string query = "SELECT OrderId, OrderStatus FROM [Order] WHERE TableId = @TableId " +
                                "AND OrderStatus NOT IN ('Settled', 'Cancelled', 'Paid') ";
 
 
