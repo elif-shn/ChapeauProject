@@ -31,10 +31,10 @@ namespace Chapeau.Models
             OrderItems = new List<OrderItem>();
         }
 
-        public decimal GetTotalAmount()
+        /*public decimal GetTotalAmount()
         {
             if (OrderItems == null) return 0;
             return OrderItems.Sum(item => item.Price * item.OrderItemQuantity);
-        }
+        }*/
     }
 }

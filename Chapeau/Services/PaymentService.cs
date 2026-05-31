@@ -8,47 +8,92 @@ namespace Chapeau.Services
     public class PaymentService : IPaymentService
     {
         private readonly IPaymentRepository _paymentRepository;
-        private readonly IOrderRepository _orderRepository;
 
-        public PaymentService(IPaymentRepository paymentRepository, IOrderRepository orderRepository)
+        public PaymentService(IPaymentRepository paymentRepository)
         {
             _paymentRepository = paymentRepository;
-            _orderRepository = orderRepository;
         }
 
-        public void ProcessPayment(Payment payment)
+        public PaymentViewModel GetDashboard()
         {
-            _paymentRepository.AddPayment(payment);
+            PaymentViewModel viewModel = new PaymentViewModel();
+
+            viewModel.Tables = _paymentRepository.GetAllTables();
+
+            return viewModel;
         }
 
-        public PaymentSummaryViewModel GetOrderSummary(int orderId)
+        public PaymentViewModel GetBillByTableId(int tableId)
         {
-            var items = _orderRepository.GetOrderItemsByOrderId(orderId);
-            decimal total = 0;
+            PaymentViewModel viewModel = GetDashboard();
+
+            Order? order = _paymentRepository.GetActiveOrderByTableId(tableId);
+
+            if (order == null)
+            {
+                viewModel.TableId = tableId;
+                viewModel.ErrorMessage = "No active order found for this table.";
+                return viewModel;
+            }
+
+            List<OrderItem> orderItems = _paymentRepository.GetOrderItemsByOrderId(order.OrderId);
+
+            viewModel.TableId = tableId;
+            viewModel.OrderId = order.OrderId;
+            viewModel.OrderItems = orderItems;
+
+            CalculateBill(viewModel);
+
+            return viewModel;
+        }
+
+        public void ConfirmPayment(PaymentViewModel viewModel)
+        {
+            CalculateBill(viewModel);
+
+            Payment payment = new Payment();
+
+            payment.Order = new Order { OrderId = viewModel.OrderId };
+            payment.TotalAmount = viewModel.TotalAmount;
+            payment.TipAmount = viewModel.TipAmount;
+            payment.Vat9 = viewModel.Vat9;
+            payment.Vat21 = viewModel.Vat21;
+            payment.PaymentMethod = viewModel.PaymentMethod;
+            payment.Feedback = viewModel.Feedback ?? "";
+            payment.PaymentDate = DateTime.Now;
+
+            _paymentRepository.SavePayment(payment);
+            _paymentRepository.UpdateOrderStatusToPaid(viewModel.OrderId);
+            _paymentRepository.UpdateTableStatusToFree(viewModel.TableId);
+        }
+
+        private void CalculateBill(PaymentViewModel viewModel)
+        {
+            decimal subTotal = 0;
             decimal vat9 = 0;
             decimal vat21 = 0;
 
-            foreach (var item in items)
+            foreach (OrderItem item in viewModel.OrderItems)
             {
-                decimal price = item.MenuItem.MenuItemPrice;
-                int vatRate = item.MenuItem.VatPercentage;
-                decimal itemTotal = price * item.OrderItemQuantity;
+                decimal itemTotal = item.MenuItem.MenuItemPrice * item.OrderItemQuantity;
 
-                total += itemTotal;
+                subTotal += itemTotal;
 
-                if (vatRate == 9) vat9 += (itemTotal * 0.09m);
-                else if (vatRate == 21) vat21 += (itemTotal * 0.21m);
+                if (item.MenuItem.VatPercentage == 9)
+                {
+                    vat9 += itemTotal - (itemTotal / 1.09m);
+                }
+
+                if (item.MenuItem.VatPercentage == 21)
+                {
+                    vat21 += itemTotal - (itemTotal / 1.21m);
+                }
             }
 
-            return new PaymentSummaryViewModel
-            {
-                OrderId = orderId,
-                OrderItems = items,
-                TotalAmount = total,
-                Vat9 = vat9,
-                Vat21 = vat21,
-                GrandTotal = total + vat9 + vat21
-            };
+            viewModel.SubTotal = Math.Round(subTotal, 2);
+            viewModel.Vat9 = Math.Round(vat9, 2);
+            viewModel.Vat21 = Math.Round(vat21, 2);
+            viewModel.TotalAmount = Math.Round(subTotal + viewModel.TipAmount, 2);
         }
     }
 }

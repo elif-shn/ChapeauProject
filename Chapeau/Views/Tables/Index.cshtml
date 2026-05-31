@@ -4,8 +4,7 @@
 
 <h1>Restaurant Overview</h1>
 
-<a asp-action="Index"
-   class="btn btn-primary mb-3">
+<a asp-action="Index" class="btn btn-primary mb-3">
     Refresh
 </a>
 
@@ -18,19 +17,17 @@
             ? "occupied"
             : "free";
 
-        <div class="table-card @cssClass">
+        <a asp-controller="Order"
+           asp-action="ViewMenuForTakeOrder"
+           asp-route-selectedTableId="@table.TableId"
+           class="table-card @cssClass"
+           style="text-decoration:none; color:inherit; display:block;">
 
             <h3>Table @table.TableId</h3>
 
-            <p>
-                Capacity:
-                @table.TableCapacity
-            </p>
+            <p>Capacity: @table.TableCapacity</p>
 
-            <p>
-                Status:
-                @table.TableStatus
-            </p>
+            <p>Status: @table.TableStatus</p>
 
             <a asp-controller="Order"
                asp-action="ViewMenuForTakeOrder"

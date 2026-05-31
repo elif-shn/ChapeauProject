@@ -15,15 +15,16 @@ namespace Chapeau.Controllers
         }
         private MenuViewModel GetViewModel(Card? selectedCard, Category? selectedCategory, bool onlyActive)
         {
-            List<Menu> allMenus = _menuService.GetMenus(selectedCard, null, onlyActive);
-            var categories = _menuService.GetCategoriesByCard(allMenus, selectedCard);
+            var allMenus = _menuService.GetMenus(selectedCard, null, true).ToList();
+
+            var categories = allMenus.Select(m => m.Category).Distinct().ToList();
 
             if (selectedCategory != null && !categories.Contains(selectedCategory.Value))
             {
                 selectedCategory = null;
             }
 
-            List<Menu> filteredMenus = _menuService.GetMenus(selectedCard, selectedCategory, onlyActive);
+            var filteredMenus = allMenus.Where(m => selectedCategory == null || m.Category == selectedCategory).ToList();
 
             return new MenuViewModel
             {
