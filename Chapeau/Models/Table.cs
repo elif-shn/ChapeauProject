@@ -1,4 +1,6 @@
-﻿namespace Chapeau.Models
+﻿using Chapeau.Enums;
+
+namespace Chapeau.Models
 {
     public class Table
     {
@@ -6,6 +8,7 @@
 
         public int TableCapacity { get; set; }
 
-        public string TableStatus { get; set; }
+        public TableStatus TableStatus { get; set; }
     }
+
 }
