@@ -16,19 +16,24 @@ namespace Chapeau.Controllers
         }
         public IActionResult Index()
         {
-            List<Order> orders = _orderServices.GetAllOrders();
+            List<Order> orders = _orderServices.GetRunningOrders();
 
             return View(orders);
         }
-        public IActionResult OrderItems(int orderId)
+
+        [HttpPost]
+        public IActionResult UpdateOrderStatus(int orderId, OrderStatus status)
         {
             try
             {
-                List<OrderItem> orderItems =
-                    _orderServices.GetOrderItemsByOrderId(orderId);
+                Order? order = _orderServices.GetOrderById(orderId);
 
-                return View(orderItems);
+                if (order != null)
+                {
+                    _orderServices.UpdateOrderStatus(order, status);
+                }
 
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
@@ -36,43 +41,18 @@ namespace Chapeau.Controllers
                 return RedirectToAction("Index");
             }
         }
-
         [HttpPost]
-        public IActionResult UpdateStatus(int orderId, OrderStatus status)
+        public IActionResult UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status)
         {
             try
             {
-                _orderServices.UpdateOrderStatus(orderId, status);
-
-                TempData["SuccessMessage"] = "Order status updated successfully.";
+                _orderServices.UpdateOrderItemStatus(orderItem, status);
 
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-
-                return RedirectToAction("Index");
-            }
-        }
-
-        [HttpPost]
-        public IActionResult UpdateItemStatus(int orderItemId, string status)
-        {
-            try
-            {
-                OrderStatus newStatus = Enum.Parse<OrderStatus>(status);
-
-                _orderServices.UpdateOrderItemStatus(orderItemId, newStatus);
-
-                TempData["SuccessMessage"] = "Item status updated.";
-
-                return RedirectToAction("Index");
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-
                 return RedirectToAction("Index");
             }
         }

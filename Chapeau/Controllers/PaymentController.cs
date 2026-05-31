@@ -101,7 +101,7 @@ namespace Chapeau.Controllers
 
             User employee = new User { Id = 0 };
 
-            var order = new Order(orderId, table, employee, DateTime.Now, null, OrderStatus.Completed);
+            var order = new Order(orderId, table, employee, DateTime.Now, null, OrderStatus.Served);
 
             var payment = new Payment
             {

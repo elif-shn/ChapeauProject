@@ -1,13 +1,12 @@
 ﻿namespace Chapeau.Enums
 {
-    public enum OrderStatus
+    public enum OrderItemStatus
     {
         Ordered,
         Preparing,
-        Ready,
         Served,
+        Ready,
         Cancelled,
-        Paid
-            
     }
+
 }

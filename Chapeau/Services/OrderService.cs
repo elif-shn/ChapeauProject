@@ -1,63 +1,56 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
 using Chapeau.Repositories;
-using Chapeau.Services;
-using Chapeau.ViewModels;
-using Microsoft.AspNetCore.Mvc;
 
-public class OrderService : IOrderService
+namespace Chapeau.Services
 {
-    private readonly IOrderRepository _orderRepository;
-    public OrderService(IOrderRepository orderRepository)
+    public class OrderService : IOrderService
     {
-        _orderRepository = orderRepository;
-    }
+        private readonly IOrderRepository _orderRepository;
 
-    public List<Order> GetAllOrders()
-    {
-        return _orderRepository.GetAllOrders();
-    }
-    
-    public Order?GetOrderById(int id)
-    {
-        return _orderRepository.GetOrderById(id);
-    }
-
-    public void UpdateOrderStatus(int orderId, OrderStatus status)
-    {
-        _orderRepository.UpdateOrderStatus(orderId, status);
-    }
-    public List<Order> GetFinishedOrders()
-    {
-        return _orderRepository.GetFinishedOrders();
-    }
-
-    List<OrderItem> IOrderService.GetOrderItemsByOrderId(int orderId)
-    {
-        return _orderRepository.GetOrderItemsByOrderId(orderId);
-    }
-    public void UpdateOrderItemStatus(int orderItemId, OrderStatus status)
-    {
-        _orderRepository.UpdateOrderItemStatus(orderItemId, status);
-    }
-    //For Take Order Part
-    public Order? GetActiveOrderForTable(int tableId)
-    {
-        try
+        public OrderService(IOrderRepository orderRepository)
         {
+            _orderRepository = orderRepository;
+        }
 
+        public List<Order> GetRunningOrders()
+        {
+            return _orderRepository.GetRunningOrders();
+        }
+
+        public List<Order> GetFinishedOrders()
+        {
+            return _orderRepository.GetFinishedOrders();
+        }
+
+        public Order? GetOrderById(int id)
+        {
+            return _orderRepository.GetOrderById(id);
+        }
+
+        public List<OrderItem> GetOrderItemsByOrderId(int orderId)
+        {
+            return _orderRepository.GetOrderItemsByOrderId(orderId);
+        }
+        public void UpdateOrderStatus(Order order, OrderStatus status)
+        {    
+            _orderRepository.UpdateOrderStatus(order, status);
+        }
+
+        public void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status)
+        {
+            _orderRepository.UpdateOrderItemStatus(orderItem, status);
+        }
+        public Order? GetActiveOrderForTable(int tableId)
+        {
             return _orderRepository.GetActiveOrderForTable(tableId);
         }
-        catch
+
+        public void AddItemToTableOrder(int tableId, int menuItemId, string comment)
         {
-            throw;
-        }
-    }
-    public void AddItemToTableOrder(int tableId, int menuItemId, string comment)
-    {
-        try
-        {
-            Order activeOrder = GetActiveOrderForTable(tableId); int orderId;
+            Order? activeOrder = GetActiveOrderForTable(tableId);
+
+            int orderId;
 
             if (activeOrder == null)
             {
@@ -78,10 +71,6 @@ public class OrderService : IOrderService
             {
                 _orderRepository.AddOrderItem(orderId, menuItemId, comment);
             }
-        }
-        catch
-        {
-            throw;
         }
     }
 }
