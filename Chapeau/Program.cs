@@ -1,5 +1,7 @@
 using Chapeau.Repositories;
+using Chapeau.Repositories.Interfaces;
 using Chapeau.Services;
+using Chapeau.Services.Interfaces;
 
 namespace Chapeau
 {
@@ -21,7 +23,6 @@ namespace Chapeau
             builder.Services.AddScoped<IUserService, UserServices>();
             builder.Services.AddScoped<IPaymentRepository, DbPaymentRepository>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
-            builder.Services.AddScoped<ITakeOrderService, TakeOrderService>();
 
             builder.Services.AddSession(options =>
             {
