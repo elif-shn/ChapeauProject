@@ -1,6 +1,6 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
-using Chapeau.ViewModels;
+using System.Collections.Generic;
 
 namespace Chapeau.Services
 {
@@ -14,5 +14,9 @@ namespace Chapeau.Services
         void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status);
         Order? GetActiveOrderForTable(int tableId);
         void AddItemToTableOrder(int tableId, int menuItemId, string comment);
+        int CreateOrder(int tableId);
+        bool OrderItemExists(int orderId, int menuItemId, string comment);
+        void IncreaseQuantity(int orderId, int menuItemId);
+        void AddOrderItem(int orderId, int menuItemId, string comment);
     }
 }

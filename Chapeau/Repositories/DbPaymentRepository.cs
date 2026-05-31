@@ -1,52 +1,39 @@
 ﻿using Chapeau.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
+using System;
 
 namespace Chapeau.Repositories
 {
     public class DbPaymentRepository : IPaymentRepository
     {
-        private readonly string _connectionString;
+        private readonly string? _connectionString;
 
         public DbPaymentRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection")!;
+            _connectionString = configuration.GetConnectionString("ChapeauDataBase");
         }
 
-        public void InsertPayment(Payment payment)
+        public void AddPayment(Payment payment)
         {
-            using var connection = new SqlConnection(_connectionString);
-            string query = "INSERT INTO Payment (OrderId, TotalAmount, HighVatAmount, LowVatAmount, TipAmount, Method, Feedback, PaymentTime) VALUES (@OrderId, @TotalAmount, @HighVatAmount, @LowVatAmount, @TipAmount, @Method, @Feedback, @PaymentTime)";
-            var command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@OrderId", payment.Order.OrderId);
-            command.Parameters.AddWithValue("@TotalAmount", payment.TotalAmount);
-            command.Parameters.AddWithValue("@HighVatAmount", payment.HighVatAmount);
-            command.Parameters.AddWithValue("@LowVatAmount", payment.LowVatAmount);
-            command.Parameters.AddWithValue("@TipAmount", payment.TipAmount);
-            command.Parameters.AddWithValue("@Method", (int)payment.Method);
-            command.Parameters.AddWithValue("@Feedback", payment.Feedback);
-            command.Parameters.AddWithValue("@PaymentTime", payment.PaymentTime);
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string sql = @"INSERT INTO Payment (OrderId, TotalAmount, TipAmount, Vat9, Vat21, PaymentMethod, Feedback, PaymentDate) 
+                               VALUES (@OrderId, @TotalAmount, @TipAmount, @Vat9, @Vat21, @PaymentMethod, @Feedback, @PaymentDate)";
 
-            connection.Open();
-            command.ExecuteNonQuery();
-        }
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@OrderId", payment.OrderId);
+                command.Parameters.AddWithValue("@TotalAmount", payment.TotalAmount);
+                command.Parameters.AddWithValue("@TipAmount", payment.TipAmount);
+                command.Parameters.AddWithValue("@Vat9", payment.Vat9);
+                command.Parameters.AddWithValue("@Vat21", payment.Vat21);
+                command.Parameters.AddWithValue("@PaymentMethod", (int)payment.PaymentMethod);
+                command.Parameters.AddWithValue("@Feedback", (object)payment.Feedback ?? DBNull.Value);
+                command.Parameters.AddWithValue("@PaymentDate", payment.PaymentDate);
 
-        public void UpdateTableStatusAfterPayment(int tableId, string status)
-        {
-            using var connection = new SqlConnection(_connectionString);
-            string query = "UPDATE [Table] SET TableStatus = @Status WHERE TableId = @TableId";
-            var command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@Status", status);
-            command.Parameters.AddWithValue("@TableId", tableId);
-
-            connection.Open();
-            command.ExecuteNonQuery();
-        }
-
-        List<OrderItem> IPaymentRepository.Getbyid(int orderId)
-        {
-            throw new NotImplementedException();
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
         }
     }
 }
