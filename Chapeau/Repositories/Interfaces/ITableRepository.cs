@@ -1,4 +1,5 @@
 ﻿using Chapeau.Models;
+using Chapeau.ViewModels;
 
 namespace Chapeau.Repositories.Interfaces
 {
@@ -6,5 +7,9 @@ namespace Chapeau.Repositories.Interfaces
     {
         List<Table> GetAllTables();
         List<Table> GetOccupiedTables();
+
+        List<ActiveOrderViewModel> GetActiveOrders(int tableId);
+
+        void MarkOrderAsServed(int orderId);
     }
 }

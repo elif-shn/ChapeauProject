@@ -1,4 +1,6 @@
-﻿@model List<Chapeau.Models.Table>
+﻿@using Chapeau.Enums;
+
+@model List<Chapeau.Models.Table>
 
 <h1>Restaurant Overview</h1>
 
@@ -12,7 +14,7 @@
     @foreach (var table in Model)
     {
         string cssClass =
-            table.TableStatus == "Occupied"
+            table.TableStatus == TableStatus.Occupied
             ? "occupied"
             : "free";
 
@@ -30,7 +32,24 @@
                 @table.TableStatus
             </p>
 
+            <a asp-controller="Order"
+               asp-action="ViewMenuForTakeOrder"
+               asp-route-selectedTableId="@table.TableId"
+                   class="btn btn-sm"
+                   style="background-color:#4a565e; border:none; color:yellow;">
+                Take Order
+            </a>
+
+            <a asp-controller="Tables"
+               asp-action="ShowOrders"
+               asp-route-tableId="@table.TableId"
+                   class="btn btn-primary">
+                View Active Orders
+            </a>
+
         </div>
     }
 
 </div>
+
+
