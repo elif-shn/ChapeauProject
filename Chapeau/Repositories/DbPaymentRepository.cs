@@ -34,7 +34,7 @@ namespace Chapeau.Repositories
 
                     table.TableId = Convert.ToInt32(reader["TableId"]);
                     table.TableCapacity = Convert.ToInt32(reader["TableCapacity"]);
-                    table.TableStatus = reader["TableStatus"].ToString() ?? "";
+                    table.TableStatus = Enum.Parse<TableStatus>(reader["TableStatus"].ToString());
 
                     tables.Add(table);
                 }
