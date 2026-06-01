@@ -1,0 +1,119 @@
+﻿@model List<Chapeau.Models.Order>
+@using Chapeau.Models
+@using Chapeau.Enums
+
+@{
+    ViewData["Title"] = "Bar Orders";
+}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Bar Orders</h1>
+        <div>
+            <button class="btn btn-outline-primary" onclick="location.reload()">Refresh</button>
+            <a asp-action="FinishedOrders" class="btn btn-outline-secondary">Finished Orders</a>
+            <a asp-controller="Order" asp-action="Index" class="btn btn-outline-info">Kitchen Orders</a>
+        </div>
+    </div>
+
+    <div class="row">
+
+        @foreach (var order in Model)
+        {
+            var drinkItems = order.OrderItems?
+            .Where(i => i.MenuItem?.Menu?.Card == Card.Drink)
+            .ToList();
+
+            if (drinkItems == null || !drinkItems.Any()) continue;
+
+            if (order.OrderStatus == OrderStatus.Paid ||
+            order.OrderStatus == OrderStatus.Cancelled ||
+            order.OrderStatus == OrderStatus.Served ||
+            order.OrderStatus == OrderStatus.Settled)
+            {
+                continue;
+            }
+
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card shadow-sm border h-100">
+
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Table @order.Table.TableId</h4>
+                        <span class="badge bg-secondary text-white">@order.OrderStatus</span>
+                    </div>
+
+                    <div class="card-body">
+
+                        <p><strong>Order Time:</strong> @order.OrderTime.ToShortTimeString()</p>
+                        <p><strong>Waiting Time:</strong> @order.WaitingTime</p>
+
+                        <hr />
+
+                        @foreach (var item in drinkItems)
+                        {
+                            <div class="border-bottom pb-2 mb-2">
+
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <strong>@item.OrderItemQuantity x @item.MenuItem.MenuItemName</strong>
+                                    <span class="badge bg-secondary text-white">@item.OrderItemStatus</span>
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(item.Comment) && item.Comment != "No comment")
+                                {
+                                    <small class="text-muted">Comment: @item.Comment</small>
+                                }
+
+                                @if (item.OrderItemStatus == OrderItemStatus.Ordered)
+                                {
+                                    <form asp-action="UpdateItemStatus" method="post">
+                                        <input type="hidden" name="orderItem.OrderItemId" value="@item.OrderItemId" />
+                                        <input type="hidden" name="status" value="Preparing" />
+                                        <button ... class="btn btn-secondary btn-sm mt-2 w-100">Start Preparing</button>
+                                    </form>
+                                }
+                                else if (item.OrderItemStatus == OrderItemStatus.Preparing)
+                                {
+                                    <form asp-action="UpdateItemStatus" method="post">
+                                        <input type="hidden" name="orderItem.OrderItemId" value="@item.OrderItemId" />
+                                        <input type="hidden" name="status" value="Ready" />
+                                        <button type="submit" class="btn btn-success btn-sm mt-2 w-100">Mark Ready</button>
+                                    </form>
+                                }
+
+                            </div>
+                        }
+
+                        <hr />
+
+                        @if (order.OrderStatus == OrderStatus.Ordered)
+                        {
+                            <form asp-action="UpdateStatus" method="post">
+                                <input type="hidden" name="order.OrderId" value="@order.OrderId" />
+                                <input type="hidden" name="status" value="Preparing" />
+								<button type="submit" class="btn btn-secondary w-100">Start Preparing</button>
+                                
+                            </form>
+                        }
+                        else if (order.OrderStatus == OrderStatus.Preparing)
+                        {
+                            <form asp-action="UpdateStatus" method="post">
+                                <input type="hidden" name="order.OrderId" value="@order.OrderId" />
+                                <input type="hidden" name="status" value="Ready" />
+                                <button type="submit" class="btn btn-success w-100">Mark Ready</button>
+                            </form>
+                        }
+                        else if (order.OrderStatus == OrderStatus.Ready)
+                        {
+                            <div class="alert alert-success mb-0">Ready To Serve</div>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+
+</div>
+

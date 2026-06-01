@@ -1,0 +1,22 @@
+﻿@model Chapeau.Models.OrderItem
+@using Chapeau.Enums
+
+<div class="border-bottom pb-2 mb-2">
+
+    <div class="d-flex justify-content-between align-items-start">
+        <strong>@Model.OrderItemQuantity x @Model.MenuItem.MenuItemName</strong>
+        <span class="badge @(Model.OrderItemStatus switch {
+            OrderItemStatus.Ordered   => "bg-secondary",
+            OrderItemStatus.Preparing => "bg-secondary",
+            OrderItemStatus.Ready     => "bg-success",
+            OrderItemStatus.Served    => "bg-success",
+            _                         => "bg-secondary"
+        })">@Model.OrderItemStatus</span>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Comment) && Model.Comment != "No comment")
+    {
+        <small class="text-muted">Comment: @Model.Comment</small>
+    }
+
+</div>
