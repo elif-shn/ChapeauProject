@@ -117,7 +117,7 @@ namespace Chapeau.Repositories
                     orderItem.Comment = reader["Comment"].ToString() ?? "";
 
                     string status = reader["OrderItemsStatus"].ToString() ?? "Ordered";
-                    orderItem.OrderItemStatus = Enum.Parse<OrderStatus>(status);
+                    orderItem.OrderItemStatus = Enum.Parse<OrderItemStatus>(status);
 
                     MenuItem menuItem = new MenuItem();
 

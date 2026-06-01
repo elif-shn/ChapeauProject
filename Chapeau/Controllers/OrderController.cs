@@ -12,39 +12,24 @@ namespace Chapeau.Controllers
         private readonly IMenuService _menuService;
         private readonly IOrderService _orderServices;
 
-
-
-        public OrderController(IMenuService menuService,IOrderService orderServices)
+        public OrderController(IMenuService menuService, IOrderService orderServices)
         {
             _menuService = menuService;
             _orderServices = orderServices;
         }
+
         public IActionResult Index()
         {
-            List<Order> orders = _orderServices.GetAllOrders();
-            return View(orders);
-        }
-
-        public IActionResult OrderItems(int orderId)
-        {
-            try
-            {
-                List<OrderItem> orderItems = _orderServices.GetOrderItemsByOrderId(orderId);
-                return View(orderItems);
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-                return RedirectToAction("Index");
-            }
+            List<Order> runningOrders = _orderServices.GetRunningOrders();
+            return View(runningOrders);
         }
 
         [HttpPost]
-        public IActionResult UpdateStatus(int orderId, OrderStatus status)
+        public IActionResult UpdateStatus(Order order, OrderStatus status)
         {
             try
             {
-                _orderServices.UpdateOrderStatus(orderId, status);
+                _orderServices.UpdateOrderStatus(order, status);
                 TempData["SuccessMessage"] = "Order status updated successfully.";
                 return RedirectToAction("Index");
             }
@@ -56,12 +41,11 @@ namespace Chapeau.Controllers
         }
 
         [HttpPost]
-        public IActionResult UpdateItemStatus(int orderItemId, string status)
+        public IActionResult UpdateItemStatus(OrderItem orderItem, OrderItemStatus status)
         {
             try
             {
-                OrderStatus newStatus = Enum.Parse<OrderStatus>(status);
-                _orderServices.UpdateOrderItemStatus(orderItemId, newStatus);
+                _orderServices.UpdateOrderItemStatus(orderItem, status);
                 TempData["SuccessMessage"] = "Item status updated.";
                 return RedirectToAction("Index");
             }
@@ -77,15 +61,15 @@ namespace Chapeau.Controllers
             try
             {
                 List<Order> finishedOrders = _orderServices.GetFinishedOrders();
-                TempData["SuccessMessage"] = "Finished orders retrieved successfully.";
                 return View(finishedOrders);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return RedirectToAction("Error");
+                return RedirectToAction("Index");
             }
         }
+
         public IActionResult ViewMenuForTakeOrder(Card? selectedCard, Category? selectedCategory, int selectedTableId)
         {
             try
@@ -93,15 +77,15 @@ namespace Chapeau.Controllers
                 HttpContext.Session.SetInt32("SelectedTableId", selectedTableId);
 
                 var allMenus = _menuService.GetMenus(selectedCard, null, true).ToList();
-
                 var categories = allMenus.Select(m => m.Category).Distinct().ToList();
 
+                // Seçili kategori mevcut kategoriler arasında yoksa sıfırlıyoruz
                 if (selectedCategory != null && !categories.Contains(selectedCategory.Value))
-                {
                     selectedCategory = null;
-                }
 
-                var filteredMenus = allMenus.Where(m => selectedCategory == null || m.Category == selectedCategory).ToList();
+                var filteredMenus = allMenus
+                    .Where(m => selectedCategory == null || m.Category == selectedCategory)
+                    .ToList();
 
                 return View("TakeOrder", new TakeOrderViewModel
                 {
@@ -115,6 +99,7 @@ namespace Chapeau.Controllers
             }
             catch (Exception ex)
             {
+                TempData["ErrorMessage"] = ex.Message;
                 return View(new TakeOrderViewModel
                 {
                     Menu = new List<Menu>(),
@@ -123,6 +108,7 @@ namespace Chapeau.Controllers
                 });
             }
         }
+
         [HttpPost]
         public IActionResult AddNewItemToCurrentOrder(TakeOrderViewModel model)
         {
@@ -152,6 +138,7 @@ namespace Chapeau.Controllers
                 selectedTableId = HttpContext.Session.GetInt32("SelectedTableId")
             });
         }
+
         [HttpPost]
         public IActionResult SendOrder()
         {
@@ -161,9 +148,7 @@ namespace Chapeau.Controllers
                 var currentItems = HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder");
 
                 if (currentItems == null || !currentItems.Any())
-                {
                     return RedirectToAction("ViewMenuForTakeOrder", new { selectedTableId = tableId });
-                }
 
                 var newOrder = new Order
                 {
@@ -182,8 +167,12 @@ namespace Chapeau.Controllers
                 TempData["ErrorMessage"] = ex.Message;
             }
 
-            return RedirectToAction("ViewMenuForTakeOrder", new { selectedTableId = HttpContext.Session.GetInt32("SelectedTableId") });
+            return RedirectToAction("ViewMenuForTakeOrder", new
+            {
+                selectedTableId = HttpContext.Session.GetInt32("SelectedTableId")
+            });
         }
+
         [HttpPost]
         public IActionResult DecreaseItemQuantityInCurrentOrder(TakeOrderViewModel model)
         {
@@ -213,6 +202,7 @@ namespace Chapeau.Controllers
                 selectedTableId = HttpContext.Session.GetInt32("SelectedTableId")
             });
         }
+
         [HttpPost]
         public IActionResult RemoveItem(int menuItemId)
         {
@@ -257,8 +247,7 @@ namespace Chapeau.Controllers
             {
                 HttpContext.Session.Remove("CurrentOrder");
                 TempData["SuccessMessage"] = "Order cancelled successfully.";
-
-                return RedirectToAction("ViewMenuForTakeOrder");
+                return RedirectToAction("ViewMenuForTakeOrder", new { selectedTableId });
             }
             catch (Exception ex)
             {
@@ -266,6 +255,5 @@ namespace Chapeau.Controllers
                 return RedirectToAction("ViewMenuForTakeOrder", new { selectedTableId });
             }
         }
-
     }
 }

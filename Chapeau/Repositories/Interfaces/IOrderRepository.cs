@@ -3,12 +3,12 @@ using Chapeau.Models;
 using Chapeau.ViewModels;
 public interface IOrderRepository
 {
-    List<Order> GetAllOrders();
-    List<OrderItem> GetOrderItemsByOrderId(int orderId);
+    List<Order> GetRunningOrders();
+    List<OrderItem> GetOrderItemsByOrderId(Order order);
     List<Order> GetFinishedOrders();
-    void UpdateOrderStatus(int orderId, OrderStatus newStatus);
-    void UpdateOrderItemStatus(int orderItemId, OrderStatus status);
-    Order? GetOrderById(int id);
+    void UpdateOrderStatus(Order order, OrderStatus status);
+    void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status);
+    Order? GetOrderById(Order order);
     Order CreateOrder(int tableId);
     void IncreaseOrderItemQuantity(OrderItem newOrderItem, int quantity);
     void AddOrderItemToOrder(OrderItem newOrderItem);
