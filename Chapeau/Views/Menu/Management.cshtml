@@ -1,4 +1,5 @@
 ﻿@using Chapeau.Enums
+@using Chapeau.Extensions
 @model Chapeau.ViewModels.MenuViewModel
 
 <style>
@@ -235,7 +236,7 @@
         @foreach (Category category in Model.Categories)
         {
             <option value="@((int)category)" selected="@(Model.SelectedCategory == category)">
-                @category.ToString().Replace("CoffeeAndTea", "Coffee & Tea")
+                @category.ToDisplayName()
             </option>
         }
     </select>

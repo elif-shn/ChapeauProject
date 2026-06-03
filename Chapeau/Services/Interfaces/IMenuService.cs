@@ -1,5 +1,6 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
+using Chapeau.ViewModels;
 using System;
 
 public interface IMenuService
@@ -17,6 +18,4 @@ public interface IMenuService
     void DeactivateMenuItem(int id);
 
     void DecreaseStock(int menuItemId, int amount);
-
-    List<Category> GetCategoriesByCard(List<Menu> menus, Card? selectedCard);
 }

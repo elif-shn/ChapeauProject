@@ -1,6 +1,11 @@
 ﻿@using Chapeau.Enums;
+@using Chapeau.Extensions;
 
 @model List<Chapeau.Models.Table>
+@{
+    var user = Context.Session.GetObject<User>("LoggedInUser");
+    bool isWaiter = user != null && user.Role == "Waiter";
+}
 
 <h1>Restaurant Overview</h1>
 
@@ -25,20 +30,30 @@
 
             <p>Status: @table.TableStatus</p>
 
-            <a asp-controller="Order"
-               asp-action="ViewMenuForTakeOrder"
-               asp-route-selectedTableId="@table.TableId"
-                   class="btn btn-sm"
-                   style="background-color:#4a565e; border:none; color:yellow;">
-                Take Order
-            </a>
+            <div class="d-flex gap-2 mt-2">
+                @if (isWaiter)
+                {
+                    <a asp-controller="Order"
+                       asp-action="ViewMenuForTakeOrder"
+                       asp-route-selectedTableId="@table.TableId"
+                       class="btn btn-sm btn-primary flex-fill text-center">
+                        Take Order
+                    </a>
+                }
+                else
+                {
+                    <span class="btn btn-sm btn-secondary flex-fill text-center disabled">
+                        Take Order
+                    </span>
+                }
+                <a asp-controller="Tables"
+                   asp-action="ShowOrders"
+                   asp-route-tableId="@table.TableId"
+                   class="btn btn-sm btn-primary flex-fill text-center">
+                    View Orders
+                </a>
 
-            <a asp-controller="Tables"
-               asp-action="ShowOrders"
-               asp-route-tableId="@table.TableId"
-                   class="btn btn-primary">
-                View Active Orders
-            </a>
+            </div>
 
         </div>
     }
