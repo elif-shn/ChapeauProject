@@ -1,0 +1,35 @@
+﻿@using Chapeau.Enums
+@using Chapeau.Extensions
+@model Chapeau.ViewModels.MenuViewModel
+
+<h1 class="display-4 pb-4" style="font-family: Arial, sans-serif; font-weight: 300;">Le MENU</h1>
+<form method="get" class="mb-4">
+    <div class="row">
+        <div class="col-md-4">
+            <select name="selectedCard" class="form-select" onchange="this.form.submit()">
+                <option value="">All Menus</option>
+                @foreach (var card in Enum.GetValues(typeof(Card)))
+                {
+                    <option value="@((int)card)" selected="@(Model.SelectedCard == (Card)card)">
+                        @card.ToString()
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <select name="selectedCategory" class="form-select" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                @if (Model.Categories != null)
+                {
+                    @foreach (Category category in Model.Categories)
+                    {
+                        <option value="@((int)category)" selected="@(Model.SelectedCategory == category)">
+                            @category.ToDisplayName()
+                        </option>
+                    }
+                }
+            </select>
+        </div>
+    </div>
+</form>

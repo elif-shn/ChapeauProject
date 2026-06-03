@@ -79,7 +79,6 @@ namespace Chapeau.Controllers
                 var allMenus = _menuService.GetMenus(selectedCard, null, true).ToList();
                 var categories = allMenus.Select(m => m.Category).Distinct().ToList();
 
-                // Seçili kategori mevcut kategoriler arasında yoksa sıfırlıyoruz
                 if (selectedCategory != null && !categories.Contains(selectedCategory.Value))
                     selectedCategory = null;
 
@@ -220,12 +219,11 @@ namespace Chapeau.Controllers
             });
         }
 
-        [HttpPost] // Güvenlik için HttpPost niteliğini eklemek iyi bir pratiktir
+        [HttpPost] 
         public IActionResult AddNote(int menuItemId, string comment)
         {
             var items = HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder") ?? new List<OrderItem>();
 
-            // LINQ: Eski foreach döngüsünü tamamen kaldırıp nokta atışı elemanı buluyoruz
             var itemToUpdate = items.FirstOrDefault(item => item.MenuItem.MenuItemId == menuItemId);
 
             if (itemToUpdate != null)
