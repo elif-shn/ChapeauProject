@@ -9,9 +9,8 @@ public interface IOrderRepository
     void UpdateOrderStatus(Order order, OrderStatus status);
     void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status);
     Order? GetOrderById(Order order);
-    Order CreateOrder(int tableId);
-    void IncreaseOrderItemQuantity(OrderItem newOrderItem, int quantity);
-    void AddOrderItemToOrder(OrderItem newOrderItem);
+    public Order CreateOrderWithItems(Order order);
+    void AddItemsToExistingOrder(int orderId, List<OrderItem> items);
     Order GetActiveOrderForTable(int tableId);
 }
 

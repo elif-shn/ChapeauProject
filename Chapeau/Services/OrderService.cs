@@ -43,40 +43,20 @@ public class OrderService : IOrderService
         return _orderRepository.GetActiveOrderForTable(tableId);
     }
 
-    public Order CreateOrder(int tableId)
-    {
-        return _orderRepository.CreateOrder(tableId);
-    }
-
     public void SendOrder(Order newOrder)
     {
-        Order order = GetActiveOrderForTable(newOrder.TableId) ?? _orderRepository.CreateOrder(newOrder.TableId);
-        List<OrderItem> existingItems = _orderRepository.GetOrderItemsByOrderId(order);
+        var activeOrder = _orderRepository.GetActiveOrderForTable(newOrder.TableId);
 
+        if (activeOrder == null)
+        {
+            _orderRepository.CreateOrderWithItems(newOrder);
+        }
+        else
+        {
+            _orderRepository.AddItemsToExistingOrder(activeOrder.OrderId, newOrder.OrderItems);
+        }
         foreach (var item in newOrder.OrderItems)
         {
-            // DB kontrolünde de sadece MenuItemId'ye bakıyoruz
-            var existingItem = existingItems.FirstOrDefault(oi =>
-                oi.MenuItem.MenuItemId == item.MenuItem.MenuItemId);
-
-            if (existingItem != null)
-            {
-                existingItem.Order = order;
-                if (!string.IsNullOrEmpty(item.Comment))
-                {
-                    existingItem.Comment = item.Comment?.Trim();
-                }
-                _orderRepository.IncreaseOrderItemQuantity(existingItem, item.OrderItemQuantity);
-                existingItem.OrderItemQuantity += item.OrderItemQuantity;
-            }
-            else
-            {
-                item.Comment = item.Comment?.Trim() ?? "";
-                item.Order = order;
-                _orderRepository.AddOrderItemToOrder(item);
-                existingItems.Add(item);
-            }
-
             _menuService.DecreaseStock(item.MenuItem.MenuItemId, item.OrderItemQuantity);
         }
     }
@@ -97,7 +77,6 @@ public class OrderService : IOrderService
         {
             existingItem.OrderItemQuantity += change;
 
-            // Eğer yeni gelen istekte bir not varsa eskisinin üzerine yazalım/güncelleyelim
             if (!string.IsNullOrEmpty(newItem.Comment))
             {
                 existingItem.Comment = newItem.Comment;

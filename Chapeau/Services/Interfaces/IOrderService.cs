@@ -11,7 +11,6 @@ namespace Chapeau.Services.Interfaces
         void UpdateOrderStatus(Order order, OrderStatus status);
         void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status);
         Order? GetActiveOrderForTable(int tableId);
-        Order CreateOrder(int tableId);
         void SendOrder(Order newOrder);
         List<OrderItem> ModifyCurrentOrderItem(List<OrderItem> currentItems, OrderItem newItem, int change);
         List<OrderItem> RemoveItem(List<OrderItem> currentItems, int menuItemId);
