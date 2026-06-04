@@ -8,7 +8,6 @@ namespace Chapeau.Services.Interfaces
     public interface ITablesService
     {
         List<Table> GetAllTables();
-        List<Table> GetOccupiedTables();
 
         List<ActiveOrderViewModel> GetActiveOrders(int tableId);
 

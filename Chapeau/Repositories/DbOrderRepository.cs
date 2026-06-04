@@ -177,7 +177,7 @@ namespace Chapeau.Repositories
                 string query = @"SELECT OrderId, TableId, EmployeeId, OrderTime, WaitingTime, ServedTime, OrderStatus
                                  FROM [Order]
                                  WHERE TableId = @TableId
-                                 AND OrderStatus NOT IN ('Settled', 'Cancelled', 'Paid')";
+                                 AND OrderStatus NOT IN ('Settled', 'Cancelled', 'Paid','Served')";
 
                 SqlCommand command = new SqlCommand(query, connection);
                 command.Parameters.AddWithValue("@TableId", tableId);

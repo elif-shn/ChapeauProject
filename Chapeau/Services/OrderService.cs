@@ -55,20 +55,23 @@ public class OrderService : IOrderService
 
         foreach (var item in newOrder.OrderItems)
         {
-            string incomingComment = item.Comment?.Trim() ?? "";
+            // DB kontrolünde de sadece MenuItemId'ye bakıyoruz
             var existingItem = existingItems.FirstOrDefault(oi =>
-                oi.MenuItem.MenuItemId == item.MenuItem.MenuItemId &&
-                (oi.Comment?.Trim() ?? "") == incomingComment);
+                oi.MenuItem.MenuItemId == item.MenuItem.MenuItemId);
 
             if (existingItem != null)
             {
                 existingItem.Order = order;
+                if (!string.IsNullOrEmpty(item.Comment))
+                {
+                    existingItem.Comment = item.Comment?.Trim();
+                }
                 _orderRepository.IncreaseOrderItemQuantity(existingItem, item.OrderItemQuantity);
                 existingItem.OrderItemQuantity += item.OrderItemQuantity;
             }
             else
             {
-                item.Comment = incomingComment;
+                item.Comment = item.Comment?.Trim() ?? "";
                 item.Order = order;
                 _orderRepository.AddOrderItemToOrder(item);
                 existingItems.Add(item);
@@ -80,10 +83,8 @@ public class OrderService : IOrderService
 
     public List<OrderItem> ModifyCurrentOrderItem(List<OrderItem> currentItems, OrderItem newItem, int change)
     {
-        newItem.Comment ??= "";
         var existingItem = currentItems.FirstOrDefault(item =>
-            item.MenuItem.MenuItemId == newItem.MenuItem.MenuItemId &&
-            item.Comment == newItem.Comment);
+         item.MenuItem.MenuItemId == newItem.MenuItem.MenuItemId);
 
         if (change > 0)
         {
@@ -95,12 +96,20 @@ public class OrderService : IOrderService
         if (existingItem != null)
         {
             existingItem.OrderItemQuantity += change;
+
+            // Eğer yeni gelen istekte bir not varsa eskisinin üzerine yazalım/güncelleyelim
+            if (!string.IsNullOrEmpty(newItem.Comment))
+            {
+                existingItem.Comment = newItem.Comment;
+            }
+
             if (existingItem.OrderItemQuantity <= 0)
                 currentItems.Remove(existingItem);
         }
         else if (change > 0)
         {
             newItem.OrderItemQuantity = change;
+            newItem.Comment ??= "";
             currentItems.Add(newItem);
         }
 
