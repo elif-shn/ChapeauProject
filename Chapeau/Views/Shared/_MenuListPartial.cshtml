@@ -63,15 +63,16 @@
                                 <input type="hidden" name="NewOrderItem.MenuItem.MenuItemId" value="@item.MenuItemId" />
 
                                 @{
-                                    var sepet = ViewData["CurrentOrders"] as List<Chapeau.Models.OrderItem>;
-                                    if (sepet != null)
+                                    var cart = ViewData["CurrentOrders"] as List<Chapeau.Models.OrderItem>;
+
+                                    if (cart != null)
                                     {
-                                        for (int j = 0; j < sepet.Count; j++)
+                                        for (int i = 0; i < cart.Count; i++)
                                         {
-                                            <input type="hidden" name="CurrentOrders[@j].MenuItem.MenuItemId" value="@sepet[j].MenuItem.MenuItemId" />
-                                            <input type="hidden" name="CurrentOrders[@j].MenuItem.MenuItemName" value="@sepet[j].MenuItem.MenuItemName" />
-                                            <input type="hidden" name="CurrentOrders[@j].OrderItemQuantity" value="@sepet[j].OrderItemQuantity" />
-                                            <input type="hidden" name="CurrentOrders[@j].Comment" value="@sepet[j].Comment" />
+                                            <input type="hidden" name="CurrentOrders[@i].MenuItem.MenuItemId" value="@cart[i].MenuItem.MenuItemId" />
+                                            <input type="hidden" name="CurrentOrders[@i].MenuItem.MenuItemName" value="@cart[i].MenuItem.MenuItemName" />
+                                            <input type="hidden" name="CurrentOrders[@i].OrderItemQuantity" value="@cart[i].OrderItemQuantity" />
+                                            <input type="hidden" name="CurrentOrders[@i].Comment" value="@cart[i].Comment" />
                                         }
                                     }
                                 }

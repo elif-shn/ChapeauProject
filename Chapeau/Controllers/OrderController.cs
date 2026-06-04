@@ -119,7 +119,6 @@ namespace Chapeau.Controllers
                 var newItem = new OrderItem
                 {
                     MenuItem = dbMenuItem,
-                    // View katmanından gelen güncel comment'i koruyoruz
                     Comment = model.NewOrderItem?.Comment ?? ""
                 };
 
@@ -130,7 +129,6 @@ namespace Chapeau.Controllers
                 TempData["ErrorMessage"] = ex.Message;
             }
 
-            // Alt taraftaki menü listeleme logic'i aynen kalıyor
             var allMenus = _menuService.GetMenus(model.SelectedCard, null, true).ToList();
             model.Categories = allMenus.Select(m => m.Category).Distinct().ToList();
             model.Menu = allMenus.Where(m => model.SelectedCategory == null || m.Category == model.SelectedCategory).ToList();
