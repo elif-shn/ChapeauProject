@@ -23,6 +23,13 @@ namespace Chapeau
             builder.Services.AddScoped<IPaymentRepository, DbPaymentRepository>();
             builder.Services.AddScoped<PaymentService>();
             builder.Services.AddScoped<ITakeOrderService, TakeOrderService>();
+            builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+            builder.Services.AddScoped<IStockRepository, StockRepository>();
+            builder.Services.AddScoped<IStockService, StockService>();
+            builder.Services.AddScoped<IFinancialRepository, FinancialRepository>();
+            builder.Services.AddScoped<IFinancialService, FinancialService>();
+
 
             builder.Services.AddSession(options =>
             {
