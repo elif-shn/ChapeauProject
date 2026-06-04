@@ -9,6 +9,6 @@ namespace Chapeau.Repositories
         void Add(Employee employee);
         void Update(Employee employee);
         void SetActive(int id, bool isActive);
-        bool EmployeeNumberExists(string employeeNumber);
+        bool EmployeeNumberExists(string employeeNumber); 
     }
 }
