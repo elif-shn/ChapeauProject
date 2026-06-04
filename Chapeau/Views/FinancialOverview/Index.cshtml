@@ -1,0 +1,291 @@
+﻿@model Chapeau.ViewModels.FinancialOverviewViewModel
+
+<style>
+    body {
+        background-color: #f8f6f3;
+        font-family: 'Segoe UI', sans-serif;
+        color: #2d2d2d;
+    }
+
+    .page-title {
+        font-size: 38px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #4b2e1f;
+    }
+
+    .title-line {
+        height: 2px;
+        background-color: #c8a96b;
+        width: 100%;
+        margin-bottom: 24px;
+    }
+
+    .filter-container {
+        background: #f4eee7;
+        border: 1px solid #d7be95;
+        border-radius: 14px;
+        padding: 18px 22px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+    }
+
+        .filter-container label {
+            font-weight: 700;
+            font-size: 18px;
+            color: #4b2e1f;
+            margin-bottom: 0;
+        }
+
+    .custom-select, .date-input {
+        min-width: 180px;
+        height: 44px;
+        border-radius: 8px;
+        border: 1px solid #c9ab73;
+        padding: 0 14px;
+        font-size: 16px;
+        background-color: white;
+        color: #333;
+    }
+
+    .btn-filter {
+        background-color: #c8a96b;
+        border: none;
+        color: white;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 17px;
+        font-weight: 600;
+        transition: 0.2s ease;
+    }
+
+        .btn-filter:hover {
+            background-color: #b18f4e;
+        }
+
+    .date-range {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .period-label {
+        color: #888;
+        font-size: 15px;
+        margin-bottom: 20px;
+    }
+
+    .cards-row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 32px;
+    }
+
+    .summary-card {
+        background-color: white;
+        border-radius: 16px;
+        padding: 24px;
+        flex: 1;
+        min-width: 180px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        border-top: 5px solid #c8a96b;
+    }
+
+        .summary-card h3 {
+            color: #4b2e1f;
+            font-size: 17px;
+            font-weight: 700;
+            margin: 0 0 14px 0;
+        }
+
+        .summary-card .big-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3e2a1a;
+        }
+
+        .summary-card .sub-label {
+            font-size: 14px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+    .card-lunch {
+        border-top-color: #c8a000;
+    }
+
+    .card-dinner {
+        border-top-color: #d43c2f;
+    }
+
+    .card-drinks {
+        border-top-color: #1a6fa8;
+    }
+
+    .card-tip {
+        border-top-color: #8e44ad;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+        border-radius: 18px;
+    }
+
+    .menu-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: white;
+        border-radius: 18px;
+    }
+
+        .menu-table thead {
+            background-color: #6b442b;
+            color: white;
+        }
+
+        .menu-table th {
+            padding: 16px 18px;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: left;
+        }
+
+        .menu-table td {
+            padding: 14px 18px;
+            font-size: 16px;
+            border-bottom: 1px solid #ececec;
+        }
+
+        .menu-table tbody tr:last-child td {
+            font-weight: 700;
+            background-color: #faf7f2;
+            border-bottom: none;
+        }
+</style>
+
+<h2 class="page-title mb-2">Financial Overview</h2>
+<div class="title-line"></div>
+
+<form method="get" asp-action="Index" class="filter-container">
+    <label>Period:</label>
+    <select name="period" class="custom-select" id="periodSelect" onchange="toggleDateRange(this.value)">
+        @if (Model.Period == "month")
+        {
+            <option value="month" selected>Last Month</option>
+        }
+        else
+        {
+            <option value="month">Last Month</option>
+        }
+
+        @if (Model.Period == "quarter")
+        {
+            <option value="quarter" selected>Last Quarter</option>
+        }
+        else
+        {
+            <option value="quarter">Last Quarter</option>
+        }
+
+        @if (Model.Period == "year")
+        {
+            <option value="year" selected>Last Year</option>
+        }
+        else
+        {
+            <option value="year">Last Year</option>
+        }
+
+        @if (Model.Period == "custom")
+        {
+            <option value="custom" selected>Custom Range</option>
+        }
+        else
+        {
+            <option value="custom">Custom Range</option>
+        }
+    </select>
+
+    <div class="date-range" id="dateRange" style="@(Model.Period == "custom" ? "display:flex;" : "display:none;")">
+        <label>From:</label>
+        <input type="date" name="startDate" class="date-input" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+        <label>To:</label>
+        <input type="date" name="endDate" class="date-input" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+    </div>
+
+    <button type="submit" class="btn-filter">Show Overview</button>
+</form>
+
+<p class="period-label">
+    Showing data from <strong>@Model.StartDate.ToString("dd MMM yyyy")</strong>
+    to <strong>@Model.EndDate.ToString("dd MMM yyyy")</strong>
+</p>
+
+<div class="cards-row">
+    <div class="summary-card card-lunch">
+        <h3>🥗 Lunch</h3>
+        <div class="big-number">€ @Model.Summary.TotalIncomeLunch.ToString("0.00")</div>
+        <div class="sub-label">@Model.Summary.TotalSalesLunch orders</div>
+    </div>
+    <div class="summary-card card-dinner">
+        <h3>🍽️ Dinner</h3>
+        <div class="big-number">€ @Model.Summary.TotalIncomeDinner.ToString("0.00")</div>
+        <div class="sub-label">@Model.Summary.TotalSalesDinner orders</div>
+    </div>
+    <div class="summary-card card-drinks">
+        <h3>🥤 Drinks</h3>
+        <div class="big-number">€ @Model.Summary.TotalIncomeDrinks.ToString("0.00")</div>
+        <div class="sub-label">@Model.Summary.TotalSalesDrinks orders</div>
+    </div>
+    <div class="summary-card card-tip">
+        <h3>💵 Total Tip</h3>
+        <div class="big-number">€ @Model.Summary.TotalTip.ToString("0.00")</div>
+        <div class="sub-label">all orders combined</div>
+    </div>
+</div>
+
+<div class="table-wrapper">
+    <table class="menu-table">
+        <thead>
+            <tr>
+                <th>Menu Card</th>
+                <th>Total Orders</th>
+                <th>Total Income</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>🥗 Lunch</td>
+                <td>@Model.Summary.TotalSalesLunch</td>
+                <td>€ @Model.Summary.TotalIncomeLunch.ToString("0.00")</td>
+            </tr>
+            <tr>
+                <td>🍽️ Dinner</td>
+                <td>@Model.Summary.TotalSalesDinner</td>
+                <td>€ @Model.Summary.TotalIncomeDinner.ToString("0.00")</td>
+            </tr>
+            <tr>
+                <td>🥤 Drinks</td>
+                <td>@Model.Summary.TotalSalesDrinks</td>
+                <td>€ @Model.Summary.TotalIncomeDrinks.ToString("0.00")</td>
+            </tr>
+            <tr>
+                <td>Total</td>
+                <td>@Model.Summary.TotalSales</td>
+                <td>€ @Model.Summary.TotalIncome.ToString("0.00")</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function toggleDateRange(value) {
+        var div = document.getElementById('dateRange');
+        div.style.display = value === 'custom' ? 'flex' : 'none';
+    }
+</script>

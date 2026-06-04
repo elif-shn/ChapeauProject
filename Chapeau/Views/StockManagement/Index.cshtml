@@ -1,9 +1,7 @@
 ﻿@using Chapeau.Enums
-@using Chapeau.Extensions
-@model Chapeau.ViewModels.MenuViewModel
+@model Chapeau.ViewModels.StockManagementViewModel
 
 <style>
-
     body {
         background-color: #f8f6f3;
         font-family: 'Segoe UI', sans-serif;
@@ -43,7 +41,7 @@
             margin-bottom: 0;
         }
 
-    .custom-select, .input-box {
+    .custom-select {
         min-width: 180px;
         height: 44px;
         border-radius: 8px;
@@ -67,23 +65,6 @@
 
         .btn-filter:hover {
             background-color: #b18f4e;
-        }
-
-    .btn-add {
-        display: inline-block;
-        background-color: #6b442b;
-        color: white;
-        text-decoration: none;
-        padding: 12px 22px;
-        border-radius: 10px;
-        font-size: 18px;
-        font-weight: 500;
-        margin-bottom: 24px;
-        transition: 0.2s ease;
-    }
-
-        .btn-add:hover {
-            background-color: #553520;
         }
 
     .table-wrapper {
@@ -111,7 +92,7 @@
         }
 
         .menu-table td {
-            padding: 16px 18px;
+            padding: 14px 18px;
             font-size: 16px;
             border-bottom: 1px solid #ececec;
             vertical-align: middle;
@@ -121,18 +102,57 @@
             background-color: #faf7f2;
         }
 
-   
-    .inactive-row td:not(.actions-cell),
-    .inactive-row span:not(.no-blur),
-    .inactive-row .menu-badge {
-        filter: blur(0.7px) grayscale(40%) brightness(0.95);
+    .stock-input {
+        width: 90px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid #c9ab73;
+        padding: 0 10px;
+        font-size: 15px;
+        background-color: white;
     }
 
-   
-    .inactive-row .actions-cell,
-    .inactive-row .actions-cell * {
-        filter: none !important;
-        opacity: 1 !important;
+    .btn-save-stock {
+        background-color: #6b442b;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+        .btn-save-stock:hover {
+            background-color: #553520;
+        }
+
+    .badge-instock {
+        background-color: #d4f4e2;
+        color: #1a7a40;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .badge-almostout {
+        background-color: #fff3cd;
+        color: #856404;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .badge-outofstock {
+        background-color: #fde8e8;
+        color: #c0392b;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 700;
     }
 
     .badge-lunch {
@@ -161,90 +181,33 @@
         font-size: 13px;
         font-weight: 700;
     }
-
-    .status-active {
-        color: #222;
-        font-weight: 500;
-    }
-
-    .status-inactive {
-        color: #888;
-        font-weight: 500;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-
-    .btn-edit {
-        background-color: #c8a96b;
-        color: white;
-        padding: 8px 14px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-    }
-
-    .btn-deactivate {
-        background-color: #d43c2f;
-        color: white;
-        padding: 8px 14px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-    }
-
-    .btn-activate {
-        background-color: #22a652;
-        color: white;
-        padding: 8px 14px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-    }
-
 </style>
 
-<h2 class="page-title mb-2">Menu Management</h2>
+<h2 class="page-title mb-2">Stock Management</h2>
 <div class="title-line"></div>
 
-<form method="get" asp-action="Management" class="filter-container">
-
-    <label>All Menus:</label>
-
-    <select name="selectedCard" class="form-select" onchange="this.form.submit()">
-        <option value="">All Menus</option>
-
+<form method="get" asp-action="Index" class="filter-container">
+    <label>Card:</label>
+    <select name="selectedCard" class="custom-select" onchange="this.form.submit()">
+        <option value="">All Cards</option>
         @foreach (var card in Enum.GetValues(typeof(Card)))
         {
-            <option value="@((int)card)" selected="@(Model.SelectedCard == (Card)card)">
-                @card.ToString()
-            </option>
+            <option value="@((int)card)" selected="@(Model.SelectedCard == (Card)card)">@card.ToString()</option>
         }
     </select>
 
     <label>Category:</label>
-
-    <select name="selectedCategory" class="form-select" onchange="this.form.submit()">
+    <select name="selectedCategory" class="custom-select" onchange="this.form.submit()">
         <option value="">All Categories</option>
         @foreach (Category category in Model.Categories)
         {
             <option value="@((int)category)" selected="@(Model.SelectedCategory == category)">
-                @category.ToDisplayName()
+                @category.ToString().Replace("CoffeeAndTea", "Coffee & Tea")
             </option>
         }
     </select>
-
     <button type="submit" class="btn-filter">Filter</button>
-
 </form>
-
-<a asp-action="Add" class="btn-add">+ Add New Menu Item</a>
 
 <div class="table-wrapper">
     <table class="menu-table">
@@ -252,65 +215,54 @@
             <tr>
                 <th>ID</th>
                 <th>Name</th>
-                <th>Price</th>
-                <th>Stock</th>
                 <th>Card</th>
                 <th>Category</th>
-                <th>VAT %</th>
+                <th>Current Stock</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th>Update Stock</th>
             </tr>
         </thead>
-
         <tbody>
             @foreach (var menu in Model.Menu)
             {
                 @foreach (var item in menu.MenuItems)
                 {
-                    <tr class="@(item.IsActive ? "" : "inactive-row")">
+                    string badgeClass = menu.Card == Card.Lunch ? "badge-lunch" :
+                    menu.Card == Card.Dinner ? "badge-dinner" : "badge-drinks";
+                    <tr>
                         <td>@item.MenuItemId</td>
                         <td style="font-weight:600;">@item.MenuItemName</td>
-
-                        <td>€ @item.MenuItemPrice.ToString("0.00")</td>
-
-                        <td>@item.Stock</td>
-                        <td>
-                            <span class="badge-lunch">@menu.Card</span>
-                        </td>
+                        <td><span class="@badgeClass">@menu.Card</span></td>
                         <td>@menu.Category</td>
-                        <td>@item.VatPercentage %</td>
-
+                        <td style="font-weight:600;">@item.Stock</td>
                         <td>
-                            @if (item.IsActive)
+                            @if (item.StockStatus == Chapeau.Enums.StockStatus.OutOfStock)
                             {
-                                <span class="status-active">Active</span>
+                                <span class="badge-outofstock">Out of Stock</span>
+                            }
+                            else if (item.StockStatus == Chapeau.Enums.StockStatus.AlmostOutOfStock)
+                            {
+
+                                <span class="badge-almostout">Almost Out (≤10)</span>
                             }
                             else
                             {
-                                <span class="status-inactive">Inactive</span>
+
+                                <span class="badge-instock">In Stock</span>
                             }
                         </td>
-
-                        <td class="actions-cell">
-                            <div class="action-buttons">
-
-                                <a asp-action="Edit" asp-route-id="@item.MenuItemId" class="btn-edit">Edit</a>
-
-                                @if (item.IsActive)
-                                {
-                                    <a asp-action="Deactivate" asp-route-id="@item.MenuItemId" class="btn-deactivate">Deactivate</a>
-                                }
-                                else
-                                {
-                                    <a asp-action="Activate" asp-route-id="@item.MenuItemId" class="btn-activate">Activate</a>
-                                }
-
-                            </div>
+                        <td>
+                            <form method="post" asp-action="UpdateStock" style="display:flex; gap:8px; align-items:center;">
+                                <input type="hidden" name="menuItemId" value="@item.MenuItemId" />
+                                <input type="hidden" name="selectedCard" value="@((int?)Model.SelectedCard)" />
+                                <input type="hidden" name="selectedCategory" value="@((int?)Model.SelectedCategory)" />
+                                <input type="number" name="newStock" value="@item.Stock" min="0" class="stock-input" />
+                                <button type="submit" class="btn-save-stock">Save</button>
+                            </form>
                         </td>
                     </tr>
                 }
             }
         </tbody>
-
     </table>
 </div>
