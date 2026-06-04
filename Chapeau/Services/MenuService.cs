@@ -46,17 +46,4 @@ public class MenuService : IMenuService
     {
         _menuRepository.DecreaseStock(menuItemId, amount);
     }
-
-    public List<Category> GetCategoriesByCard(List<Menu> menus, Card? selectedCard)
-    {
-        List<Category> categories = new List<Category>();
-        foreach (var menu in menus)
-        {
-            if (!categories.Contains(menu.Category))
-            {
-                categories.Add(menu.Category);
-            }
-        }
-        return categories;
-    }
 }

@@ -1,0 +1,71 @@
+﻿@using Chapeau.Enums
+@using Chapeau.Extensions
+@model dynamic
+
+@{
+    bool showAddButton = ViewData["ShowAddButton"] as bool? ?? false;
+    Chapeau.Enums.Card? previousCard = null;
+}
+
+<table>
+    <tbody>
+        @foreach (var menu in Model)
+        {
+            if (previousCard != menu.Card)
+            {
+                <tr>
+                    <td colspan="4" style="padding-top: 35px;">
+                        <strong>@menu.Card.ToString().ToUpper()</strong>
+                    </td>
+                </tr>
+                previousCard = menu.Card;
+            }
+
+            <tr>
+                <td colspan="4" style="padding-top: 15px;">
+                    <em>@(((Chapeau.Enums.Category)menu.Category).ToDisplayName().ToUpper())</em>
+                </td>
+            </tr>
+
+            @foreach (var item in menu.MenuItems)
+            {
+                <tr>
+                    <td class="pe-3">
+                        @item.MenuItemName
+                    </td>
+
+                    <td class="pe-3">
+                        @if (item.StockStatus == Chapeau.Enums.StockStatus.OutOfStock)
+                        {
+                            <span style="color:red;">Out of stock</span>
+                        }
+                        else if (item.StockStatus == Chapeau.Enums.StockStatus.AlmostOutOfStock)
+                        {
+                            <span style="color:orange;">Almost out of stock</span>
+                        }
+                        else
+                        {
+                            <span style="color:green;">In stock</span>
+                        }
+                    </td>
+
+                    <td class="pe-3">
+                        € @item.MenuItemPrice.ToString("0.00")
+                    </td>
+                    @if (showAddButton)
+                    {
+                        <td>
+                            <form method="post" asp-action="AddNewItemToCurrentOrder">
+                                <input type="hidden" name="SelectedCard" value="@ViewData["SelectedCard"]" />
+                                <input type="hidden" name="SelectedCategory" value="@ViewData["SelectedCategory"]" />
+                                <input type="hidden" name="SelectedTableId" value="@ViewData["SelectedTableId"]" />
+                                <input type="hidden" name="NewOrderItem.MenuItem.MenuItemId" value="@item.MenuItemId" />
+                                <button class="btn btn-success">+</button>
+                            </form>
+                        </td>
+                    }
+                </tr>
+            }
+        }
+    </tbody>
+</table>

@@ -1,9 +1,15 @@
-﻿@model List<Chapeau.Models.Table>
+﻿@using Chapeau.Enums;
+@using Chapeau.Extensions;
+
+@model List<Chapeau.Models.Table>
+@{
+    var user = Context.Session.GetObject<User>("LoggedInUser");
+    bool isWaiter = user != null && user.Role == "Waiter";
+}
 
 <h1>Restaurant Overview</h1>
 
-<a asp-action="Index"
-   class="btn btn-primary mb-3">
+<a asp-action="Index" class="btn btn-primary mb-3">
     Refresh
 </a>
 
@@ -12,7 +18,7 @@
     @foreach (var table in Model)
     {
         string cssClass =
-            table.TableStatus == "Occupied"
+            table.TableStatus == TableStatus.Occupied
             ? "occupied"
             : "free";
 
@@ -20,17 +26,38 @@
 
             <h3>Table @table.TableId</h3>
 
-            <p>
-                Capacity:
-                @table.TableCapacity
-            </p>
+            <p>Capacity: @table.TableCapacity</p>
 
-            <p>
-                Status:
-                @table.TableStatus
-            </p>
+            <p>Status: @table.TableStatus</p>
+
+            <div class="d-flex gap-2 mt-2">
+                @if (isWaiter)
+                {
+                    <a asp-controller="Order"
+                       asp-action="ViewMenuForTakeOrder"
+                       asp-route-selectedTableId="@table.TableId"
+                       class="btn btn-sm btn-primary flex-fill text-center">
+                        Take Order
+                    </a>
+                }
+                else
+                {
+                    <span class="btn btn-sm btn-secondary flex-fill text-center disabled">
+                        Take Order
+                    </span>
+                }
+                <a asp-controller="Tables"
+                   asp-action="ShowOrders"
+                   asp-route-tableId="@table.TableId"
+                   class="btn btn-sm btn-primary flex-fill text-center">
+                    View Orders
+                </a>
+
+            </div>
 
         </div>
     }
 
 </div>
+
+
