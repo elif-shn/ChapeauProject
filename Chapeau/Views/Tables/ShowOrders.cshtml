@@ -1,0 +1,69 @@
+﻿@model List<Chapeau.ViewModels.ActiveOrderViewModel>
+
+<h2>Active Orders</h2>
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>Order Number</th>
+            <th>Food / Drink</th>
+            <th>Order Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var order in Model)
+        {
+            <tr>
+
+                <td>
+                    @order.OrderId
+                </td>
+
+                <td>
+                    @order.OrderType
+                </td>
+
+                <td>
+                    @order.OrderStatus
+                </td>
+                <td>
+
+                    @if (order.OrderStatus == "Ready")
+                    {
+                        <form asp-action="MarkServed"
+                              method="post">
+
+                            <input type="hidden"
+                                   name="orderId"
+                                   value="@order.OrderId" />
+
+                            <input type="hidden"
+                                   name="tableId"
+                                   value="@order.TableId" />
+
+                            <button type="submit"
+                                    class="btn btn-success">
+
+                                Serve
+
+                            </button>
+
+                        </form>
+                    }
+
+                </td>
+            </tr>
+        }
+
+    </tbody>
+
+</table>
+
+<a asp-action="Index"
+       class="btn btn-secondary">
+    Back
+</a>

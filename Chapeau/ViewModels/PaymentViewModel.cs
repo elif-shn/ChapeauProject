@@ -1,20 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using Chapeau.Enums;
 using Chapeau.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Chapeau.ViewModels
 {
     public class PaymentViewModel
     {
-        public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-        public int OrderId { get; set; }
+        public List<Table> Tables { get; set; }
+        public List<OrderItem> OrderItems { get; set; }
+
         public int TableId { get; set; }
+        public int OrderId { get; set; }
+
         public decimal SubTotal { get; set; }
-        public decimal HighVat { get; set; }
-        public decimal LowVat { get; set; }
         public decimal TotalAmount { get; set; }
-        public List<SelectListItem> ActiveOrders { get; set; } = new List<SelectListItem>();
-        public int NumberOfSplits { get; set; } = 1;
-        public decimal AmountToPayNow { get; set; }
+        public decimal TipAmount { get; set; }
+        public decimal Vat9 { get; set; }
+        public decimal Vat21 { get; set; }
+
+        public PaymentMethod PaymentMethod { get; set; }
+        public string Feedback { get; set; }
+        public string ErrorMessage { get; set; }
+
+        public PaymentViewModel()
+        {
+            Tables = new List<Table>();
+            OrderItems = new List<OrderItem>();
+            PaymentMethod = PaymentMethod.Cash;
+            Feedback = "";
+            ErrorMessage = "";
+        }
     }
 }

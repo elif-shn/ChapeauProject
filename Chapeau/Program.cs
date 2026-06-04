@@ -1,5 +1,7 @@
 using Chapeau.Repositories;
+using Chapeau.Repositories.Interfaces;
 using Chapeau.Services;
+using Chapeau.Services.Interfaces;
 
 namespace Chapeau
 {
@@ -9,7 +11,6 @@ namespace Chapeau
         {
             var builder = WebApplication.CreateBuilder(args);
 
-           
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddScoped<IMenuRepository, MenuRepository>();
@@ -37,19 +38,14 @@ namespace Chapeau
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
-            builder.Services.AddSession();
-            
-
-            builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
+
             app.UseSession();
 
-            
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-            
                 app.UseHsts();
             }
 

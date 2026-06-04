@@ -1,108 +1,125 @@
-﻿@model List<Order>
+﻿@model List<Chapeau.Models.Order>
 @using Chapeau.Models
 @using Chapeau.Enums
 
 @{
     ViewData["Title"] = "Running Orders";
+
+    var categoryGroups = new[]
+    {
+        ("Starters",  Category.Starters),
+        ("Mains",     Category.Mains),
+        ("Desserts",  Category.Desserts)
+    };
 }
 
-<div class="container mt-4">
+<div class="container-fluid">
 
-    <h1 class="mb-4">Running Orders</h1>
-
-    <div class="text-end mb-3">
-        <button class="btn btn-sm"
-                onclick="location.reload()"
-                style="background-color:lightseagreen; border:none; color:white;">
-            Refresh Orders
-        </button>
-
-        <a asp-action="FinishedOrders"
-            class="btn btn-sm"
-            style="background-color:#4a565e; border:none; color:white;">
-			View Finished Orders
-        </a>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Running Orders</h1>
+        <div>
+            <button class="btn btn-outline-primary" onclick="location.reload()">Refresh</button>
+            <a asp-controller="Bar" asp-action="Index" class="btn btn-outline-info">Bar Orders</a>
+            <a asp-action="FinishedOrders" class="btn btn-outline-secondary">Finished Orders</a>
+        </div>
     </div>
 
-    <div class="table-responsive">
+    <div class="row">
+        @foreach (var order in Model)
+        {
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card shadow-sm border h-100">
 
-        <table class="table table-hover table-bordered w-100">
-            <thead>
-            <thead class="table-secondary">
-                <tr>
-                    <th>Table Number</th>
-                    <th>Order Time</th>
-                    <th>Waiting Time</th>
-                    <th>Status</th>
-                    <th>Order Items</th>
-                    <th>Update Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (Order order in Model)
-                {
-                    <tr>
-                        <td>@order.Table.TableId</td>
-                        <td>@order.OrderTime.ToShortTimeString()</td>
-                        <td>@order.WaitingTime</td>
-                        <td>@order.OrderStatus</td>
-                        <td>
-                            <a asp-controller="Order"
-                               asp-action="OrderItems"
-                               asp-route-orderId="@order.OrderId"
-                               class="btn btn-sm"
-                               style="background-color:darkcyan; border:none; color:white;">
-                                View Items
-                            </a>
-                        </td>
-                        <td>
-                            @if (order.OrderStatus == OrderStatus.Pending)
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Table @order.Table.TableId</h4>
+                        <span class="badge bg-secondary">@order.OrderStatus</span>
+                    </div>
+
+                    <div class="card-body">
+
+                        <p><strong>Order Time:</strong> @order.OrderTime.ToShortTimeString()</p>
+                        <p><strong>Waiting Time:</strong> @order.WaitingTime</p>
+
+                        <hr />
+
+                        @foreach (var (label, category) in categoryGroups)
+                        {
+                            var items = order.OrderItems?
+                                .Where(i => i.MenuItem?.Menu?.Category == category)
+                                .ToList();
+
+                            if (items == null || !items.Any()) continue;
+
+                            <h5 class="mt-2">@label</h5>
+
+                            @foreach (var item in items)
                             {
-                                <form asp-action="UpdateStatus" method="post">
-                                    <input type="hidden" name="orderId" value="@order.OrderId" />
+                                <div class="border-bottom pb-2 mb-2">
 
-                                    <button type="submit"
-                                            name="status"
-                                            value="Preparing"
-                                            class="btn btn-sm"
-                                            style="background-color:orangered; border:none; color:white; width:170px;">
-                                        Start Preparing
-                                    </button>
-                                </form>
-                            }
-                            else if (order.OrderStatus == OrderStatus.Preparing)
-                            {
-                                <form asp-action="UpdateStatus" method="post">
-                                    <input type="hidden" name="orderId" value="@order.OrderId" />
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <strong>@item.OrderItemQuantity x @item.MenuItem.MenuItemName</strong>
+                                        <span class="badge @(item.OrderItemStatus switch {
+                                            OrderItemStatus.Ordered   => "bg-secondary",
+                                            OrderItemStatus.Preparing => "bg-secondary",
+                                            OrderItemStatus.Ready     => "bg-success",
+                                            _                         => "bg-secondary"
+                                        })">@item.OrderItemStatus</span>
+                                    </div>
 
-                                    <button type="submit"
-                                            name="status"
-                                            value="Ready"
-                                            class="btn btn-sm"
-                                            style="background-color:#4a565e; border:none; color:white; width:170px;">
-                                        Mark Ready
-                                    </button>
-                                </form>
-                            }
-                            else if (order.OrderStatus == OrderStatus.Ready)
-                            {
-                                <form asp-action="UpdateStatus" method="post">
-                                    <input type="hidden" name="orderId" value="@order.OrderId" />
+                                    @if (!string.IsNullOrWhiteSpace(item.Comment) && item.Comment != "No comment")
+                                    {
+                                        <small class="text-muted">Comment: @item.Comment</small>
+                                    }
 
-                                    <button type="submit"
-                                            name="status"
-                                            value="Served"
-                                            class="btn btn-sm"
-                                            style="background-color:green; border:none; color:white; width:170px;">
-                                        Serve
-                                    </button>
-                                </form>
+                                    @if (item.OrderItemStatus == OrderItemStatus.Ordered)
+                                    {
+                                        <form asp-action="UpdateItemStatus" method="post">
+                                            <input type="hidden" name="orderItem.OrderItemId" value="@item.OrderItemId" />
+                                            <input type="hidden" name="status" value="Preparing" />
+                                            <button ... class="btn btn-secondary btn-sm mt-2 w-100">Start Preparing</button>
+                                        </form>
+                                    }
+                                    else if (item.OrderItemStatus == OrderItemStatus.Preparing)
+                                    {
+                                        <form asp-action="UpdateItemStatus" method="post">
+                                            <input type="hidden" name="orderItem.OrderItemId" value="@item.OrderItemId" />
+                                            <input type="hidden" name="status" value="Ready" />
+                                            <button type="submit" class="btn btn-success btn-sm mt-2 w-100">Mark Ready</button>
+                                        </form>
+                                    }
+
+                                </div>
                             }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                        }
+
+                        <hr />
+
+                        @if (order.OrderStatus == OrderStatus.Ordered)
+                        {
+                            <form asp-action="UpdateStatus" method="post">
+                                <input type="hidden" name="order.OrderId" value="@order.OrderId" />
+                                <input type="hidden" name="status"        value="Preparing" />
+                                <button ... class="btn btn-warning btn-sm mt-2 w-100">Start Preparing</button>
+                            </form>
+                        }
+                        else if (order.OrderStatus == OrderStatus.Preparing)
+                        {
+                            <form asp-action="UpdateStatus" method="post">
+                                <input type="hidden" name="order.OrderId" value="@order.OrderId" />
+                                <input type="hidden" name="status"        value="Ready" />
+                                <button type="submit" class="btn btn-success w-100">Mark Ready</button>
+                            </form>
+                        }
+                        else if (order.OrderStatus == OrderStatus.Ready)
+                        {
+                            <div class="alert alert-success mb-0">Ready To Serve</div>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        }
 
     </div>
+
 </div>

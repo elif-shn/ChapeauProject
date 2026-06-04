@@ -1,0 +1,33 @@
+﻿@using Chapeau.Enums
+@using Chapeau.Extensions
+@model Chapeau.ViewModels.TakeOrderViewModel
+
+@{
+    ViewData["Title"] = "Take Order";
+}
+
+
+
+
+<partial name="_MenuFilterForm" 
+         model='new Chapeau.ViewModels.MenuViewModel { 
+             SelectedCard = Model.SelectedCard, 
+             SelectedCategory = Model.SelectedCategory, 
+             Categories = Model.Categories
+         }' />
+<div class="row">
+    <div class="col-md-8">
+        <partial name="_MenuListPartial" model="Model.Menu" view-data='new ViewDataDictionary(ViewData) { 
+                     { "ShowAddButton", true },
+                     { "SelectedCard", Model.SelectedCard },
+                     { "SelectedCategory", Model.SelectedCategory },
+                     { "SelectedTableId", Model.SelectedTableId }
+                 }' />
+
+    </div>
+
+    <div class="col-md-4">
+       <partial name="_OrderCartPartial" model="Model" />
+
+    </div>
+</div>

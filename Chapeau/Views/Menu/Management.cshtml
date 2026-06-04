@@ -1,5 +1,6 @@
 ﻿@using Chapeau.Enums
-@model Chapeau.ViewModels.MenuManagementViewModel
+@using Chapeau.Extensions
+@model Chapeau.ViewModels.MenuViewModel
 
 <style>
 
@@ -212,7 +213,7 @@
 <h2 class="page-title mb-2">Menu Management</h2>
 <div class="title-line"></div>
 
-<form method="get" asp-action="Index" class="filter-container">
+<form method="get" asp-action="Management" class="filter-container">
 
     <label>All Menus:</label>
 
@@ -234,7 +235,7 @@
         @foreach (Category category in Model.Categories)
         {
             <option value="@((int)category)" selected="@(Model.SelectedCategory == category)">
-                @category.ToString().Replace("CoffeeAndTea", "Coffee & Tea")
+                @category.ToDisplayName()
             </option>
         }
     </select>

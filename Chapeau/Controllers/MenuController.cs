@@ -1,53 +1,54 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
-using Chapeau.Repositories;
-using Chapeau.Services;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 namespace Chapeau.Controllers
 {
-    public class MenuManagementController : Controller
+    public class MenuController : Controller
     {
         private readonly IMenuService _menuService;
 
 
-        public MenuManagementController(IMenuService menuService)
+        public MenuController(IMenuService menuService)
         {
             _menuService = menuService;
         }
+        private MenuViewModel GetViewModel(Card? selectedCard, Category? selectedCategory, bool onlyActive)
+        {
+            var allMenus = _menuService.GetMenus(selectedCard, null, onlyActive).ToList();
 
+            var categories = allMenus.Select(m => m.Category).Distinct().ToList();
+
+            if (selectedCategory != null && !categories.Contains(selectedCategory.Value))
+            {
+                selectedCategory = null;
+            }
+
+            var filteredMenus = allMenus.Where(m => selectedCategory == null || m.Category == selectedCategory).ToList();
+
+            return new MenuViewModel
+            {
+                Menu = filteredMenus,
+                Categories = categories,
+                SelectedCard = selectedCard,
+                SelectedCategory = selectedCategory,
+            };
+        }
         public IActionResult Index(Card? selectedCard, Category? selectedCategory)
         {
-            try
-            {
-                List<Menu> menu = _menuService.GetAllByFilter(selectedCard, selectedCategory);
-                return View(new MenuManagementViewModel
-                {
-                    Menu = menu,
-                    Categories = _menuService.GetCategoriesByCard(menu, selectedCard),
-                    SelectedCard = selectedCard,
-                    SelectedCategory = selectedCategory,
-                });
-            }
-
-            catch (Exception ex)
-            {
-                return View(new MenuManagementViewModel
-                {
-                    Menu = new List<Menu>(),
-                    Categories = new List<Category>()
-                });
-            }
-
+            return View(GetViewModel(selectedCard, selectedCategory, true));
         }
-
+        public IActionResult Management(Card? selectedCard, Category? selectedCategory)
+        {
+            return View("Management", GetViewModel(selectedCard, selectedCategory, false));
+        }
         public IActionResult Add()
         {
-            return View(new MenuManagementViewModel { ItemToEdit = new MenuItem() });
+            return View(new MenuViewModel { ItemToEdit = new MenuItem() });
         }
 
         [HttpPost]
-        public IActionResult Add(MenuManagementViewModel model)
+        public IActionResult Add(MenuViewModel model)
         {
             if (model.ItemToEdit != null && model.SelectedCard.HasValue && model.SelectedCategory.HasValue)
             {
@@ -56,7 +57,7 @@ namespace Chapeau.Controllers
 
                 _menuService.AddMenuItem(model.ItemToEdit, cardId, categoryId);
 
-                return RedirectToAction("Index");
+                return RedirectToAction("Management");
             }
             return View(model);
         }
@@ -71,7 +72,7 @@ namespace Chapeau.Controllers
             }
 
 
-            MenuManagementViewModel viewModel = new MenuManagementViewModel
+            MenuViewModel viewModel = new MenuViewModel
             {
                 ItemToEdit = item,
 
@@ -80,7 +81,7 @@ namespace Chapeau.Controllers
             return View(viewModel);
         }
         [HttpPost]
-        public IActionResult Edit(MenuManagementViewModel model)
+        public IActionResult Edit(MenuViewModel model)
         {
 
             if (model.ItemToEdit != null && model.SelectedCard.HasValue && model.SelectedCategory.HasValue)
@@ -90,7 +91,7 @@ namespace Chapeau.Controllers
 
                 _menuService.UpdateMenuItem(model.ItemToEdit, cardId, categoryId);
 
-                return RedirectToAction("Index");
+                return RedirectToAction("Management");
             }
 
             return View(model);
@@ -99,13 +100,13 @@ namespace Chapeau.Controllers
         public IActionResult Deactivate(int id)
         {
             _menuService.DeactivateMenuItem(id);
-            return RedirectToAction("Index");
+            return RedirectToAction("Management");
         }
 
         public IActionResult Activate(int id)
         {
             _menuService.ActivateMenuItem(id);
-            return RedirectToAction("Index");
+            return RedirectToAction("Management");
         }
     }
 }

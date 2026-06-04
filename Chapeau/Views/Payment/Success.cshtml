@@ -2,35 +2,66 @@
     ViewData["Title"] = "Payment Success";
 }
 
-<div class="container my-5 d-flex justify-content-center align-items-center" style="min-height: 60vh;">
-    <div class="card shadow border-0 text-center p-5" style="max-width: 550px; border-radius: 20px;">
-        <div class="mb-4">
-            <div class="display-1 text-success animate__animated animate__bounceIn">
-                <i class="bi bi-check-circle-fill">✓</i>
-            </div>
-        </div>
-        <h2 class="text-success fw-bold mb-3">Payment Successful!</h2>
-        <p class="text-muted fs-5 mb-4">
-            @if (TempData["SuccessMessage"] != null)
-            {
-                @TempData["SuccessMessage"]
-            }
-            else
-            {
-                <span>The transaction has been processed successfully.</span>
-            }
-        </p>
-        <div class="p-3 bg-light rounded mb-4">
-            <span class="text-secondary fw-bold">Order Reference ID:</span>
-            <span class="text-dark fw-bold">#@ViewBag.OrderId</span>
-        </div>
-        <div class="d-grid gap-2">
-            <a href="/Payment" class="btn btn-success btn-lg py-3 fw-bold shadow-sm" style="border-radius: 10px;">
-                Go to Payment Dashboard
-            </a>
-            <a href="/" class="btn btn-outline-secondary btn-lg py-2" style="border-radius: 10px;">
-                Back to Home
-            </a>
-        </div>
+<div class="success-page">
+    <div class="success-card">
+        <div class="success-icon">✓</div>
+        <h1>Payment Completed</h1>
+        <p>The payment has been saved successfully and the table is now free.</p>
+
+        <a asp-controller="Payment" asp-action="Index" class="back-button">
+            Back to Payment Dashboard
+        </a>
     </div>
 </div>
+
+<style>
+    .success-page {
+        min-height: 70vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: Arial, sans-serif;
+    }
+
+    .success-card {
+        background-color: white;
+        padding: 45px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+        max-width: 500px;
+    }
+
+    .success-icon {
+        width: 80px;
+        height: 80px;
+        background-color: #16a34a;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 42px;
+        margin: 0 auto 20px auto;
+    }
+
+    .success-card h1 {
+        margin: 0;
+        color: #111827;
+    }
+
+    .success-card p {
+        color: #6b7280;
+        margin: 16px 0 28px 0;
+    }
+
+    .back-button {
+        display: inline-block;
+        text-decoration: none;
+        background-color: #2563eb;
+        color: white;
+        padding: 14px 22px;
+        border-radius: 12px;
+        font-weight: bold;
+    }
+</style>

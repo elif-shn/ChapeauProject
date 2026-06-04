@@ -1,6 +1,10 @@
 ﻿
+using Chapeau.Models;
+using Chapeau.Repositories;
+using Chapeau.Repositories.Interfaces;
+using Chapeau.Services.Interfaces;
+using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using Chapeau.Services;
 
 namespace Chapeau.Controllers
 {
@@ -18,10 +22,32 @@ namespace Chapeau.Controllers
 
         public IActionResult Index()
         {
-            var tables = _tableService.GetAllTables();
+            List<Table> tables = new List<Table>();
 
 
+            tables = _tableService.GetAllTables();
+            
+            
             return View(tables);
+        }
+
+        [HttpGet]
+        public IActionResult ShowOrders(int tableId)
+        {
+            List<ActiveOrderViewModel> orders =
+                _tableService
+                    .GetActiveOrders(tableId);
+
+            return View(orders);
+        }
+
+        [HttpPost]
+        public IActionResult MarkServed(int orderId, int tableId)
+        {
+
+            _tableService.MarkOrderAsServed(orderId);
+                
+            return RedirectToAction("ShowOrders", new { tableId });
         }
     }
 }

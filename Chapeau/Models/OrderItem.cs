@@ -1,5 +1,7 @@
 ﻿using Chapeau.Extensions;
 using Chapeau.Enums;
+using Chapeau.Models;
+
 namespace Chapeau.Models
 {
     public class OrderItem
@@ -14,11 +16,13 @@ namespace Chapeau.Models
 
         public string Comment { get; set; }
 
-        public OrderStatus OrderItemStatus { get; set; }
+        public OrderItemStatus OrderItemStatus { get; set; }
+
         public OrderItem()
         {
         }
-        public OrderItem(int orderItemId, Order order, MenuItem menuItem, int orderItemQuantity, string comment, OrderStatus orderItemStatus)
+
+        public OrderItem(int orderItemId, Order order, MenuItem menuItem, int orderItemQuantity, string comment, OrderItemStatus orderItemStatus)
         {
             OrderItemId = orderItemId;
             Order = order;
