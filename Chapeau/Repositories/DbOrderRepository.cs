@@ -13,63 +13,67 @@ namespace Chapeau.Repositories
             _connectionString = configuration.GetConnectionString("ChapeauDatabase"); 
         }
 
+
         public List<Order> GetRunningOrders()
         {
-            List<Order> orders = new List<Order>();
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            try
             {
-                string query = @"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.WaitingTime, o.ServedTime, o.OrderStatus
-                         FROM [Order] o
-                         WHERE o.OrderStatus NOT IN ('Completed', 'Cancelled', 'Paid', 'Served')";
+                List<Order> orders = new List<Order>();
 
-                SqlCommand command = new SqlCommand(query, connection);
-
-                try
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
+                    string query = $@"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus 
+                  FROM [Order] o WHERE o.OrderStatus NOT IN ('{OrderStatus.Paid}', '{OrderStatus.Cancelled}', '{OrderStatus.Served}', '{OrderStatus.Settled}')
+                  ORDER BY o.OrderTime ASC";
+
+
+                    SqlCommand command = new SqlCommand(query, connection);
+
                     connection.Open();
+
                     SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read()) orders.Add(ReadOrder(reader));
+
+                    while (reader.Read())
+                    {
+                        orders.Add(ReadOrder(reader));
+                    }
                 }
-                catch (SqlException ex) { throw new Exception("Failed to get running orders.", ex); }
-            }
 
-            foreach (Order order in orders)
+                foreach (Order order in orders)
+                {
+                    order.OrderItems = GetOrderItemsByOrderId(order);
+                }
+
+                return orders;
+            }
+            catch (SqlException ex)
             {
-                order.OrderItems = GetOrderItemsByOrderId(order);
+                throw new Exception("Failed to retrieve running orders.", ex);
             }
-
-            return orders;
         }
         public List<Order> GetFinishedOrders() 
         {
-            List<Order> orders = new List<Order>();
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            try
             {
-                string query = @"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.WaitingTime, o.ServedTime, o.OrderStatus
-                         FROM [Order] o
-                         WHERE o.OrderStatus IN ('Served', 'Completed')
-                         ORDER BY o.OrderTime DESC";
+                List<Order> orders = new List<Order>();
 
-                SqlCommand command = new SqlCommand(query, connection);
-
-                try
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
+                    string query = $@"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus
+                                   FROM [Order] o WHERE o.OrderStatus IN ('{OrderStatus.Served}','{OrderStatus.Settled}') 
+                                   ORDER BY o.OrderTime ASC";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+
                     connection.Open();
+
                     SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read()) orders.Add(ReadOrder(reader));
+
+                    while (reader.Read())
+                    {
+                        orders.Add(ReadOrder(reader));
+                    }
                 }
-                catch (SqlException ex) { throw new Exception("Failed to get finished orders.", ex); }
-            }
-
-            foreach (Order order in orders)
-            {
-                order.OrderItems = GetOrderItemsByOrderId(order);
-            }
-
-            return orders;
-        }
 
         public void UpdateOrderStatus(Order order, OrderStatus status)
         {
@@ -77,25 +81,11 @@ namespace Chapeau.Repositories
             {
                 string query = "UPDATE [Order] SET OrderStatus = @Status WHERE OrderId = @OrderId";
 
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@Status", status.ToString());
-                command.Parameters.AddWithValue("@OrderId", order.OrderId);
-                connection.Open();
-                command.ExecuteNonQuery();
+                return orders;
             }
-        }
-
-        public void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status)
-        {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            catch (SqlException ex)
             {
-                string query = "UPDATE OrderItem SET OrderItemsStatus = @Status WHERE OrderItemId = @OrderItemId";
-
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@Status", status.ToString());
-                command.Parameters.AddWithValue("@OrderItemId", orderItem.OrderItemId);
-                connection.Open();
-                command.ExecuteNonQuery();
+                throw new Exception("Failed to retrieve finished orders.", ex);
             }
         }
 
