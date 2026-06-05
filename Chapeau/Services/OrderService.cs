@@ -1,5 +1,6 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
+using Chapeau.Repositories;
 using Chapeau.Repositories.Interfaces;
 using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
@@ -28,12 +29,23 @@ public class OrderService : IOrderService
     {
         return _orderRepository.GetOrderById(order);
     }
-
     public void UpdateOrderStatus(Order order, OrderStatus status)
     {
+        order.OrderStatus = status;
+
+        if (status == OrderStatus.Served)
+        {
+            order.ServedTime = DateTime.Now;
+
+            List<OrderItem> items = _orderRepository.GetOrderItemsByOrderId(order);
+            foreach (OrderItem item in items)
+            {
+                _orderRepository.UpdateOrderItemStatus(item, OrderItemStatus.Served);
+            }
+        }
+
         _orderRepository.UpdateOrderStatus(order, status);
     }
-
     public void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status)
     {
         _orderRepository.UpdateOrderItemStatus(orderItem, status);
@@ -103,15 +115,20 @@ public class OrderService : IOrderService
 
         return  currentItems;
     }
-    public List<Order> GetRunningOrder()
+    public List<Order> GetKitchenOrders()
     {
-        return _orderRepository
-            .GetRunningOrders()
-            .Where(o =>
-                o.OrderStatus != OrderStatus.Paid &&
-                o.OrderStatus != OrderStatus.Cancelled &&
-                o.OrderStatus != OrderStatus.Served &&
-                o.OrderStatus != OrderStatus.Settled)
+        return _orderRepository.GetRunningOrders()
+            .Where(order => order.OrderItems.Any(item =>
+                item.MenuItem.Menu.Card == Card.Lunch || item.MenuItem.Menu.Card == Card.Dinner))
             .ToList();
     }
+
+    public List<Order> GetBarOrders()
+    {
+        return _orderRepository.GetRunningOrders()
+            .Where(order => order.OrderItems.Any(item =>
+                item.MenuItem.Menu.Card == Card.Drink))
+            .ToList();
+    }
+
 }

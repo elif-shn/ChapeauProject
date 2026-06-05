@@ -7,6 +7,8 @@ namespace Chapeau.Services.Interfaces
     {
         List<Order> GetRunningOrders();
         List<Order> GetFinishedOrders();
+        List<Order> GetKitchenOrders();
+        List<Order> GetBarOrders();
         Order? GetOrderById(Order order);
         void UpdateOrderStatus(Order order, OrderStatus status);
         void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status);
