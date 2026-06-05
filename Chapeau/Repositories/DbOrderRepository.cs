@@ -46,7 +46,7 @@ namespace Chapeau.Repositories
 
             return orders;
         }
-        public List<Order> GetFinishedOrders()
+        public List<Order> GetFinishedOrders() 
         {
             List<Order> orders = new List<Order>();
 
