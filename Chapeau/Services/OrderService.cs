@@ -3,6 +3,7 @@ using Chapeau.Models;
 using Chapeau.Repositories;
 using Chapeau.Repositories.Interfaces;
 using Chapeau.Services.Interfaces;
+using Chapeau.ViewModels;
 
 public class OrderService : IOrderService
 {
@@ -49,7 +50,7 @@ public class OrderService : IOrderService
     {
         _orderRepository.UpdateOrderItemStatus(orderItem, status);
     }
-
+   
     public Order? GetActiveOrderForTable(int tableId)
     {
         return _orderRepository.GetActiveOrderForTable(tableId);
@@ -57,7 +58,7 @@ public class OrderService : IOrderService
 
     public void SendOrder(Order newOrder)
     {
-        var activeOrder = _orderRepository.GetActiveOrderForTable(newOrder.TableId);
+        Order? activeOrder = GetActiveOrderForTable(newOrder.TableId);
 
         if (activeOrder == null)
         {
@@ -65,9 +66,9 @@ public class OrderService : IOrderService
         }
         else
         {
-            _orderRepository.AddItemsToExistingOrder(activeOrder.OrderId, newOrder.OrderItems);
+            _orderRepository.AddItemsToExistingOrder(activeOrder, newOrder.OrderItems);
         }
-        foreach (var item in newOrder.OrderItems)
+        foreach (OrderItem item in newOrder.OrderItems)
         {
             _menuService.DecreaseStock(item.MenuItem.MenuItemId, item.OrderItemQuantity);
         }
@@ -75,8 +76,8 @@ public class OrderService : IOrderService
 
     public List<OrderItem> ModifyCurrentOrderItem(List<OrderItem> currentItems, OrderItem newItem, int change)
     {
-        var existingItem = currentItems.FirstOrDefault(item =>
-         item.MenuItem.MenuItemId == newItem.MenuItem.MenuItemId);
+        OrderItem? existingItem = currentItems.FirstOrDefault(item =>
+        item.MenuItem.MenuItemId == newItem.MenuItem.MenuItemId);
 
         if (change > 0)
         {
@@ -112,7 +113,7 @@ public class OrderService : IOrderService
         if (currentItems != null)
             currentItems.RemoveAll(item => item.MenuItem.MenuItemId == menuItemId);
 
-        return currentItems;
+        return  currentItems;
     }
     public List<Order> GetKitchenOrders()
     {
