@@ -76,22 +76,14 @@ namespace Chapeau.Controllers
             {
                 HttpContext.Session.SetInt32("SelectedTableId", selectedTableId);
 
-                var allMenus = _menuService.GetMenus(selectedCard, null, true).ToList();
-                var categories = allMenus.Select(m => m.Category).Distinct().ToList();
-
-                if (selectedCategory != null && !categories.Contains(selectedCategory.Value))
-                    selectedCategory = null;
-
-                var filteredMenus = allMenus
-                    .Where(m => selectedCategory == null || m.Category == selectedCategory)
-                    .ToList();
+                MenuFilterData data = _menuService.GetMenuData(selectedCard, selectedCategory, false);
 
                 return View("TakeOrder", new TakeOrderViewModel
                 {
-                    Menu = filteredMenus,
-                    Categories = categories,
-                    SelectedCard = selectedCard,
-                    SelectedCategory = selectedCategory,
+                    Menu = data.Menus,
+                    Categories = data.Categories,
+                    SelectedCard = data.SelectedCard,
+                    SelectedCategory = data.SelectedCategory,
                     SelectedTableId = selectedTableId,
                     CurrentOrders = new List<OrderItem>()
                 });

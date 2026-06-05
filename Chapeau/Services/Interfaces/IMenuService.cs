@@ -18,4 +18,5 @@ public interface IMenuService
     void DeactivateMenuItem(int id);
 
     void DecreaseStock(int menuItemId, int amount);
+    MenuFilterData GetMenuData(Card? selectedCard, Category? selectedCategory, bool onlyActive);
 }
