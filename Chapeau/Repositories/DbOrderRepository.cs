@@ -73,7 +73,7 @@ namespace Chapeau.Repositories
 
         public void UpdateOrderStatus(Order order, OrderStatus status)
         {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            using (SqlConnection connection = new SqlConnection(_connectionString)) 
             {
                 string query = "UPDATE [Order] SET OrderStatus = @Status WHERE OrderId = @OrderId";
 
@@ -174,6 +174,7 @@ namespace Chapeau.Repositories
                 throw new Exception("An unexpected error occurred while fetching the order by ID.", ex);
             }
         }
+        //testtttt
         public Order GetActiveOrderForTable(int tableId)
         {
             try
