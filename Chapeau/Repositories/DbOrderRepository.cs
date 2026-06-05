@@ -51,7 +51,7 @@ namespace Chapeau.Repositories
                 throw new Exception("Failed to retrieve running orders.", ex);
             }
         }
-        public List<Order> GetFinishedOrders() 
+        public List<Order> GetFinishedOrders()
         {
             try
             {
@@ -75,11 +75,10 @@ namespace Chapeau.Repositories
                     }
                 }
 
-        public void UpdateOrderStatus(Order order, OrderStatus status)
-        {
-            using (SqlConnection connection = new SqlConnection(_connectionString)) 
-            {
-                string query = "UPDATE [Order] SET OrderStatus = @Status WHERE OrderId = @OrderId";
+                foreach (Order order in orders)
+                {
+                    order.OrderItems = GetOrderItemsByOrderId(order);
+                }
 
                 return orders;
             }
@@ -88,6 +87,36 @@ namespace Chapeau.Repositories
                 throw new Exception("Failed to retrieve finished orders.", ex);
             }
         }
+
+
+        public void UpdateOrderStatus(Order order, OrderStatus status)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = "UPDATE [Order] SET OrderStatus = @Status WHERE OrderId = @OrderId";
+
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@Status", status.ToString());
+                command.Parameters.AddWithValue("@OrderId", order.OrderId);
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = "UPDATE OrderItem SET OrderItemsStatus = @Status WHERE OrderItemId = @OrderItemId";
+
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@Status", status.ToString());
+                command.Parameters.AddWithValue("@OrderItemId", orderItem.OrderItemId);
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
+
 
         public List<OrderItem> GetOrderItemsByOrderId(Order order)
         {
@@ -340,7 +369,6 @@ namespace Chapeau.Repositories
             Order order = new Order();
             order.OrderId = (int)reader["OrderId"];
             order.OrderTime = (DateTime)reader["OrderTime"];
-            order.WaitingTime = reader.IsDBNull(reader.GetOrdinal("WaitingTime"))? string.Empty : reader["WaitingTime"].ToString();
             order.ServedTime = reader["ServedTime"] == DBNull.Value ? (DateTime?)null : (DateTime)reader["ServedTime"];
             order.OrderStatus = Enum.Parse<OrderStatus>(reader["OrderStatus"].ToString());
             order.Table = ReadTable(reader);
