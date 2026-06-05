@@ -1,11 +1,6 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
-using Chapeau.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
-using System.Data;
-using System.Xml.Linq;
 
 namespace Chapeau.Repositories
 {
@@ -15,7 +10,7 @@ namespace Chapeau.Repositories
 
         public DbOrderRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("ChapeauDatabase");
+            _connectionString = configuration.GetConnectionString("ChapeauDatabase"); 
         }
 
         public List<Order> GetRunningOrders()
