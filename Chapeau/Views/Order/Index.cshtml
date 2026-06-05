@@ -1,5 +1,4 @@
 ﻿@model List<Chapeau.Models.Order>
-@using Chapeau.Models
 @using Chapeau.Enums
 
 @{
@@ -7,9 +6,9 @@
 
     var categoryGroups = new[]
     {
-        ("Starters",  Category.Starters),
-        ("Mains",     Category.Mains),
-        ("Desserts",  Category.Desserts)
+        ("Starters", Category.Starters),
+        ("Mains", Category.Mains),
+        ("Desserts", Category.Desserts)
     };
 }
 
@@ -17,6 +16,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Running Orders</h1>
+
         <div>
             <button class="btn btn-outline-primary" onclick="location.reload()">Refresh</button>
             <a asp-controller="Bar" asp-action="Index" class="btn btn-outline-info">Bar Orders</a>
@@ -25,9 +25,11 @@
     </div>
 
     <div class="row">
+
         @foreach (var order in Model)
         {
             <div class="col-lg-4 col-md-6 mb-4">
+
                 <div class="card shadow-sm border h-100">
 
                     <div class="card-header bg-light d-flex justify-content-between align-items-center">
@@ -45,50 +47,40 @@
                         @foreach (var (label, category) in categoryGroups)
                         {
                             var items = order.OrderItems?
-                                .Where(i => i.MenuItem?.Menu?.Category == category)
-                                .ToList();
+                            .Where(item => item.MenuItem?.Menu?.Category == category)
+                            .ToList();
 
-                            if (items == null || !items.Any()) continue;
+                            if (items == null || !items.Any())
+                            {
+                                continue;
+                            }
 
                             <h5 class="mt-2">@label</h5>
 
                             @foreach (var item in items)
                             {
-                                <div class="border-bottom pb-2 mb-2">
+                                @await Html.PartialAsync("_OrderItemCard", item)
 
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <strong>@item.OrderItemQuantity x @item.MenuItem.MenuItemName</strong>
-                                        <span class="badge @(item.OrderItemStatus switch {
-                                            OrderItemStatus.Ordered   => "bg-secondary",
-                                            OrderItemStatus.Preparing => "bg-secondary",
-                                            OrderItemStatus.Ready     => "bg-success",
-                                            _                         => "bg-secondary"
-                                        })">@item.OrderItemStatus</span>
-                                    </div>
-
-                                    @if (!string.IsNullOrWhiteSpace(item.Comment) && item.Comment != "No comment")
-                                    {
-                                        <small class="text-muted">Comment: @item.Comment</small>
-                                    }
-
-                                    @if (item.OrderItemStatus == OrderItemStatus.Ordered)
-                                    {
-                                        <form asp-action="UpdateItemStatus" method="post">
-                                            <input type="hidden" name="orderItem.OrderItemId" value="@item.OrderItemId" />
-                                            <input type="hidden" name="status" value="Preparing" />
-                                            <button ... class="btn btn-secondary btn-sm mt-2 w-100">Start Preparing</button>
-                                        </form>
-                                    }
-                                    else if (item.OrderItemStatus == OrderItemStatus.Preparing)
-                                    {
-                                        <form asp-action="UpdateItemStatus" method="post">
-                                            <input type="hidden" name="orderItem.OrderItemId" value="@item.OrderItemId" />
-                                            <input type="hidden" name="status" value="Ready" />
-                                            <button type="submit" class="btn btn-success btn-sm mt-2 w-100">Mark Ready</button>
-                                        </form>
-                                    }
-
-                                </div>
+                                @if (item.OrderItemStatus == OrderItemStatus.Ordered)
+                                {
+                                    <form asp-action="UpdateItemStatus" method="post">
+                                        <input type="hidden" name="orderItem.OrderItemId" value="@item.OrderItemId" />
+                                        <input type="hidden" name="status" value="@OrderItemStatus.Preparing" />
+                                        <button type="submit" class="btn btn-secondary btn-sm mt-2 w-100">
+                                            Start Preparing
+                                        </button>
+                                    </form>
+                                }
+                                else if (item.OrderItemStatus == OrderItemStatus.Preparing)
+                                {
+                                    <form asp-action="UpdateItemStatus" method="post">
+                                        <input type="hidden" name="orderItem.OrderItemId" value="@item.OrderItemId" />
+                                        <input type="hidden" name="status" value="@OrderItemStatus.Ready" />
+                                        <button type="submit" class="btn btn-success btn-sm mt-2 w-100">
+                                            Mark Ready
+                                        </button>
+                                    </form>
+                                }
                             }
                         }
 
@@ -98,25 +90,37 @@
                         {
                             <form asp-action="UpdateStatus" method="post">
                                 <input type="hidden" name="order.OrderId" value="@order.OrderId" />
-                                <input type="hidden" name="status"        value="Preparing" />
-                                <button ... class="btn btn-warning btn-sm mt-2 w-100">Start Preparing</button>
+                                <input type="hidden" name="status" value="@OrderStatus.Preparing" />
+                                <button type="submit" class="btn btn-warning w-100">
+                                    Start Preparing
+                                </button>
                             </form>
                         }
                         else if (order.OrderStatus == OrderStatus.Preparing)
                         {
                             <form asp-action="UpdateStatus" method="post">
                                 <input type="hidden" name="order.OrderId" value="@order.OrderId" />
-                                <input type="hidden" name="status"        value="Ready" />
-                                <button type="submit" class="btn btn-success w-100">Mark Ready</button>
+                                <input type="hidden" name="status" value="@OrderStatus.Ready" />
+                                <button type="submit" class="btn btn-success w-100">
+                                    Mark Ready
+                                </button>
                             </form>
                         }
                         else if (order.OrderStatus == OrderStatus.Ready)
                         {
-                            <div class="alert alert-success mb-0">Ready To Serve</div>
+                            <form asp-action="UpdateStatus" method="post">
+                                <input type="hidden" name="order.OrderId" value="@order.OrderId" />
+                                <input type="hidden" name="status" value="@OrderStatus.Served" />
+                                <button type="submit" class="btn btn-success w-100">
+                                    Ready To Serve
+                                </button>
+                            </form>
                         }
 
                     </div>
+
                 </div>
+
             </div>
         }
 

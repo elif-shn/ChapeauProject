@@ -20,7 +20,7 @@ namespace Chapeau.Controllers
 
         public IActionResult Index()
         {
-            List<Order> runningOrders = _orderServices.GetRunningOrders();
+            List<Order> runningOrders = _orderServices.GetKitchenOrders();
             return View(runningOrders);
         }
 
