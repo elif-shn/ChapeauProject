@@ -18,11 +18,7 @@ namespace Chapeau.Services
         {
             return _tableRepository.GetAllTables();
         }
-        public List<Table> GetOccupiedTables()
-        {
-            return _tableRepository.GetOccupiedTables();
-        }
-
+       
         public List<ActiveOrderViewModel> GetActiveOrders(int tableId)
         {
             return _tableRepository.GetActiveOrders(tableId);

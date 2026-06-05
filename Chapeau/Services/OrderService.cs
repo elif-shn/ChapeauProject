@@ -55,47 +55,28 @@ public class OrderService : IOrderService
         return _orderRepository.GetActiveOrderForTable(tableId);
     }
 
-    public Order CreateOrder(int tableId)
-    {
-        return _orderRepository.CreateOrder(tableId);
-    }
-
     public void SendOrder(Order newOrder)
     {
-        Order order = GetActiveOrderForTable(newOrder.TableId) ?? _orderRepository.CreateOrder(newOrder.TableId);
-        List<OrderItem> existingItems = _orderRepository.GetOrderItemsByOrderId(order);
+        var activeOrder = _orderRepository.GetActiveOrderForTable(newOrder.TableId);
 
+        if (activeOrder == null)
+        {
+            _orderRepository.CreateOrderWithItems(newOrder);
+        }
+        else
+        {
+            _orderRepository.AddItemsToExistingOrder(activeOrder.OrderId, newOrder.OrderItems);
+        }
         foreach (var item in newOrder.OrderItems)
         {
-            string incomingComment = item.Comment?.Trim() ?? "";
-            var existingItem = existingItems.FirstOrDefault(oi =>
-                oi.MenuItem.MenuItemId == item.MenuItem.MenuItemId &&
-                (oi.Comment?.Trim() ?? "") == incomingComment);
-
-            if (existingItem != null)
-            {
-                existingItem.Order = order;
-                _orderRepository.IncreaseOrderItemQuantity(existingItem, item.OrderItemQuantity);
-                existingItem.OrderItemQuantity += item.OrderItemQuantity;
-            }
-            else
-            {
-                item.Comment = incomingComment;
-                item.Order = order;
-                _orderRepository.AddOrderItemToOrder(item);
-                existingItems.Add(item);
-            }
-
             _menuService.DecreaseStock(item.MenuItem.MenuItemId, item.OrderItemQuantity);
         }
     }
 
     public List<OrderItem> ModifyCurrentOrderItem(List<OrderItem> currentItems, OrderItem newItem, int change)
     {
-        newItem.Comment ??= "";
         var existingItem = currentItems.FirstOrDefault(item =>
-            item.MenuItem.MenuItemId == newItem.MenuItem.MenuItemId &&
-            item.Comment == newItem.Comment);
+         item.MenuItem.MenuItemId == newItem.MenuItem.MenuItemId);
 
         if (change > 0)
         {
@@ -107,12 +88,19 @@ public class OrderService : IOrderService
         if (existingItem != null)
         {
             existingItem.OrderItemQuantity += change;
+
+            if (!string.IsNullOrEmpty(newItem.Comment))
+            {
+                existingItem.Comment = newItem.Comment;
+            }
+
             if (existingItem.OrderItemQuantity <= 0)
                 currentItems.Remove(existingItem);
         }
         else if (change > 0)
         {
             newItem.OrderItemQuantity = change;
+            newItem.Comment ??= "";
             currentItems.Add(newItem);
         }
 

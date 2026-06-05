@@ -1,5 +1,4 @@
-﻿@model Chapeau.ViewModels.MenuViewModel
-@using Chapeau.Enums
+﻿@model Chapeau.ViewModels.EmployeeManagementViewModel
 
 <style>
     body {
@@ -91,62 +90,38 @@
         }
 </style>
 
-<h2>Edit Menu Item</h2>
+<h2>Edit Employee</h2>
 <div class="title-line"></div>
 
 <div class="form-card">
-
     <form method="post" asp-action="Edit">
-
-        <input type="hidden" asp-for="ItemToEdit.MenuItemId" />
-
+        <input type="hidden" asp-for="EmployeeToEdit.EmployeeId" />
         <div class="form-group">
-            <label>Name</label>
-            <input asp-for="ItemToEdit.MenuItemName" class="input-box" required />
+            <label>Full Name</label>
+            <input asp-for="EmployeeToEdit.EmployeeName" class="input-box" required />
         </div>
-
         <div class="form-group">
-            <label>Price (€)</label>
-            <input asp-for="ItemToEdit.MenuItemPrice" class="input-box" type="number" step="0.01" min="0" required />
+            <label>Employee Number</label>
+            <input asp-for="EmployeeToEdit.EmployeeNumber" class="input-box" required />
         </div>
-
         <div class="form-group">
-            <label>Stock</label>
-            <input asp-for="ItemToEdit.Stock" class="input-box" type="number" min="0" required />
-        </div>
-
-        <div class="form-group">
-            <label>Card</label>
-            <select asp-for="SelectedCard" class="input-box" required>
-                @foreach (Card card in Enum.GetValues(typeof(Card)))
-                {
-                    <option value="@((int)card)">
-                        @card
-                    </option>
-                }
+            <label>Occupation / Role</label>
+            <select asp-for="EmployeeToEdit.EmployeeOccupation" class="input-box" required>
+                <option value="">-- Select Role --</option>
+                <option value="Manager">Manager</option>
+                <option value="Waiter">Waiter</option>
+                <option value="Chef">Chef</option>
+                <option value="Bartender">Bartender</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label>Category</label>
-            <select asp-for="SelectedCategory" class="input-box" required>
-                @foreach (Category category in Enum.GetValues(typeof(Category)))
-                {
-                    <option value="@((int)category)">
-                        @category
-                    </option>
-                }
-            </select>
+            <label>New Password / PIN Code</label>
+            <input asp-for="EmployeeToEdit.EmployeePassword" class="input-box" type="password" placeholder="Enter new password or PIN" required />
         </div>
-
-        <div class="form-group">
-            <label>VAT Percentage</label>
-            <input asp-for="ItemToEdit.VatPercentage" class="input-box" type="number" min="0" required />
-        </div>
-
         <div class="btn-row">
             <button type="submit" class="btn btn-save">Save Changes</button>
-            <a asp-action="Management" class="btn btn-cancel">Cancel</a>
+            <a asp-action="Index" class="btn btn-cancel">Cancel</a>
         </div>
 
     </form>

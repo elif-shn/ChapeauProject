@@ -1,0 +1,123 @@
+﻿@model Chapeau.ViewModels.TakeOrderViewModel
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@{
+    void RenderCurrentOrders()
+    {
+        for (int i = 0; i < Model.CurrentOrders.Count; i++)
+        {
+            <input type="hidden"
+                   name="CurrentOrders[@i].MenuItem.MenuItemId"
+                   value="@Model.CurrentOrders[i].MenuItem.MenuItemId" />
+
+            <input type="hidden"
+                   name="CurrentOrders[@i].MenuItem.MenuItemName"
+                   value="@Model.CurrentOrders[i].MenuItem.MenuItemName" />
+
+            <input type="hidden"
+                   name="CurrentOrders[@i].MenuItem.Stock"
+                   value="@Model.CurrentOrders[i].MenuItem.Stock" />
+
+            <input type="hidden"
+                   name="CurrentOrders[@i].OrderItemQuantity"
+                   value="@Model.CurrentOrders[i].OrderItemQuantity" />
+
+            <input type="hidden"
+                   name="CurrentOrders[@i].Comment"
+                   value="@Model.CurrentOrders[i].Comment" />
+        }
+    }
+}
+
+@if (Model.CurrentOrders != null && Model.CurrentOrders.Count > 0)
+{
+    <table class="table">
+        <tbody>
+            @foreach (var currentorderItem in Model.CurrentOrders)
+            {
+                <tr>
+                    <td>
+                        @currentorderItem.MenuItem.MenuItemName
+                        <form method="post" asp-action="AddNote" class="d-flex mt-1">
+                            @{
+                                RenderCurrentOrders();
+                            }
+                            <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItem.MenuItemId" />
+                            <input type="hidden" name="selectedTableId" value="@Model.SelectedTableId" />
+                            <input type="text" name="comment" value="@currentorderItem.Comment" class="form-control form-control-sm me-1" placeholder="Add note..." style="font-size: 0.8rem; max-width: 150px;" />
+                            <button type="submit" class="btn btn-sm btn-outline-warning" style="font-size: 0.7rem;">Save</button>
+                        </form>
+                    </td>
+
+                    <td style="min-width: 50px; white-space: nowrap;">
+                        <form method="post" asp-action="DecreaseItemQuantityInCurrentOrder" style="display:inline;">
+                            @{
+                                RenderCurrentOrders();
+                            }
+                            <input type="hidden" name="SelectedCard" value="@Model.SelectedCard" />
+                            <input type="hidden" name="SelectedCategory" value="@Model.SelectedCategory" />
+                            <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
+                            <input type="hidden" name="NewOrderItem.MenuItem.MenuItemId" value="@currentorderItem.MenuItem.MenuItemId" />
+                            <input type="hidden" name="NewOrderItem.Comment" value="@currentorderItem.Comment" />
+                            <button type="submit" class="btn btn-sm btn-outline-warning">-</button>
+                        </form>
+
+                        <span class="mx-2" style="display:inline-block; width: 20px; text-align: center;">
+                            @currentorderItem.OrderItemQuantity
+                        </span>
+
+                        <form method="post" asp-action="AddNewItemToCurrentOrder" style="display:inline;">
+                            @{
+                                RenderCurrentOrders();
+                            }
+                            <input type="hidden" name="SelectedCard" value="@Model.SelectedCard" />
+                            <input type="hidden" name="SelectedCategory" value="@Model.SelectedCategory" />
+                            <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
+                            <input type="hidden" name="NewOrderItem.MenuItem.MenuItemId" value="@currentorderItem.MenuItem.MenuItemId" />
+                            <input type="hidden" name="NewOrderItem.Comment" value="@currentorderItem.Comment" />
+                            <button type="submit" class="btn btn-sm btn-outline-success">+</button>
+                        </form>
+                    </td>
+                    <td style="min-width: 50px; white-space: nowrap;">@currentorderItem.Comment</td>
+                    <td>
+                        <form method="post" asp-action="RemoveItem" style="display:inline;">
+                            @{
+                                RenderCurrentOrders();
+                            }
+                            <input type="hidden" name="menuItemId" value="@currentorderItem.MenuItem.MenuItemId" />
+                            <button type="submit" class="btn btn-sm btn-danger">x</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No items yet</p>
+}
+<div class="d-flex gap-2">
+    <form method="post" asp-action="SendOrder" class="flex-fill">
+        @{
+            RenderCurrentOrders();
+        }
+        <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
+        <button class="btn btn-success w-100">Send Order</button>
+    </form>
+    <form method="post" asp-action="CancelOrder" class="flex-fill">
+        @{
+            RenderCurrentOrders();
+        }
+        <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
+        <button type="submit" class="btn btn-danger w-100">Cancel</button>
+    </form>
+</div>
