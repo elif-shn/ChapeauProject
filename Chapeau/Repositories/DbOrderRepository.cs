@@ -369,6 +369,16 @@ namespace Chapeau.Repositories
             menu.Category = Enum.Parse<Category>(reader["Category"].ToString());
             return menu;
         }
+
+        void IOrderRepository.UpdateOrderStatus(Order order, OrderStatus status)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IOrderRepository.UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 
