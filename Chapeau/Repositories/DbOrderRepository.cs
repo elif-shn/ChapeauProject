@@ -421,6 +421,16 @@ namespace Chapeau.Repositories
             menu.Category = (Category)(int)reader["Category"];
             return menu;
         }
+
+        void IOrderRepository.UpdateOrderStatus(Order order, OrderStatus status)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IOrderRepository.UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 
