@@ -121,10 +121,6 @@ namespace Chapeau.Controllers
                 TempData["ErrorMessage"] = ex.Message;
             }
 
-            var allMenus = _menuService.GetMenus(model.SelectedCard, null, true).ToList();
-            model.Categories = allMenus.Select(m => m.Category).Distinct().ToList();
-            model.Menu = allMenus.Where(m => model.SelectedCategory == null || m.Category == model.SelectedCategory).ToList();
-
             ViewData["CurrentOrders"] = model.CurrentOrders;
             return View("TakeOrder", model);
         }
@@ -184,10 +180,6 @@ namespace Chapeau.Controllers
                 TempData["ErrorMessage"] = ex.Message;
             }
 
-            var allMenus = _menuService.GetMenus(model.SelectedCard, null, true).ToList();
-            model.Categories = allMenus.Select(m => m.Category).Distinct().ToList();
-            model.Menu = allMenus.Where(m => model.SelectedCategory == null || m.Category == model.SelectedCategory).ToList();
-
             ViewData["CurrentOrders"] = model.CurrentOrders;
             return View("TakeOrder", model);
         }
@@ -202,13 +194,6 @@ namespace Chapeau.Controllers
                 items = _orderServices.RemoveItem(items, menuItemId);
                 model.CurrentOrders = items;
             }
-            var allMenus = _menuService.GetMenus(model.SelectedCard, null, true).ToList();
-
-            model.Categories = allMenus.Select(m => m.Category).Distinct().ToList();
-
-            model.Menu = allMenus
-                .Where(m => model.SelectedCategory == null || m.Category == model.SelectedCategory)
-                .ToList();
 
             ViewData["CurrentOrders"] = model.CurrentOrders;
 
@@ -226,14 +211,6 @@ namespace Chapeau.Controllers
             {
                 itemToUpdate.Comment = comment;
             }
-
-            var allMenus = _menuService.GetMenus(model.SelectedCard, null, true).ToList();
-
-            model.Categories = allMenus.Select(m => m.Category).Distinct().ToList();
-
-            model.Menu = allMenus
-                .Where(m => model.SelectedCategory == null || m.Category == model.SelectedCategory)
-                .ToList();
 
             ViewData["CurrentOrders"] = model.CurrentOrders;
 
