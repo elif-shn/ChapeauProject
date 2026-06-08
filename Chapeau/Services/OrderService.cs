@@ -1,7 +1,9 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
+using Chapeau.Repositories;
 using Chapeau.Repositories.Interfaces;
 using Chapeau.Services.Interfaces;
+using Chapeau.ViewModels;
 
 public class OrderService : IOrderService
 {
@@ -27,63 +29,55 @@ public class OrderService : IOrderService
     {
         return _orderRepository.GetOrderById(order);
     }
-
     public void UpdateOrderStatus(Order order, OrderStatus status)
     {
+        order.OrderStatus = status;
+
+        if (status == OrderStatus.Served)
+        {
+            order.ServedTime = DateTime.Now;
+
+            List<OrderItem> items = _orderRepository.GetOrderItemsByOrderId(order);
+            foreach (OrderItem item in items)
+            {
+                _orderRepository.UpdateOrderItemStatus(item, OrderItemStatus.Served);
+            }
+        }
+
         _orderRepository.UpdateOrderStatus(order, status);
     }
-
     public void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status)
     {
         _orderRepository.UpdateOrderItemStatus(orderItem, status);
     }
-
+   
     public Order? GetActiveOrderForTable(int tableId)
     {
         return _orderRepository.GetActiveOrderForTable(tableId);
     }
 
-    public Order CreateOrder(int tableId)
-    {
-        return _orderRepository.CreateOrder(tableId);
-    }
-
     public void SendOrder(Order newOrder)
     {
-        Order order = GetActiveOrderForTable(newOrder.TableId) ?? _orderRepository.CreateOrder(newOrder.TableId);
-        List<OrderItem> existingItems = _orderRepository.GetOrderItemsByOrderId(order);
+        Order? activeOrder = GetActiveOrderForTable(newOrder.TableId);
 
-        foreach (var item in newOrder.OrderItems)
+        if (activeOrder == null)
         {
-            string incomingComment = item.Comment?.Trim() ?? "";
-            var existingItem = existingItems.FirstOrDefault(oi =>
-                oi.MenuItem.MenuItemId == item.MenuItem.MenuItemId &&
-                (oi.Comment?.Trim() ?? "") == incomingComment);
-
-            if (existingItem != null)
-            {
-                existingItem.Order = order;
-                _orderRepository.IncreaseOrderItemQuantity(existingItem, item.OrderItemQuantity);
-                existingItem.OrderItemQuantity += item.OrderItemQuantity;
-            }
-            else
-            {
-                item.Comment = incomingComment;
-                item.Order = order;
-                _orderRepository.AddOrderItemToOrder(item);
-                existingItems.Add(item);
-            }
-
+            _orderRepository.CreateOrderWithItems(newOrder);
+        }
+        else
+        {
+            _orderRepository.AddItemsToExistingOrder(activeOrder, newOrder.OrderItems);
+        }
+        foreach (OrderItem item in newOrder.OrderItems)
+        {
             _menuService.DecreaseStock(item.MenuItem.MenuItemId, item.OrderItemQuantity);
         }
     }
 
     public List<OrderItem> ModifyCurrentOrderItem(List<OrderItem> currentItems, OrderItem newItem, int change)
     {
-        newItem.Comment ??= "";
-        var existingItem = currentItems.FirstOrDefault(item =>
-            item.MenuItem.MenuItemId == newItem.MenuItem.MenuItemId &&
-            item.Comment == newItem.Comment);
+        OrderItem? existingItem = currentItems.FirstOrDefault(item =>
+        item.MenuItem.MenuItemId == newItem.MenuItem.MenuItemId);
 
         if (change > 0)
         {
@@ -95,12 +89,19 @@ public class OrderService : IOrderService
         if (existingItem != null)
         {
             existingItem.OrderItemQuantity += change;
+
+            if (!string.IsNullOrEmpty(newItem.Comment))
+            {
+                existingItem.Comment = newItem.Comment;
+            }
+
             if (existingItem.OrderItemQuantity <= 0)
                 currentItems.Remove(existingItem);
         }
         else if (change > 0)
         {
             newItem.OrderItemQuantity = change;
+            newItem.Comment ??= "";
             currentItems.Add(newItem);
         }
 
@@ -112,17 +113,22 @@ public class OrderService : IOrderService
         if (currentItems != null)
             currentItems.RemoveAll(item => item.MenuItem.MenuItemId == menuItemId);
 
-        return currentItems;
+        return  currentItems;
     }
-    public List<Order> GetRunningOrder()
+    public List<Order> GetKitchenOrders()
     {
-        return _orderRepository
-            .GetRunningOrders()
-            .Where(o =>
-                o.OrderStatus != OrderStatus.Paid &&
-                o.OrderStatus != OrderStatus.Cancelled &&
-                o.OrderStatus != OrderStatus.Served &&
-                o.OrderStatus != OrderStatus.Settled)
+        return _orderRepository.GetRunningOrders()
+            .Where(order => order.OrderItems.Any(item =>
+                item.MenuItem.Menu.Card == Card.Lunch || item.MenuItem.Menu.Card == Card.Dinner))
             .ToList();
     }
+
+    public List<Order> GetBarOrders()
+    {
+        return _orderRepository.GetRunningOrders()
+            .Where(order => order.OrderItems.Any(item =>
+                item.MenuItem.Menu.Card == Card.Drink))
+            .ToList();
+    }
+
 }

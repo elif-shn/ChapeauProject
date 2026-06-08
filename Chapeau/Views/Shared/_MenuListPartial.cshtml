@@ -59,7 +59,23 @@
                                 <input type="hidden" name="SelectedCard" value="@ViewData["SelectedCard"]" />
                                 <input type="hidden" name="SelectedCategory" value="@ViewData["SelectedCategory"]" />
                                 <input type="hidden" name="SelectedTableId" value="@ViewData["SelectedTableId"]" />
+
                                 <input type="hidden" name="NewOrderItem.MenuItem.MenuItemId" value="@item.MenuItemId" />
+
+                                @{
+                                    var cart = ViewData["CurrentOrders"] as List<Chapeau.Models.OrderItem>;
+
+                                    if (cart != null)
+                                    {
+                                        for (int i = 0; i < cart.Count; i++)
+                                        {
+                                            <input type="hidden" name="CurrentOrders[@i].MenuItem.MenuItemId" value="@cart[i].MenuItem.MenuItemId" />
+                                            <input type="hidden" name="CurrentOrders[@i].MenuItem.MenuItemName" value="@cart[i].MenuItem.MenuItemName" />
+                                            <input type="hidden" name="CurrentOrders[@i].OrderItemQuantity" value="@cart[i].OrderItemQuantity" />
+                                            <input type="hidden" name="CurrentOrders[@i].Comment" value="@cart[i].Comment" />
+                                        }
+                                    }
+                                }
                                 <button class="btn btn-success">+</button>
                             </form>
                         </td>

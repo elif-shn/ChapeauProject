@@ -16,48 +16,60 @@ namespace Chapeau.Repositories
         }
         public List<Menu> GetMenus(Card? card, Category? category, bool onlyActive)
         {
-            Dictionary<int, Menu> menus = new Dictionary<int, Menu>();
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            try
             {
-                string query =
-                    "SELECT mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.MenuId, " +
-                    "mi.VatPercentage, mi.Stock, mi.IsActive, " +
-                    "m.Card, m.Category " +
-                    "FROM MenuItem mi " +
-                    "INNER JOIN Menu m ON mi.MenuId = m.MenuId " +
-                    "WHERE (@Card IS NULL OR m.Card = @Card) " +
-                    "AND (@Category IS NULL OR m.Category = @Category) "+
-                    "AND (@OnlyActive = 0 OR mi.IsActive = 1)";
+                Dictionary<int, Menu> menus = new Dictionary<int, Menu>();
 
-                SqlCommand command = new SqlCommand(query, connection);
-
-                command.Parameters.Add("@Card", SqlDbType.Int).Value = (object?)card ?? DBNull.Value;
-
-                command.Parameters.Add("@Category", SqlDbType.Int).Value = (object?)category ?? DBNull.Value;
-                command.Parameters.Add("@OnlyActive", SqlDbType.Bit).Value = onlyActive;
-
-                connection.Open();
-
-                SqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    int menuId = (int)reader["MenuId"];
+                    string query =
+                        @"SELECT mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.MenuId,
+                         mi.VatPercentage, mi.Stock, mi.IsActive,
+                         m.Card, m.Category
+                  FROM MenuItem mi
+                  INNER JOIN Menu m ON mi.MenuId = m.MenuId
+                  WHERE (@Card IS NULL OR m.Card = @Card)
+                  AND (@Category IS NULL OR m.Category = @Category)
+                  AND (@OnlyActive = 0 OR mi.IsActive = 1)";
 
-                    if (!menus.ContainsKey(menuId))
+                    SqlCommand command = new SqlCommand(query, connection);
+
+                    command.Parameters.AddWithValue("@Card", (object?)card ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Category", (object?)category ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@OnlyActive", onlyActive);
+
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        menus[menuId] = ReadMenu(reader, menuId);
+                        while (reader.Read())
+                        {
+                            int menuId = (int)reader["MenuId"];
+
+                            if (!menus.ContainsKey(menuId))
+                            {
+                                menus[menuId] = ReadMenu(reader, menuId);
+                            }
+
+                            MenuItem item = ReadMenuItem(reader);
+                            item.Menu = menus[menuId];
+                            menus[menuId].MenuItems.Add(item);
+                        }
                     }
-
-                    MenuItem item = ReadMenuItem(reader);
-                    item.Menu = menus[menuId];
-                    menus[menuId].MenuItems.Add(item);
                 }
-            }
 
-            return menus.Values.ToList();
+                return menus.Values.ToList();
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error occurred while retrieving menus.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Unexpected error occurred while retrieving menus.", ex);
+            }
         }
+        //These columns are defined as NOT NULL in the database, therefore IsDBNull checks are unnecessary.
         private Menu ReadMenu(SqlDataReader reader, int menuId)
         {
             Menu menu = new Menu();
@@ -86,7 +98,7 @@ namespace Chapeau.Repositories
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
-                string sql = "SELECT * FROM MenuItem WHERE MenuItemId = @MenuItemId";
+                string sql = "SELECT MenuItemId, MenuItemName, MenuItemPrice, MenuId, VatPercentage, Stock, IsActive FROM MenuItem WHERE MenuItemId = @MenuItemId";
                 return conn.QuerySingleOrDefault<MenuItem>(sql, new { MenuItemId = id });
             }
         }
