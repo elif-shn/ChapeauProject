@@ -198,6 +198,59 @@ namespace Chapeau.Repositories
             }
 
         }
+
+        public bool HasActiveOrders(int tableId)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+                
+            {
+                string query = @"
+                                SELECT COUNT(*)
+                                FROM [Order]
+                                WHERE TableId = @tableId
+                                  AND OrderStatus NOT IN ('Served', 'Paid')";
+
+                SqlCommand command = new SqlCommand(query, connection);
+                
+
+                command.Parameters.AddWithValue("@tableId", tableId);
+                
+
+                connection.Open();
+
+                int count = Convert.ToInt32(command.ExecuteScalar());
+                
+
+                return count > 0;
+            }
+        }
+
+        public void UpdateTableStatus(Table table)
+        {
+            using (SqlConnection connection =
+                new SqlConnection(_connectionString))
+            {
+                string query = @"
+                                    UPDATE [Table]
+                                    SET TableStatus = @status
+                                    WHERE TableId = @tableId";
+
+                SqlCommand command =
+                    new SqlCommand(query, connection);
+
+                command.Parameters.AddWithValue(
+                    "@tableId",
+                    table.TableId);
+
+                command.Parameters.AddWithValue(
+                    "@status",
+                    table.TableStatus.ToString());
+
+                connection.Open();
+
+                command.ExecuteNonQuery();
+            }
+        }
     }
 }
 

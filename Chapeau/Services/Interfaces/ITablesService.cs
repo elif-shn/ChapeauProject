@@ -12,5 +12,9 @@ namespace Chapeau.Services.Interfaces
         List<ActiveOrderViewModel> GetActiveOrders(int tableId);
 
         void MarkOrderAsServed(int orderId);
+
+        void UpdateTableStatus(Table table);
+
+        bool HasActiveOrders(int tableId);
     }
 }

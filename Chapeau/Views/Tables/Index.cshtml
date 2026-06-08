@@ -7,6 +7,13 @@
     bool isWaiter = user != null && user.Role == "Waiter";
 }
 
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
 <h1>Restaurant Overview</h1>
 
 <a asp-action="Index" class="btn btn-primary mb-3">
@@ -30,6 +37,44 @@
 
             <p>Status: @table.TableStatus</p>
 
+            <form asp-action="ChangeTableStatus"
+                  method="post">
+
+                <input type="hidden"
+                       name="TableId"
+                       value="@table.TableId" />
+
+                <input type="hidden"
+                       name="TableCapacity"
+                       value="@table.TableCapacity" />
+
+                <input type="hidden"
+                       name="TableStatus"
+                       value="@table.TableStatus" />
+
+                @if (table.TableStatus ==
+                    TableStatus.Free)
+                {
+                    <button type="submit"
+                            class="btn btn-success">
+
+                        Mark Occupied
+
+                    </button>
+                }
+                else
+                {
+                    <button type="submit"
+                            class="btn btn-warning">
+
+                        Mark Free
+
+                    </button>
+                }
+
+            </form>
+
+
             <div class="d-flex gap-2 mt-2">
                 @if (isWaiter)
                 {
@@ -39,19 +84,25 @@
                        class="btn btn-sm btn-primary flex-fill text-center">
                         Take Order
                     </a>
+
+                    <a asp-controller="Tables"
+                       asp-action="ShowOrders"
+                       asp-route-tableId="@table.TableId"
+                       class="btn btn-sm btn-primary flex-fill text-center">
+                        View Orders
+                    </a>
                 }
                 else
                 {
                     <span class="btn btn-sm btn-secondary flex-fill text-center disabled">
                         Take Order
                     </span>
+
+                    <span class="btn btn-sm btn-secondary flex-fill text-center disabled">
+                        View Orders
+                    </span>
                 }
-                <a asp-controller="Tables"
-                   asp-action="ShowOrders"
-                   asp-route-tableId="@table.TableId"
-                   class="btn btn-sm btn-primary flex-fill text-center">
-                    View Orders
-                </a>
+                
 
             </div>
 
