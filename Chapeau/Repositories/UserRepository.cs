@@ -14,7 +14,7 @@ namespace Chapeau.Repositories
             _connectionString =
                 configuration.GetConnectionString("ChapeauDataBase");
         }
-
+        // Change Password Slection to Password instead of employee numebr later
         public User? GetByUsernameAndPassword(string username, string password)
 
         {

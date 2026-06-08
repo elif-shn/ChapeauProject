@@ -28,5 +28,16 @@ namespace Chapeau.Services
         {
             _tableRepository.MarkOrderAsServed(orderId);
         }
+
+        public void UpdateTableStatus(Table table)
+        {
+            _tableRepository.UpdateTableStatus(table);
+        }
+
+        public bool HasActiveOrders(int tableId)
+        {
+            return _tableRepository.HasActiveOrders(tableId);
+        }
+
     }
 }
