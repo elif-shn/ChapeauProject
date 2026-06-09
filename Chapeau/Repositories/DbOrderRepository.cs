@@ -160,7 +160,6 @@ namespace Chapeau.Repositories
                 throw new Exception("An unexpected error occurred while fetching order items.", ex);
             }
         }
-           
         public Order? GetOrderById(Order order)
         {
             try

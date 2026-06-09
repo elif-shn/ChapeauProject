@@ -11,7 +11,27 @@ public class MenuService : IMenuService
     {
         _menuRepository = menuRepository;
     }
+    public MenuFilterData GetMenuData(Card? selectedCard, Category? selectedCategory, bool onlyActive)
+    {
+        var allMenus = GetMenus(selectedCard, null, onlyActive).ToList();
 
+        var categories = allMenus.Select(m => m.Category).Distinct().ToList();
+
+        if (selectedCategory != null && !categories.Contains(selectedCategory.Value))
+        {
+            selectedCategory = null;
+        }
+
+        var filteredMenus = allMenus.Where(m => selectedCategory == null || m.Category == selectedCategory).ToList();
+
+        return new MenuFilterData
+        {
+            Menus = filteredMenus,
+            Categories = categories,
+            SelectedCard = selectedCard,
+            SelectedCategory = selectedCategory,
+        };
+    }
     public List<Menu> GetMenus(Card? card, Category? category, bool onlyActive)
     {
         return _menuRepository.GetMenus(card, category, onlyActive);
