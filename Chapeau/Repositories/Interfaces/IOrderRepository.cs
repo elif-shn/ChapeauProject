@@ -10,7 +10,7 @@ public interface IOrderRepository
     void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status);
     Order? GetOrderById(Order order);
     public void CreateOrderWithItems(Order order);
-    void AddItemsToExistingOrder(Order order, List<OrderItem> items);
+    //void AddItemsToExistingOrder(Order order, List<OrderItem> items);
     Order GetActiveOrderForTable(int tableId);
 }
 

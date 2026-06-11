@@ -194,7 +194,6 @@ namespace Chapeau.Repositories
                 throw new Exception("An unexpected error occurred while fetching the order by ID.", ex);
             }
         }
-        //testtttt
         public Order GetActiveOrderForTable(int tableId)
         {
             try
@@ -253,6 +252,7 @@ namespace Chapeau.Repositories
                             foreach (var item in order.OrderItems)
                             {
                                 AddOrderItem(connection, transaction, newOrderId, item);
+                                DecreaseItemStock(connection, transaction, item);
                             }
                         }
                         transaction.Commit();
@@ -278,7 +278,7 @@ namespace Chapeau.Repositories
             using (SqlCommand orderCommand = new SqlCommand(orderQuery, connection, transaction))
             {
                 orderCommand.Parameters.AddWithValue("@TableId", order.TableId);
-                orderCommand.Parameters.AddWithValue("@EmployeeId", order.Employee?.Id ?? 1);
+                orderCommand.Parameters.AddWithValue("@EmployeeId", order.Employee.Id);
                 orderCommand.Parameters.AddWithValue("@OrderStatus", OrderStatus.Ordered.ToString());
 
                 int newOrderId = Convert.ToInt32(orderCommand.ExecuteScalar());
@@ -286,6 +286,7 @@ namespace Chapeau.Repositories
             }
 
         }
+        
         private void AddOrderItem(SqlConnection connection, SqlTransaction transaction, int orderId, OrderItem item)
         {
             string query = @"
@@ -304,6 +305,22 @@ namespace Chapeau.Repositories
                 cmd.ExecuteNonQuery();
             }
         }
+        private void DecreaseItemStock(SqlConnection connection, SqlTransaction transaction, OrderItem item)
+        {
+
+            string query = "UPDATE MenuItem " +
+                           "SET Stock = Stock - @Amount " +
+                           "WHERE MenuItemId = @MenuItemId";
+            using (SqlCommand cmd = new SqlCommand(query, connection, transaction))
+            {
+
+                cmd.Parameters.AddWithValue("@Amount", item.OrderItemQuantity);
+                cmd.Parameters.AddWithValue("@MenuItemId", item.MenuItem.MenuItemId);
+                cmd.ExecuteNonQuery();
+            }
+            
+        }
+        /*
         private void AddOrUpdateOrderItem(SqlConnection connection, SqlTransaction transaction, int orderId, OrderItem item)
         {
             string query = @"
@@ -363,7 +380,7 @@ namespace Chapeau.Repositories
                     }
                 }
             }
-        }
+        }*/
         //Private Helpers Methods//
         private Order ReadOrder(SqlDataReader reader)
         {

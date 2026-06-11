@@ -1,12 +1,13 @@
 ﻿@using Chapeau.Enums
 @using Chapeau.Extensions
-@model Chapeau.ViewModels.MenuViewModel
+@using Chapeau.ViewModels
+@model Chapeau.ViewModels.MenuListViewModel
 
 @{
     ViewData["Title"] = "MenuItems";
 }
+<partial name="_MenuFilterForm" model="Model"/>
 
-<partial name="_MenuFilterForm" model="Model" />
-
-<partial name="_MenuListPartial" model="Model.Menu" view-data='new ViewDataDictionary(ViewData) { { "ShowAddButton", false } }' />
-
+<partial name="_MenuListPartial"
+         model="Model"
+         }" />

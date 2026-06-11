@@ -2,6 +2,7 @@
 using Chapeau.Models;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace Chapeau.Controllers
 {
     public class MenuController : Controller
@@ -16,15 +17,25 @@ namespace Chapeau.Controllers
 
         public IActionResult Index(Card? selectedCard, Category? selectedCategory)
         {
-            MenuFilterData data = _menuService.GetMenuData( selectedCard, selectedCategory, true);
-
-            return View(new MenuViewModel
+            try
             {
-                Menu = data.Menus,
-                Categories = data.Categories,
-                SelectedCard = data.SelectedCard,
-                SelectedCategory = data.SelectedCategory
-            });
+                MenuFilterData data =
+                    _menuService.GetMenuData(selectedCard, selectedCategory, true);
+
+                return View(new MenuListViewModel
+                {
+                    MenuFilterData = data,
+                });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return View(new MenuListViewModel
+                {
+                    MenuFilterData = new MenuFilterData(),
+                });
+            }
         }
         public IActionResult Management(Card? selectedCard, Category? selectedCategory)
         {
