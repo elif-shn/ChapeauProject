@@ -10,6 +10,5 @@ namespace Chapeau.Repositories.Interfaces
         void Add(MenuItem item, int selectedCard, int selectedCategory);
         void Update(MenuItem item, int selectedCard, int selectedCategory);
         void SetActive(int id, bool isActive);
-        void DecreaseStock(int menuItemId, int amount);
     }
 }

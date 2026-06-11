@@ -13,7 +13,7 @@ public class MenuService : IMenuService
     }
     public MenuFilterData GetMenuData(Card? selectedCard, Category? selectedCategory, bool onlyActive)
     {
-        var allMenus = GetMenus(selectedCard, null, onlyActive).ToList();
+        var allMenus = _menuRepository.GetMenus(selectedCard, null, onlyActive).ToList();
 
         var categories = allMenus.Select(m => m.Category).Distinct().ToList();
 
@@ -32,11 +32,12 @@ public class MenuService : IMenuService
             SelectedCategory = selectedCategory,
         };
     }
+    /*
     public List<Menu> GetMenus(Card? card, Category? category, bool onlyActive)
     {
         return _menuRepository.GetMenus(card, category, onlyActive);
     }
-
+    */
     public MenuItem GetMenuItemById(int id)
     {
         return _menuRepository.GetById(id);
@@ -60,10 +61,5 @@ public class MenuService : IMenuService
     public void DeactivateMenuItem(int id)
     {
         _menuRepository.SetActive(id, false);
-    }
-
-    public void DecreaseStock(int menuItemId, int amount)
-    {
-        _menuRepository.DecreaseStock(menuItemId, amount);
     }
 }
