@@ -39,5 +39,7 @@ namespace Chapeau.Models
             OrderStatus = orderStatus;
             OrderItems = new List<OrderItem>();
         }
+
+
     }
 }

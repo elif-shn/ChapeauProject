@@ -1,4 +1,5 @@
 ﻿
+using Chapeau.Enums;
 using Chapeau.Models;
 using Chapeau.Repositories;
 using Chapeau.Repositories.Interfaces;
@@ -34,9 +35,8 @@ namespace Chapeau.Controllers
         [HttpGet]
         public IActionResult ShowOrders(int tableId)
         {
-            List<ActiveOrderViewModel> orders =
-                _tableService
-                    .GetActiveOrders(tableId);
+            List<ActiveOrderViewModel> orders = _tableService.GetActiveOrders(tableId);
+            
 
             return View(orders);
         }
@@ -48,6 +48,40 @@ namespace Chapeau.Controllers
             _tableService.MarkOrderAsServed(orderId);
                 
             return RedirectToAction("ShowOrders", new { tableId });
+        }
+
+        [HttpPost]
+        public IActionResult ChangeTableStatus(Table table)
+        {
+            if (table.TableStatus == TableStatus.Free)
+            {
+                table.TableStatus = TableStatus.Occupied;
+
+
+                _tableService.UpdateTableStatus(table);
+                    
+            }
+            else
+            {
+                bool hasActiveOrders = _tableService.HasActiveOrders(table.TableId);
+                
+
+                if (!hasActiveOrders)
+                {
+                    table.TableStatus = TableStatus.Free;
+
+
+                    _tableService.UpdateTableStatus(table);
+                        
+                }
+                else
+                {
+                    TempData["Error"] = "Table has active orders.";
+                    
+                }
+            }
+
+            return RedirectToAction("Index");
         }
     }
 }
