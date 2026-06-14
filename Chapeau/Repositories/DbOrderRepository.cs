@@ -435,12 +435,11 @@ namespace Chapeau.Repositories
                     ServedTime = GETDATE()
                 WHERE OrderId = @orderId";
 
-                SqlCommand command =
-                    new SqlCommand(query, connection);
+                SqlCommand command = new SqlCommand(query, connection);
+                
 
-                command.Parameters.AddWithValue(
-                    "@orderId",
-                    orderId);
+                command.Parameters.AddWithValue("@orderId", orderId);
+                
 
                 connection.Open();
 
