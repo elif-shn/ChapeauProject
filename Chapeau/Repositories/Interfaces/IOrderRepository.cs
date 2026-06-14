@@ -4,6 +4,10 @@ using Chapeau.ViewModels;
 public interface IOrderRepository
 {
     List<Order> GetRunningOrders();
+
+    List<Order> GetRunningTableOrders(int tableId);
+    List<Order> GetActiveDrinkOrders(int tableId);
+    List<Order> GetActiveFoodOrders(int tableId);
     List<OrderItem> GetOrderItemsByOrderId(Order order);
     List<Order> GetFinishedOrders();
     void UpdateOrderStatus(Order order, OrderStatus status);
@@ -12,6 +16,7 @@ public interface IOrderRepository
     public void CreateOrderWithItems(Order order);
     void AddItemsToExistingOrder(Order order, List<OrderItem> items);
     Order GetActiveOrderForTable(int tableId);
+    void MarkOrderAsServed(int orderId);
 }
 
 

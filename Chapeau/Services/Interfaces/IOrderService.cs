@@ -9,6 +9,10 @@ namespace Chapeau.Services.Interfaces
         List<Order> GetFinishedOrders();
         List<Order> GetKitchenOrders();
         List<Order> GetBarOrders();
+        List<Order> GetRunningTableOrders(int tableId);
+        List<Order> GetActiveDrinkOrders(int tableId);
+        List<Order> GetActiveFoodOrders(int tableId);
+        void MarkOrderAsServed(int orderId);
         Order? GetOrderById(Order order);
         void UpdateOrderStatus(Order order, OrderStatus status);
         void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status);
