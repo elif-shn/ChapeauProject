@@ -3,8 +3,8 @@
 
 @model List<Chapeau.Models.Table>
 @{
-    var user = Context.Session.GetObject<User>("LoggedInUser");
-    bool isWaiter = user != null && user.Role == "Waiter";
+    var employee = Context.Session.GetObject<Employee>("LoggedInUser");
+    bool isWaiter = employee != null && employee.EmployeeOccupation == "Waiter";
 }
 
 @if (TempData["Error"] != null)

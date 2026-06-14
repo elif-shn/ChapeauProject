@@ -10,7 +10,7 @@ namespace Chapeau.Models
         public int OrderId { get; set; }
         public int TableId { get; set; }
         public Table Table { get; set; }
-        public User Employee { get; set; }
+        public Employee Employee { get; set; }
         public DateTime OrderTime { get; set; }
         public DateTime? ServedTime { get; set; }
         public OrderStatus OrderStatus { get; set; }
@@ -28,7 +28,7 @@ namespace Chapeau.Models
         }
         public Order() { }
 
-        public Order(int orderId, int tableId, Table table, User employee, DateTime orderTime, DateTime? servedTime, OrderStatus orderStatus)
+        public Order(int orderId, int tableId, Table table, Employee employee, DateTime orderTime, DateTime? servedTime, OrderStatus orderStatus)
         {
             OrderId = orderId;
             TableId = tableId;
