@@ -1,5 +1,4 @@
 ﻿@model Chapeau.ViewModels.TakeOrderViewModel
-,
 
 @if (Model.CurrentOrders.Any())
 {
@@ -16,15 +15,18 @@
                               class="d-flex mt-1">
 
                             <input type="hidden"
-                                   name="menuItemId"
+                                   name="NewOrderItem.MenuItem.MenuItemId"
                                    value="@item.MenuItem.MenuItemId" />
 
                             <input type="hidden"
                                    name="SelectedTableId"
                                    value="@Model.SelectedTableId" />
 
+                            <input type="hidden" name="MenuFilterData.SelectedCard" value="@Model.MenuFilterData.SelectedCard" />
+                            <input type="hidden" name="MenuFilterData.SelectedCategory" value="@Model.MenuFilterData.SelectedCategory" />
+
                             <input type="text"
-                                   name="comment"
+                                   name="NewOrderItem.Comment"
                                    value="@item.Comment"
                                    class="form-control form-control-sm me-1"
                                    placeholder="Add note..." />
@@ -40,7 +42,7 @@
                         <div style="display:inline-flex; align-items:center; gap:6px;">
 
                             <form method="post"
-                                  asp-action="DecreaseItemQuantityInCurrentOrder"
+                                  asp-action="RemoveItemInCurrentOrder"
                                   style="margin:0;">
 
                                 <input type="hidden"
@@ -50,6 +52,9 @@
                                 <input type="hidden"
                                        name="SelectedTableId"
                                        value="@Model.SelectedTableId" />
+
+                                <input type="hidden" name="MenuFilterData.SelectedCard" value="@Model.MenuFilterData.SelectedCard" />
+                                <input type="hidden" name="MenuFilterData.SelectedCategory" value="@Model.MenuFilterData.SelectedCategory" />
 
                                 <button type="submit"
                                         class="btn btn-sm btn-outline-warning">
@@ -62,7 +67,7 @@
                             </span>
 
                             <form method="post"
-                                  asp-action="AddNewItemToCurrentOrder"
+                                  asp-action="AddItemToCurrentOrder"
                                   style="margin:0;">
 
                                 <input type="hidden"
@@ -72,6 +77,9 @@
                                 <input type="hidden"
                                        name="SelectedTableId"
                                        value="@Model.SelectedTableId" />
+
+                                <input type="hidden" name="MenuFilterData.SelectedCard" value="@Model.MenuFilterData.SelectedCard" />
+                                <input type="hidden" name="MenuFilterData.SelectedCategory" value="@Model.MenuFilterData.SelectedCategory" />
 
                                 <button type="submit"
                                         class="btn btn-sm btn-outline-success">
@@ -89,15 +97,18 @@
 
                     <td>
                         <form method="post"
-                              asp-action="RemoveItem">
+                              asp-action="DeleteItem">
 
                             <input type="hidden"
-                                   name="menuItemId"
+                                   name="NewOrderItem.MenuItem.MenuItemId"
                                    value="@item.MenuItem.MenuItemId" />
 
                             <input type="hidden"
                                    name="SelectedTableId"
                                    value="@Model.SelectedTableId" />
+
+                            <input type="hidden" name="MenuFilterData.SelectedCard" value="@Model.MenuFilterData.SelectedCard" />
+                            <input type="hidden" name="MenuFilterData.SelectedCategory" value="@Model.MenuFilterData.SelectedCategory" />
 
                             <button type="submit"
                                     class="btn btn-sm btn-danger">

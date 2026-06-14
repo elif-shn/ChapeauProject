@@ -260,7 +260,6 @@ namespace Chapeau.Repositories
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-
                         throw new Exception("An error occurred while saving the order and its items; all operations have been rolled back.", ex);
                     }
                 }
@@ -278,7 +277,7 @@ namespace Chapeau.Repositories
             using (SqlCommand orderCommand = new SqlCommand(orderQuery, connection, transaction))
             {
                 orderCommand.Parameters.AddWithValue("@TableId", order.TableId);
-                orderCommand.Parameters.AddWithValue("@EmployeeId", order.Employee.Id);
+                orderCommand.Parameters.AddWithValue("@EmployeeId", order.Employee?.EmployeeId ?? 1);
                 orderCommand.Parameters.AddWithValue("@OrderStatus", OrderStatus.Ordered.ToString());
 
                 int newOrderId = Convert.ToInt32(orderCommand.ExecuteScalar());
@@ -320,7 +319,7 @@ namespace Chapeau.Repositories
             }
             
         }
-        /*
+        
         private void AddOrUpdateOrderItem(SqlConnection connection, SqlTransaction transaction, int orderId, OrderItem item)
         {
             string query = @"
@@ -369,6 +368,7 @@ namespace Chapeau.Repositories
                         foreach (var item in items)
                         {
                             AddOrUpdateOrderItem(connection, transaction, order.OrderId, item);
+                            DecreaseItemStock(connection, transaction, item);
                         }
 
                         transaction.Commit();
@@ -377,10 +377,11 @@ namespace Chapeau.Repositories
                     {
                         transaction.Rollback();
                         throw new Exception("An error occurred while saving the order and its items; all operations have been rolled back.", ex);
+
                     }
                 }
             }
-        }*/
+        }
         //Private Helpers Methods//
         private Order ReadOrder(SqlDataReader reader)
         {
@@ -401,10 +402,10 @@ namespace Chapeau.Repositories
             return table;
         }
 
-        private User ReadEmployee(SqlDataReader reader)
+        private Employee ReadEmployee(SqlDataReader reader)
         {
-            User employee = new User();
-            employee.Id = (int)reader["EmployeeId"];
+            Employee employee = new Employee();
+            employee.EmployeeId = (int)reader["EmployeeId"];
 
             return employee;
         }

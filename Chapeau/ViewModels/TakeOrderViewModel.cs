@@ -1,5 +1,4 @@
-﻿using Chapeau.Enums;
-using Chapeau.Models;
+﻿using Chapeau.Models;
 
 namespace Chapeau.ViewModels
 {

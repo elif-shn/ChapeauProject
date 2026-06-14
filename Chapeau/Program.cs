@@ -27,10 +27,10 @@ namespace Chapeau
             builder.Services.AddScoped<IOrderRepository, DbOrderRepository>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IMenuService, MenuService>();
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            
             builder.Services.AddScoped<ITableRepository, TableRepository>();
             builder.Services.AddScoped<ITablesService, TableService>();
-            builder.Services.AddScoped<IUserService, UserServices>();
+
             builder.Services.AddScoped<IPaymentRepository, DbPaymentRepository>();
             builder.Services.AddScoped<PaymentService>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();

@@ -1,7 +1,4 @@
-﻿using Chapeau.Enums;
-using Chapeau.Models;
-
-namespace Chapeau.ViewModels
+﻿namespace Chapeau.ViewModels
 {
     public class MenuListViewModel
     {

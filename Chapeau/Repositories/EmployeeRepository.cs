@@ -161,5 +161,38 @@ namespace Chapeau.Repositories
                 IsActive = (bool)reader["IsActive"]
             };
         }
+
+        public Employee? GetByUsernameAndPassword(string username, string password)
+
+        {
+            Employee? employee = null;
+
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+
+            {
+                string query =
+                    @"SELECT EmployeeId, EmployeeName, EmployeeNumber, EmployeeOccupation, EmployeePassword, IsActive
+                      FROM Employee
+                      WHERE EmployeeName = @username
+                      AND EmployeePassword = @password";
+
+                SqlCommand command = new SqlCommand(query, connection);
+                
+
+                command.Parameters.AddWithValue("@username", username);
+                command.Parameters.AddWithValue("@password", password);
+
+                connection.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    employee = ReadEmployee(reader);
+                }
+            }
+
+            return employee;
+        }
     }
 }            
