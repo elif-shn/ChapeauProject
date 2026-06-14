@@ -1,6 +1,7 @@
 ﻿using Chapeau.Extensions;
 using Chapeau.Models;
 using Chapeau.Repositories;
+using Chapeau.Services;
 using Chapeau.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,11 +10,11 @@ namespace Chapeau.Controllers
     public class AccountController : Controller
     {
          
-        private readonly IUserService _userServices;
+        private readonly IEmployeeService _employeeServices;
 
-        public AccountController(IUserService userServices)
+        public AccountController(IEmployeeService employeeServices)
         {
-            this._userServices = userServices;
+            this._employeeServices = employeeServices;
         }
 
         public IActionResult Login()
@@ -27,12 +28,12 @@ namespace Chapeau.Controllers
         [HttpPost]
         public IActionResult Login(LoginModel loginModel)
         {
-            User? user =
-                _userServices.GetByUsernameAndPassword(
+            Employee? employee =
+                _employeeServices.GetByUsernameAndPassword(
                     loginModel.Username,
                     loginModel.Password);
 
-            if (user == null)
+            if (employee == null)
             {
                 ViewBag.Error = "Invalid credentials";
 
@@ -41,7 +42,7 @@ namespace Chapeau.Controllers
 
             HttpContext.Session.SetObject(
                 "LoggedInUser",
-                user);
+                employee);
 
             return RedirectToAction(
                 "Index",

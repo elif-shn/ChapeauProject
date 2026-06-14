@@ -11,8 +11,8 @@
 @using Chapeau.Extensions
 @using Chapeau.Models
 @{
-        User? user =
-                Context.Session.GetObject<User>("LoggedInUser");
+        Employee? user =
+                Context.Session.GetObject<Employee>("LoggedInUser");
 }
 
 
@@ -52,7 +52,7 @@
                         </li>
                         @if (user != null)
                         {
-                            <span>Welcome @user.Username</span>
+                            <span>Welcome @user.EmployeeName</span>
 
                             <a class="nav-link text-warning" asp-controller="Account" asp-action="Logout"> Logout </a>
 
