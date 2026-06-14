@@ -18,6 +18,7 @@ namespace Chapeau.Controllers
             this._employeeServices = employeeServices;
         }
 
+        //you can Log in as a waiter with username: Marie Lee, password: admin123
         [AllowAnonymous]
         public IActionResult Login()
         {
@@ -42,9 +43,8 @@ namespace Chapeau.Controllers
                 return View(loginModel);
             }
 
-            HttpContext.Session.SetObject(
-                "LoggedInUser",
-                employee);
+            HttpContext.Session.SetObject("LoggedInUser", employee);
+            
 
             List<Claim> claims = new List<Claim>
             {
@@ -58,9 +58,8 @@ namespace Chapeau.Controllers
 
             await HttpContext.SignInAsync("ChapeauCookie", principal);
 
-            return RedirectToAction(
-                "Index",
-                "Home");
+            return RedirectToAction("Index", "Home");
+            
         }
 
         [Authorize]

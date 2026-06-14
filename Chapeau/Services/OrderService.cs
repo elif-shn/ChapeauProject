@@ -22,6 +22,11 @@ public class OrderService : IOrderService
         return _orderRepository.GetRunningOrders();
     }
 
+    public List<Order> GetRunningTableOrders(int tableId)
+    {
+        return _orderRepository.GetRunningTableOrders(tableId);
+    }
+
     public List<Order> GetFinishedOrders()
     {
         return _orderRepository.GetFinishedOrders();
@@ -145,6 +150,20 @@ public class OrderService : IOrderService
             .Where(order => order.OrderItems.Any(item =>
                 item.MenuItem.Menu.Card == Card.Drink))
             .ToList();
+    }
+
+    public void MarkOrderAsServed(int orderId)
+    {
+        _orderRepository.MarkOrderAsServed(orderId);
+    }
+
+    public List<Order> GetActiveDrinkOrders(int tableId)
+    {
+        return _orderRepository.GetActiveDrinkOrders(tableId);
+    }
+    public List<Order> GetActiveFoodOrders(int tableId)
+    {
+        return _orderRepository.GetActiveFoodOrders(tableId);
     }
 
 }

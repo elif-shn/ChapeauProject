@@ -1,7 +1,8 @@
 ﻿@using Chapeau.Enums;
 @using Chapeau.Extensions;
 
-@model List<Chapeau.Models.Table>
+@using Chapeau.ViewModels
+@model List<RestaurantOverviewViewModel>
 @{
     var employee = Context.Session.GetObject<Employee>("LoggedInUser");
     bool isWaiter = employee != null && employee.EmployeeOccupation == EmployeeRole.Waiter;
@@ -22,37 +23,56 @@
 
 <div class="restaurant-layout">
 
-    @foreach (var table in Model)
+    @foreach (var item in Model)
     {
         string cssClass =
-            table.TableStatus == TableStatus.Occupied
-            ? "occupied"
-            : "free";
+                item.Table.TableStatus == TableStatus.Occupied
+                ? "occupied"
+                : "free";
 
         <div class="table-card @cssClass">
 
-            <h3>Table @table.TableId</h3>
+            <h3>Table @item.Table.TableId</h3>
 
-            <p>Capacity: @table.TableCapacity</p>
+            <p>Capacity: @item.Table.TableCapacity</p>
 
-            <p>Status: @table.TableStatus</p>
+            <p>Status: @item.Table.TableStatus</p>
+
+            @if(item.HasFoodOrders && item.HasDrinkOrders)
+            {
+                <span class="badge bg-primary">
+                    Food & Drink
+                </span>
+            }
+            else if(item.HasFoodOrders)
+            {
+                <span class="badge bg-success">
+                    Food
+                </span>
+            }
+            else if(item.HasDrinkOrders)
+            {
+                <span class="badge bg-info">
+                    Drink
+                </span>
+            }
 
             <form asp-action="ChangeTableStatus"
                   method="post">
 
                 <input type="hidden"
                        name="TableId"
-                       value="@table.TableId" />
+                       value="@item.Table.TableId" />
 
                 <input type="hidden"
                        name="TableCapacity"
-                       value="@table.TableCapacity" />
+                       value="@item.Table.TableCapacity" />
 
                 <input type="hidden"
                        name="TableStatus"
-                       value="@table.TableStatus" />
+                       value="@item.Table.TableStatus" />
 
-                @if (table.TableStatus ==
+                @if (item.Table.TableStatus ==
                     TableStatus.Free)
                 {
                     <button type="submit"
@@ -80,14 +100,14 @@
                 {
                     <a asp-controller="Order"
                        asp-action="ViewMenuForTakeOrder"
-                       asp-route-selectedTableId="@table.TableId"
+                       asp-route-selectedTableId="@item.Table.TableId"
                        class="btn btn-sm btn-primary flex-fill text-center">
                         Take Order
                     </a>
 
                     <a asp-controller="Tables"
                        asp-action="ShowOrders"
-                       asp-route-tableId="@table.TableId"
+                       asp-route-tableId="@item.Table.TableId"
                        class="btn btn-sm btn-primary flex-fill text-center">
                         View Orders
                     </a>

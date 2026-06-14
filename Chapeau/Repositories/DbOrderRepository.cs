@@ -382,6 +382,197 @@ namespace Chapeau.Repositories
                 }
             }
         }
+        //Ahmad Methods
+        public List<Order> GetRunningTableOrders(int tableId)
+        {
+            try
+            {
+                List<Order> orders = new List<Order>();
+
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = $@"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus 
+                  FROM [Order] o WHERE o.OrderStatus NOT IN ('{OrderStatus.Paid}', '{OrderStatus.Cancelled}', '{OrderStatus.Served}', '{OrderStatus.Settled}')
+                                                     AND o.TableId = @tableId
+                  ORDER BY o.OrderTime ASC";
+
+
+                    SqlCommand command = new SqlCommand(query, connection);
+
+                    command.Parameters.AddWithValue("@tableId", tableId);
+
+                    connection.Open();
+
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        orders.Add(ReadOrder(reader));
+                    }
+                }
+
+                foreach (Order order in orders)
+                {
+                    order.OrderItems = GetOrderItemsByOrderId(order);
+                }
+
+                return orders;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Failed to retrieve running orders.", ex);
+            }
+        }
+
+        public void MarkOrderAsServed(int orderId)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = @"
+                UPDATE [Order]
+                SET
+                    OrderStatus = 'Served',
+                    ServedTime = GETDATE()
+                WHERE OrderId = @orderId";
+
+                SqlCommand command =
+                    new SqlCommand(query, connection);
+
+                command.Parameters.AddWithValue(
+                    "@orderId",
+                    orderId);
+
+                connection.Open();
+
+                int noOfRowsAffected = command.ExecuteNonQuery();
+                if (noOfRowsAffected == 0)
+                {
+                    throw new Exception("No record updated!");
+                }
+            }
+
+        }
+
+        public List<Order> GetActiveFoodOrders(int tableId)
+        {
+            try
+            {
+                List<Order> orders = new List<Order>();
+
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                   
+                {
+                    string query = $@"
+                        SELECT DISTINCT
+                            o.OrderId,
+                            o.TableId,
+                            o.EmployeeId,
+                            o.OrderTime,
+                            o.ServedTime,
+                            o.OrderStatus
+
+                        FROM [Order] o
+
+                        JOIN OrderItem oi
+                            ON o.OrderId = oi.OrderId
+
+                        JOIN MenuItem mi
+                            ON oi.MenuItemId = mi.MenuItemId
+
+                        WHERE
+                            o.OrderStatus NOT IN
+                            ('{OrderStatus.Paid}', '{OrderStatus.Cancelled}', '{OrderStatus.Served}', '{OrderStatus.Settled}')
+
+                            AND mi.IsFood = 1
+
+                            AND o.TableId = @tableId";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+                    
+
+                    command.Parameters.AddWithValue("@tableId", tableId);
+                    
+
+                    connection.Open();
+
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    
+
+                    while (reader.Read())
+                    {
+                        orders.Add(ReadOrder(reader));
+                    }
+                }
+
+                return orders;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error occurred while fetching Food Orders.", ex);
+            }
+            
+        }
+
+        public List<Order> GetActiveDrinkOrders(int tableId)
+        {
+            try
+            {
+                List<Order> orders = new List<Order>();
+
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                    
+                {
+                    string query = $@"
+                                SELECT DISTINCT
+                                    o.OrderId,
+                                    o.TableId,
+                                    o.EmployeeId,
+                                    o.OrderTime,
+                                    o.ServedTime,
+                                    o.OrderStatus
+
+                                FROM [Order] o
+
+                                JOIN OrderItem oi
+                                    ON o.OrderId = oi.OrderId
+
+                                JOIN MenuItem mi
+                                    ON oi.MenuItemId = mi.MenuItemId
+
+                                WHERE
+                                    o.OrderStatus NOT IN
+                                    ('{OrderStatus.Paid}', '{OrderStatus.Cancelled}', '{OrderStatus.Served}', '{OrderStatus.Settled}')
+
+                                    AND mi.IsFood = 0
+
+                                    AND o.TableId = @tableId";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+                    
+
+                    command.Parameters.AddWithValue("@tableId", tableId);
+                    
+
+                    connection.Open();
+
+                    SqlDataReader reader = command.ExecuteReader();
+                    
+
+                    while (reader.Read())
+                    {
+                        orders.Add(ReadOrder(reader));
+                    }
+                }
+
+                return orders;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error occurred while fetching Drinks Orders.", ex);
+            }
+            
+        }
         //Private Helpers Methods//
         private Order ReadOrder(SqlDataReader reader)
         {
