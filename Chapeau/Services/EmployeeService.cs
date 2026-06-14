@@ -1,5 +1,6 @@
 ﻿using Chapeau.Models;
 using Chapeau.Repositories;
+using Chapeau.Repositories.Interfaces;
 using System.Security.Cryptography;
 using System.Text;
 namespace Chapeau.Services
@@ -35,6 +36,11 @@ namespace Chapeau.Services
                 return _employeeRepository.GetById(id);
             }
             catch { throw; }
+        }
+
+        public Employee? GetByUsernameAndPassword(string username, string password)
+        {
+            return _employeeRepository.GetByUsernameAndPassword(username, password);
         }
         public void AddEmployee(Employee employee)
         {
@@ -80,6 +86,11 @@ namespace Chapeau.Services
         {
             try { _employeeRepository.SetActive(id, false); }
             catch { throw; }
+        }
+
+        public Employee? GetByUsernameAndPassword(string username, string password)
+        {
+            return _employeeRepository.GetByUsernameAndPassword(username, HashPassword(password));
         }
     }
 }

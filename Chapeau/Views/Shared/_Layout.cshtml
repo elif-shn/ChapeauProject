@@ -11,8 +11,7 @@
 @using Chapeau.Extensions
 @using Chapeau.Models
 @{
-        User? user =
-                Context.Session.GetObject<User>("LoggedInUser");
+        Employee? user = Context.Session.GetObject<Employee>("LoggedInUser");
 }
 
 
@@ -42,27 +41,32 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="ManagementHub">Management</a>
                         </li>
-      
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Payment" asp-action="Index" asp-route-orderId="1">Payment</a>
                         </li>
-
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                    </ul>
+
+                    <ul class="navbar-nav ms-auto align-items-center">
                         @if (user != null)
                         {
-                            <span>Welcome @user.Username</span>
-
-                            <a class="nav-link text-warning" asp-controller="Account" asp-action="Logout"> Logout </a>
-
+                            <li class="nav-item me-2">
+                                <span class="navbar-text fw-semibold">
+                                    Welcome @user.EmployeeName
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-warning" asp-controller="Account" asp-action="Logout">Logout</a>
+                            </li>
                         }
                         else
-                        {
-                            <a class="nav-link" asp-controller="Account" asp-action="Login"> Login </a>
-
+                        { 
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
+                            </li>
                         }
-
                     </ul>
                 </div>
             </div>

@@ -1,5 +1,6 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
+using Microsoft.AspNetCore.Authorization;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 namespace Chapeau.Controllers
@@ -8,7 +9,7 @@ namespace Chapeau.Controllers
     {
         private readonly IMenuService _menuService;
 
-
+        /*for login to the management part user name : Mehedi and Password :12345*/
         public MenuController(IMenuService menuService)
         {
             _menuService = menuService;
@@ -36,6 +37,7 @@ namespace Chapeau.Controllers
                 });
             }
         }
+        [Authorize(Roles = "Manager")]
         public IActionResult Management(Card? selectedCard, Category? selectedCategory)
         {
             try
@@ -55,11 +57,13 @@ namespace Chapeau.Controllers
                 return View(new MenuViewModel());
             }
         }
+        [Authorize(Roles = "Manager")]
         public IActionResult Add()
         {
             return View(new MenuViewModel { ItemToEdit = new MenuItem() });
         }
 
+        [Authorize(Roles = "Manager")]
         [HttpPost]
         public IActionResult Add(MenuViewModel model)
         {
@@ -75,6 +79,7 @@ namespace Chapeau.Controllers
             return View(model);
         }
         [HttpGet]
+        [Authorize(Roles = "Manager")]
         public IActionResult Edit(int id)
         {
             MenuItem item = _menuService.GetMenuItemById(id);
@@ -90,6 +95,8 @@ namespace Chapeau.Controllers
             };
             return View(viewModel);
         }
+
+        [Authorize(Roles = "Manager")]
         [HttpPost]
         public IActionResult Edit(MenuViewModel model)
         {
@@ -106,6 +113,8 @@ namespace Chapeau.Controllers
 
             return View(model);
         }
+
+        [Authorize(Roles = "Manager")]
         [HttpPost]
         public IActionResult Deactivate(int id)
         {
@@ -113,6 +122,8 @@ namespace Chapeau.Controllers
             TempData["SuccessMessage"] = "Menu item deactivated successfully!";
             return RedirectToAction("Management");
         }
+
+        [Authorize(Roles = "Manager")]
         [HttpPost]
         public IActionResult Activate(int id)
         {

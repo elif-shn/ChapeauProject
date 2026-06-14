@@ -1,38 +1,41 @@
 ﻿using Chapeau.Extensions;
 using Chapeau.Models;
-using Chapeau.Repositories;
-using Chapeau.Services.Interfaces;
+using Chapeau.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Chapeau.Controllers
 {
     public class AccountController : Controller
     {
          
-        private readonly IUserService _userServices;
-
-        public AccountController(IUserService userServices)
+        private readonly IEmployeeService _employeeServices;
+        
+        public AccountController(IEmployeeService employeeServices)
         {
-            this._userServices = userServices;
+            this._employeeServices = employeeServices;
         }
 
+        [AllowAnonymous]
         public IActionResult Login()
         {
             LoginModel loginModel = new LoginModel();
-            
 
             return View(loginModel);
         }
 
+        [AllowAnonymous]
         [HttpPost]
-        public IActionResult Login(LoginModel loginModel)
+        public async Task<IActionResult> Login(LoginModel loginModel)
         {
-            User? user =
-                _userServices.GetByUsernameAndPassword(
+            Employee? employee =
+                _employeeServices.GetByUsernameAndPassword(
                     loginModel.Username,
                     loginModel.Password);
 
-            if (user == null)
+            if (employee == null)
             {
                 ViewBag.Error = "Invalid credentials";
 
@@ -41,19 +44,33 @@ namespace Chapeau.Controllers
 
             HttpContext.Session.SetObject(
                 "LoggedInUser",
-                user);
+                employee);
+
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, employee.EmployeeId.ToString()),
+                new Claim(ClaimTypes.Name, employee.EmployeeName),
+                new Claim(ClaimTypes.Role, employee.EmployeeOccupation.ToString())
+            };
+
+            ClaimsIdentity identity = new ClaimsIdentity(claims, "ChapeauCookie");
+            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync("ChapeauCookie", principal);
 
             return RedirectToAction(
                 "Index",
                 "Home");
         }
 
-        public IActionResult Logout()
+        [Authorize]
+        public async Task<IActionResult> Logout()
         {
             HttpContext.Session.Remove("LoggedInUser");
+
+            await HttpContext.SignOutAsync("ChapeauCookie");
 
             return RedirectToAction("Login");
         }
     }
 }
-
