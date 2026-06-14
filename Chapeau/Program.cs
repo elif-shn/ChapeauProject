@@ -13,6 +13,16 @@ namespace Chapeau
 
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddAuthentication("ChapeauCookie")
+                .AddCookie("ChapeauCookie", options =>
+                {
+                    options.LoginPath = "/Account/Login";
+                    options.AccessDeniedPath = "/Account/AccessDenied";
+                });
+
+            builder.Services.AddAuthorization();
+
+
             builder.Services.AddScoped<IMenuRepository, MenuRepository>();
             builder.Services.AddScoped<IOrderRepository, DbOrderRepository>();
             builder.Services.AddScoped<IOrderService, OrderService>();
@@ -53,6 +63,7 @@ namespace Chapeau
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

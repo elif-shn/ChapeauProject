@@ -1,6 +1,9 @@
 ﻿using Chapeau.Extensions;
 using Chapeau.Models;
-using Chapeau.Repositories;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+
 using Chapeau.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,7 +11,6 @@ namespace Chapeau.Controllers
 {
     public class AccountController : Controller
     {
-         
         private readonly IUserService _userServices;
 
         public AccountController(IUserService userServices)
@@ -16,16 +18,17 @@ namespace Chapeau.Controllers
             this._userServices = userServices;
         }
 
+        [AllowAnonymous]
         public IActionResult Login()
         {
             LoginModel loginModel = new LoginModel();
-            
 
             return View(loginModel);
         }
 
+        [AllowAnonymous]
         [HttpPost]
-        public IActionResult Login(LoginModel loginModel)
+        public async Task<IActionResult> Login(LoginModel loginModel)
         {
             User? user =
                 _userServices.GetByUsernameAndPassword(
@@ -43,17 +46,31 @@ namespace Chapeau.Controllers
                 "LoggedInUser",
                 user);
 
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role)
+            };
+
+            ClaimsIdentity identity = new ClaimsIdentity(claims, "ChapeauCookie");
+            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync("ChapeauCookie", principal);
+
             return RedirectToAction(
                 "Index",
                 "Home");
         }
 
-        public IActionResult Logout()
+        [Authorize]
+        public async Task<IActionResult> Logout()
         {
             HttpContext.Session.Remove("LoggedInUser");
+
+            await HttpContext.SignOutAsync("ChapeauCookie");
 
             return RedirectToAction("Login");
         }
     }
 }
-

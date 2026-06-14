@@ -1,6 +1,7 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
 using Chapeau.Services;
+using Microsoft.AspNetCore.Authorization;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,6 +11,7 @@ namespace Chapeau.Controllers
     {
         private readonly IStockService _stockService;
 
+        /*for login to the management part user name : Mehedi and Password :12345*/
         public StockManagementController(IStockService stockService)
         {
             _stockService = stockService;
@@ -37,6 +39,8 @@ namespace Chapeau.Controllers
                 });
             }
         }
+
+        [Authorize(Roles = "Manager")]
 
         [HttpPost]
         public IActionResult UpdateStock(int menuItemId, int newStock, Card? selectedCard, Category? selectedCategory)
