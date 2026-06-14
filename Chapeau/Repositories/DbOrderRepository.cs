@@ -277,7 +277,7 @@ namespace Chapeau.Repositories
             using (SqlCommand orderCommand = new SqlCommand(orderQuery, connection, transaction))
             {
                 orderCommand.Parameters.AddWithValue("@TableId", order.TableId);
-                orderCommand.Parameters.AddWithValue("@EmployeeId", order.Employee.Id);
+                orderCommand.Parameters.AddWithValue("@EmployeeId", order.Employee.EmployeeId);
                 orderCommand.Parameters.AddWithValue("@OrderStatus", OrderStatus.Ordered.ToString());
 
                 int newOrderId = Convert.ToInt32(orderCommand.ExecuteScalar());
@@ -402,10 +402,10 @@ namespace Chapeau.Repositories
             return table;
         }
 
-        private User ReadEmployee(SqlDataReader reader)
+        private Employee ReadEmployee(SqlDataReader reader)
         {
-            User employee = new User();
-            employee.Id = (int)reader["EmployeeId"];
+            Employee employee = new Employee();
+            employee.EmployeeId = (int)reader["EmployeeId"];
 
             return employee;
         }

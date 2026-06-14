@@ -89,12 +89,11 @@ namespace Chapeau.Controllers
             try
             {
                 MenuFilterData data = _menuService.GetMenuData(selectedCard,selectedCategory,true);
-
+                data.SelectedTableId = selectedTableId;
                 return View("TakeOrder",
                     new TakeOrderViewModel
                     {
                         MenuFilterData = data,
-                        SelectedTableId = selectedTableId,
                         CurrentOrders = GetCurrentOrder()
                     });
             }
@@ -107,7 +106,6 @@ namespace Chapeau.Controllers
                     {
                         MenuFilterData = new MenuFilterData(),
                         CurrentOrders = GetCurrentOrder(),
-                        SelectedTableId = selectedTableId,
                     });
             }
         }
@@ -119,7 +117,7 @@ namespace Chapeau.Controllers
                {
                    selectedCard = model.MenuFilterData?.SelectedCard,
                    selectedCategory = model.MenuFilterData?.SelectedCategory,
-                   selectedTableId = model.SelectedTableId
+                   selectedTableId = model.MenuFilterData?.SelectedTableId
                });
         }
 
@@ -156,13 +154,13 @@ namespace Chapeau.Controllers
                         nameof(ViewMenuForTakeOrder),
                         new
                         {
-                            model.SelectedTableId
+                            selectedTableId = model.MenuFilterData?.SelectedTableId
                         });
                 }
-                var user = HttpContext.Session.GetObject<User>("LoggedInUser");
+                var user = HttpContext.Session.GetObject<Employee>("LoggedInUser");
                 var order = new Order
                 {
-                    TableId = model.SelectedTableId.Value,
+                    TableId = model.MenuFilterData.SelectedTableId.Value,
                     OrderTime = DateTime.Now,
                     OrderStatus = OrderStatus.Ordered,
                     ServedTime = null,
@@ -180,7 +178,7 @@ namespace Chapeau.Controllers
                      "ViewMenuForTakeOrder",
                     new
                     {
-                        model.SelectedTableId
+                        selectedTableId = model.MenuFilterData?.SelectedTableId
                     });
             }
             catch (Exception ex)
@@ -191,7 +189,7 @@ namespace Chapeau.Controllers
                      "ViewMenuForTakeOrder",
                     new
                     {
-                        model.SelectedTableId
+                        selectedTableId = model.MenuFilterData?.SelectedTableId
                     });
             }
         }
@@ -270,7 +268,7 @@ namespace Chapeau.Controllers
                     "ViewMenuForTakeOrder",
                 new
                 {
-                    model.SelectedTableId
+                    selectedTableId = model.MenuFilterData?.SelectedTableId
                 });
         }
     }
