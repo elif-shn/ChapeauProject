@@ -4,7 +4,7 @@
 @model List<Chapeau.Models.Table>
 @{
     var employee = Context.Session.GetObject<Employee>("LoggedInUser");
-    bool isWaiter = employee != null && employee.EmployeeOccupation == "Waiter";
+    bool isWaiter = employee != null && employee.EmployeeOccupation == EmployeeRole.Waiter;
 }
 
 @if (TempData["Error"] != null)
