@@ -260,7 +260,6 @@ namespace Chapeau.Repositories
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-
                         throw new Exception("An error occurred while saving the order and its items; all operations have been rolled back.", ex);
                     }
                 }
@@ -320,7 +319,7 @@ namespace Chapeau.Repositories
             }
             
         }
-        /*
+        
         private void AddOrUpdateOrderItem(SqlConnection connection, SqlTransaction transaction, int orderId, OrderItem item)
         {
             string query = @"
@@ -369,6 +368,7 @@ namespace Chapeau.Repositories
                         foreach (var item in items)
                         {
                             AddOrUpdateOrderItem(connection, transaction, order.OrderId, item);
+                            DecreaseItemStock(connection, transaction, item);
                         }
 
                         transaction.Commit();
@@ -377,10 +377,11 @@ namespace Chapeau.Repositories
                     {
                         transaction.Rollback();
                         throw new Exception("An error occurred while saving the order and its items; all operations have been rolled back.", ex);
+
                     }
                 }
             }
-        }*/
+        }
         //Private Helpers Methods//
         private Order ReadOrder(SqlDataReader reader)
         {

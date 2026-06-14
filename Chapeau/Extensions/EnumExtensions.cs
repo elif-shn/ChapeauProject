@@ -1,14 +1,23 @@
-﻿namespace Chapeau.Extensions
+﻿using Chapeau.Enums;
+
+namespace Chapeau.Extensions
 {
     public static class EnumExtensions
     {
         public static string ToDisplayName(this Enum value)
         {
-            string display = value.ToString();
-            if (display == "CoffeeAndTea") return "Coffee & Tea";
-            if (display == "SoftDrinks") return "Soft Drinks";
-            if (display == "SpiritDrinks") return "Spirit Drinks";
-            return display;
+            return value switch
+            {
+                Category.CoffeeAndTea => "Coffee & Tea",
+                Category.SoftDrinks => "Soft Drinks",
+                Category.SpiritDrinks => "Spirit Drinks",
+
+                StockStatus.OutOfStock => "Out of stock",
+                StockStatus.AlmostOutOfStock => "Almost out of stock",
+                StockStatus.InStock => "In stock",
+
+                _ => value.ToString()
+            };
         }
     }
 }

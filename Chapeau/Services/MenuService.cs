@@ -2,6 +2,7 @@
 using Chapeau.Models;
 using Chapeau.Repositories.Interfaces;
 using Chapeau.Services.Interfaces;
+using Chapeau.ViewModels;
 
 public class MenuService : IMenuService
 {
@@ -32,12 +33,6 @@ public class MenuService : IMenuService
             SelectedCategory = selectedCategory,
         };
     }
-    /*
-    public List<Menu> GetMenus(Card? card, Category? category, bool onlyActive)
-    {
-        return _menuRepository.GetMenus(card, category, onlyActive);
-    }
-    */
     public MenuItem GetMenuItemById(int id)
     {
         return _menuRepository.GetById(id);

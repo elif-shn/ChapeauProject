@@ -32,18 +32,9 @@
                     <td>@item.MenuItemName</td>
 
                     <td>
-                        @if (item.StockStatus == StockStatus.OutOfStock)
-                        {
-                            <span style="color:red;">Out of stock</span>
-                        }
-                        else if (item.StockStatus == StockStatus.AlmostOutOfStock)
-                        {
-                            <span style="color:orange;">Almost out of stock</span>
-                        }
-                        else
-                        {
-                            <span style="color:green;">In stock</span>
-                        }
+                        <span class="@item.StockStatusClass">
+                            @item.StockStatus.ToDisplayName()
+                        </span>
                     </td>
 
                     <td>€ @item.MenuItemPrice.ToString("0.00")</td>
@@ -51,18 +42,17 @@
                     @if (Model.ShowAddButton)
                     {
                         <td>
-                            <form method="post" asp-action="AddNewItemToCurrentOrder">
+                            <form method="post" asp-action="AddItemToCurrentOrder">
 
                                 <input type="hidden" name="SelectedTableId" value="@Model.SelectedTableId" />
-                                <input type="hidden" name="SelectedCard" value="@Model.MenuFilterData.SelectedCard" />
-                                <input type="hidden" name="SelectedCategory" value="@Model.MenuFilterData.SelectedCategory" />
+                                <input type="hidden" name="MenuFilterData.SelectedCard" value="@Model.MenuFilterData.SelectedCard" />
+                                <input type="hidden" name="MenuFilterData.SelectedCategory" value="@Model.MenuFilterData.SelectedCategory" />
 
-                                <input type="hidden"
-                                       name="NewOrderItem.MenuItem.MenuItemId"
-                                       value="@item.MenuItemId" />
+                                <input type="hidden" name="NewOrderItem.MenuItem.MenuItemId" value="@item.MenuItemId" />
 
                                 <button class="btn btn-success">+</button>
                             </form>
+
                         </td>
                     }
                 </tr>
