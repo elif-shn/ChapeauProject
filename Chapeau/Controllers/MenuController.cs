@@ -2,6 +2,7 @@
 using Chapeau.Models;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace Chapeau.Controllers
 {
     public class MenuController : Controller
@@ -13,34 +14,40 @@ namespace Chapeau.Controllers
         {
             _menuService = menuService;
         }
-        private MenuViewModel GetViewModel(Card? selectedCard, Category? selectedCategory, bool onlyActive)
-        {
-            var allMenus = _menuService.GetMenus(selectedCard, null, onlyActive).ToList();
 
-            var categories = allMenus.Select(m => m.Category).Distinct().ToList();
-
-            if (selectedCategory != null && !categories.Contains(selectedCategory.Value))
-            {
-                selectedCategory = null;
-            }
-
-            var filteredMenus = allMenus.Where(m => selectedCategory == null || m.Category == selectedCategory).ToList();
-
-            return new MenuViewModel
-            {
-                Menu = filteredMenus,
-                Categories = categories,
-                SelectedCard = selectedCard,
-                SelectedCategory = selectedCategory,
-            };
-        }
         public IActionResult Index(Card? selectedCard, Category? selectedCategory)
         {
-            return View(GetViewModel(selectedCard, selectedCategory, true));
+            try
+            {
+                MenuFilterData data =
+                    _menuService.GetMenuData(selectedCard, selectedCategory, true);
+
+                return View(new MenuListViewModel
+                {
+                    MenuFilterData = data,
+                });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return View(new MenuListViewModel
+                {
+                    MenuFilterData = new MenuFilterData(),
+                });
+            }
         }
         public IActionResult Management(Card? selectedCard, Category? selectedCategory)
         {
-            return View("Management", GetViewModel(selectedCard, selectedCategory, false));
+            MenuFilterData data = _menuService.GetMenuData(selectedCard,selectedCategory, false);
+
+            return View(new MenuViewModel
+            {
+                Menu = data.Menus,
+                Categories = data.Categories,
+                SelectedCard = data.SelectedCard,
+                SelectedCategory = data.SelectedCategory
+            });
         }
         public IActionResult Add()
         {

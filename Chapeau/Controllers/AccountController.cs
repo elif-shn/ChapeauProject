@@ -18,8 +18,8 @@ namespace Chapeau.Controllers
 
         public IActionResult Login()
         {
-            LoginModel loginModel =
-                new LoginModel();
+            LoginModel loginModel = new LoginModel();
+            
 
             return View(loginModel);
         }

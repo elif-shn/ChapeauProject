@@ -16,7 +16,7 @@ namespace Chapeau.Controllers
 
         public IActionResult Index()
         {
-            List<Order> orders = _orderServices.GetRunningOrders();
+            List<Order> orders = _orderServices.GetBarOrders();
             return View(orders);
         }
 

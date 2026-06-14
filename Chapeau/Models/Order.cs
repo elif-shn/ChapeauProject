@@ -11,12 +11,21 @@ namespace Chapeau.Models
         public int TableId { get; set; }
         public Table Table { get; set; }
         public User Employee { get; set; }
-        public string WaitingTime { get; set; }
         public DateTime OrderTime { get; set; }
         public DateTime? ServedTime { get; set; }
         public OrderStatus OrderStatus { get; set; }
         public List<OrderItem> OrderItems { get; set; }
+        public string WaitingTime
+        {
+            get
+            {
+                DateTime endTime = ServedTime ?? DateTime.Now;
 
+                int minutes = (int)(endTime - OrderTime).TotalMinutes;
+
+                return $"{minutes} min";
+            }
+        }
         public Order() { }
 
         public Order(int orderId, int tableId, Table table, User employee, DateTime orderTime, DateTime? servedTime, OrderStatus orderStatus)
@@ -31,10 +40,6 @@ namespace Chapeau.Models
             OrderItems = new List<OrderItem>();
         }
 
-        /*public decimal GetTotalAmount()
-        {
-            if (OrderItems == null) return 0;
-            return OrderItems.Sum(item => item.Price * item.OrderItemQuantity);
-        }*/
+
     }
 }

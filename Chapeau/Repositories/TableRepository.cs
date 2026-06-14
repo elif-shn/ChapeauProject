@@ -58,32 +58,6 @@ namespace Chapeau.Repositories
 
             return tables;
         }
-        public List<Table> GetOccupiedTables()
-        {
-            List<Table> tables = new List<Table>();
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            {
-                string query = @"SELECT * FROM [Table] WHERE TableStatus = 'Occupied'";
-
-                SqlCommand command = new SqlCommand(query, connection);
-                connection.Open();
-
-                SqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    tables.Add(new Table
-                    {
-                        TableId = Convert.ToInt32(reader["TableId"]),
-                        TableCapacity = Convert.ToInt32(reader["TableCapacity"]),
-                        TableStatus = Enum.Parse<TableStatus>(reader["TableStatus"].ToString())
-                    });
-                }
-            }
-
-            return tables;
-        }
 
         public List<ActiveOrderViewModel> GetActiveOrders(int tableId)
         {
@@ -223,6 +197,59 @@ namespace Chapeau.Repositories
                 }
             }
 
+        }
+
+        public bool HasActiveOrders(int tableId)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+                
+            {
+                string query = @"
+                                SELECT COUNT(*)
+                                FROM [Order]
+                                WHERE TableId = @tableId
+                                  AND OrderStatus NOT IN ('Served', 'Paid')";
+
+                SqlCommand command = new SqlCommand(query, connection);
+                
+
+                command.Parameters.AddWithValue("@tableId", tableId);
+                
+
+                connection.Open();
+
+                int count = Convert.ToInt32(command.ExecuteScalar());
+                
+
+                return count > 0;
+            }
+        }
+
+        public void UpdateTableStatus(Table table)
+        {
+            using (SqlConnection connection =
+                new SqlConnection(_connectionString))
+            {
+                string query = @"
+                                    UPDATE [Table]
+                                    SET TableStatus = @status
+                                    WHERE TableId = @tableId";
+
+                SqlCommand command =
+                    new SqlCommand(query, connection);
+
+                command.Parameters.AddWithValue(
+                    "@tableId",
+                    table.TableId);
+
+                command.Parameters.AddWithValue(
+                    "@status",
+                    table.TableStatus.ToString());
+
+                connection.Open();
+
+                command.ExecuteNonQuery();
+            }
         }
     }
 }

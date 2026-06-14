@@ -1,8 +1,6 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
-using Chapeau.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
 
 namespace Chapeau.Repositories
 {
@@ -12,117 +10,85 @@ namespace Chapeau.Repositories
 
         public DbOrderRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("ChapeauDatabase");
+            _connectionString = configuration.GetConnectionString("ChapeauDatabase"); 
         }
+
 
         public List<Order> GetRunningOrders()
         {
-            List<Order> orders = new List<Order>();
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            try
             {
-                string query = @"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.WaitingTime, o.ServedTime, o.OrderStatus
-                         FROM [Order] o
-                         WHERE o.OrderStatus NOT IN ('Completed', 'Cancelled', 'Paid', 'Served')";
+                List<Order> orders = new List<Order>();
 
-                SqlCommand command = new SqlCommand(query, connection);
-
-                try
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
+                    string query = $@"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus 
+                  FROM [Order] o WHERE o.OrderStatus NOT IN ('{OrderStatus.Paid}', '{OrderStatus.Cancelled}', '{OrderStatus.Served}', '{OrderStatus.Settled}')
+                  ORDER BY o.OrderTime ASC";
+
+
+                    SqlCommand command = new SqlCommand(query, connection);
+
                     connection.Open();
+
                     SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read()) orders.Add(ReadOrder(reader));
+
+                    while (reader.Read())
+                    {
+                        orders.Add(ReadOrder(reader));
+                    }
                 }
-                catch (SqlException ex) { throw new Exception("Failed to get running orders.", ex); }
-            }
 
-            foreach (Order order in orders)
+                foreach (Order order in orders)
+                {
+                    order.OrderItems = GetOrderItemsByOrderId(order);
+                }
+
+                return orders;
+            }
+            catch (SqlException ex)
             {
-                order.OrderItems = GetOrderItemsByOrderId(order);
+                throw new Exception("Failed to retrieve running orders.", ex);
             }
-
-            return orders;
         }
         public List<Order> GetFinishedOrders()
         {
-            List<Order> orders = new List<Order>();
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            try
             {
-                string query = @"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.WaitingTime, o.ServedTime, o.OrderStatus
-                         FROM [Order] o
-                         WHERE o.OrderStatus IN ('Served', 'Completed')
-                         ORDER BY o.OrderTime DESC";
+                List<Order> orders = new List<Order>();
 
-                SqlCommand command = new SqlCommand(query, connection);
-
-                try
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
+                    string query = $@"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus
+                                   FROM [Order] o WHERE o.OrderStatus IN ('{OrderStatus.Served}','{OrderStatus.Settled}') 
+                                   ORDER BY o.OrderTime ASC";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+
                     connection.Open();
+
                     SqlDataReader reader = command.ExecuteReader();
-                    while (reader.Read()) orders.Add(ReadOrder(reader));
+
+                    while (reader.Read())
+                    {
+                        orders.Add(ReadOrder(reader));
+                    }
                 }
-                catch (SqlException ex) { throw new Exception("Failed to get finished orders.", ex); }
-            }
 
-            foreach (Order order in orders)
-            {
-                order.OrderItems = GetOrderItemsByOrderId(order);
-            }
-
-            return orders;
-        }
-
-
-
-        public List<OrderItem> GetOrderItemsByOrderId(Order order)
-        {
-            List<OrderItem> items = new List<OrderItem>();
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            {
-                string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemsStatus,
-                                        mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.VatPercentage,
-                                        mi.MenuId, m.Card, m.Category
-                                 FROM OrderItem oi
-                                 JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
-                                 JOIN Menu m      ON mi.MenuId = m.MenuId
-                                 WHERE oi.OrderId = @OrderId";
-
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@OrderId", order.OrderId);
-                connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
+                foreach (Order order in orders)
                 {
-                    items.Add(ReadOrderItem(reader));
+                    order.OrderItems = GetOrderItemsByOrderId(order);
                 }
+
+                return orders;
             }
-
-            return items;
-        }
-
-        public Order? GetOrderById(Order order)
-        {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            catch (SqlException ex)
             {
-                string query = @"SELECT OrderId, TableId, EmployeeId, OrderTime, WaitingTime, ServedTime, OrderStatus
-                                 FROM [Order] WHERE OrderId = @OrderId";
-
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@OrderId", order.OrderId);
-                connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
-
-                if (reader.Read())
-                {
-                    return ReadOrder(reader);
-                }
+                throw new Exception("Failed to retrieve finished orders.", ex);
             }
-
-            return null;
         }
+
+
 
         public void UpdateOrderStatus(Order order, OrderStatus status)
         {
@@ -152,90 +118,275 @@ namespace Chapeau.Repositories
             }
         }
 
-        public Order CreateOrder(int tableId)
+
+        public List<OrderItem> GetOrderItemsByOrderId(Order order)
         {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            try
             {
-                string query = @"INSERT INTO [Order] (TableId, EmployeeId, OrderTime, ServedTime, OrderStatus)
-                                 VALUES (@TableId, @EmployeeId, GETDATE(), NULL, 'Ordered');
-                                 SELECT SCOPE_IDENTITY();";
+                List<OrderItem> items = new List<OrderItem>();
 
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@TableId", tableId);
-                command.Parameters.AddWithValue("@EmployeeId", 1);
-                connection.Open();
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemsStatus,
+                                    mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.VatPercentage,
+                                    mi.MenuId, m.Card, m.Category
+                             FROM OrderItem oi
+                             JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
+                             JOIN Menu m      ON mi.MenuId = m.MenuId
+                             WHERE oi.OrderId = @OrderId";
 
-                int newOrderId = Convert.ToInt32(command.ExecuteScalar());
-                return GetOrderById(new Order { OrderId = newOrderId });
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@OrderId", order.OrderId);
+
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            items.Add(ReadOrderItem(reader));
+                        }
+                    }
+                }
+
+                return items;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error occurred while fetching order items.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while fetching order items.", ex);
             }
         }
+        public Order? GetOrderById(Order order)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = @"SELECT OrderId, TableId, EmployeeId, OrderTime, WaitingTime, ServedTime, OrderStatus
+                             FROM [Order] WHERE OrderId = @OrderId";
 
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@OrderId", order.OrderId);
+
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return ReadOrder(reader);
+                        }
+                    }
+                }
+
+                return null;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error occurred while fetching the order by ID.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while fetching the order by ID.", ex);
+            }
+        }
         public Order GetActiveOrderForTable(int tableId)
         {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = @"
+                SELECT OrderId, TableId, EmployeeId, OrderTime, WaitingTime, ServedTime, OrderStatus
+                FROM [Order]
+                WHERE TableId = @TableId
+                AND OrderStatus NOT IN (@Settled, @Cancelled, @Paid, @Served)";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+
+                    command.Parameters.AddWithValue("@TableId", tableId);
+                    command.Parameters.AddWithValue("@Settled", OrderStatus.Settled.ToString());
+                    command.Parameters.AddWithValue("@Cancelled", OrderStatus.Cancelled.ToString());
+                    command.Parameters.AddWithValue("@Paid", OrderStatus.Paid.ToString());
+                    command.Parameters.AddWithValue("@Served", OrderStatus.Served.ToString());
+
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return ReadOrder(reader);
+                        }
+                    }
+                }
+
+                return null;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error occurred while getting active order for table.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Unexpected error occurred while getting active order for table.", ex);
+            }
+        }
+        public void CreateOrderWithItems(Order order)
+        {
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string query = @"SELECT OrderId, TableId, EmployeeId, OrderTime, WaitingTime, ServedTime, OrderStatus
-                                 FROM [Order]
-                                 WHERE TableId = @TableId
-                                 AND OrderStatus NOT IN ('Settled', 'Cancelled', 'Paid')";
-
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@TableId", tableId);
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
-
-                if (reader.Read())
+                using (SqlTransaction transaction = connection.BeginTransaction())
                 {
-                    return ReadOrder(reader);
+                    try
+                    {
+                        int newOrderId = CreateNewOrder(connection, transaction, order);
+
+                        if (order.OrderItems != null && order.OrderItems.Count > 0)
+                        {
+                            foreach (var item in order.OrderItems)
+                            {
+                                AddOrderItem(connection, transaction, newOrderId, item);
+                                DecreaseItemStock(connection, transaction, item);
+                            }
+                        }
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+
+                        throw new Exception("An error occurred while saving the order and its items; all operations have been rolled back.", ex);
+                    }
                 }
             }
-
-            return null;
         }
+        private int CreateNewOrder(SqlConnection connection, SqlTransaction transaction, Order order)
+        {
+            string orderQuery = @"
+                                INSERT INTO [Order] 
+                                (TableId, EmployeeId, OrderTime, ServedTime, OrderStatus)
+                                VALUES 
+                                (@TableId, @EmployeeId, GETDATE(), NULL, @OrderStatus);
+                                SELECT SCOPE_IDENTITY();";
 
-        public void AddOrderItemToOrder(OrderItem newOrderItem)
+            using (SqlCommand orderCommand = new SqlCommand(orderQuery, connection, transaction))
+            {
+                orderCommand.Parameters.AddWithValue("@TableId", order.TableId);
+                orderCommand.Parameters.AddWithValue("@EmployeeId", order.Employee.Id);
+                orderCommand.Parameters.AddWithValue("@OrderStatus", OrderStatus.Ordered.ToString());
+
+                int newOrderId = Convert.ToInt32(orderCommand.ExecuteScalar());
+                return newOrderId;
+            }
+
+        }
+        
+        private void AddOrderItem(SqlConnection connection, SqlTransaction transaction, int orderId, OrderItem item)
+        {
+            string query = @"
+            INSERT INTO OrderItem
+                                (OrderId, MenuItemId, OrderItemQuantity, Comment, OrderItemsStatus)
+                                VALUES
+                                (@OrderId, @MenuItemId, @Quantity, @Comment, @Status)";
+            using (SqlCommand cmd = new SqlCommand(query, connection, transaction))
+            {
+                cmd.Parameters.AddWithValue("@OrderId", orderId);
+                cmd.Parameters.AddWithValue("@MenuItemId", item.MenuItem.MenuItemId);
+                cmd.Parameters.AddWithValue("@Quantity", item.OrderItemQuantity);
+                cmd.Parameters.AddWithValue("@Comment", item.Comment ?? "");
+                cmd.Parameters.AddWithValue("@Status", OrderItemStatus.Ordered.ToString());
+
+                cmd.ExecuteNonQuery();
+            }
+        }
+        private void DecreaseItemStock(SqlConnection connection, SqlTransaction transaction, OrderItem item)
+        {
+
+            string query = "UPDATE MenuItem " +
+                           "SET Stock = Stock - @Amount " +
+                           "WHERE MenuItemId = @MenuItemId";
+            using (SqlCommand cmd = new SqlCommand(query, connection, transaction))
+            {
+
+                cmd.Parameters.AddWithValue("@Amount", item.OrderItemQuantity);
+                cmd.Parameters.AddWithValue("@MenuItemId", item.MenuItem.MenuItemId);
+                cmd.ExecuteNonQuery();
+            }
+            
+        }
+        /*
+        private void AddOrUpdateOrderItem(SqlConnection connection, SqlTransaction transaction, int orderId, OrderItem item)
+        {
+            string query = @"
+                            IF EXISTS (
+                                SELECT 1 FROM OrderItem
+                                WHERE OrderId = @OrderId
+                                  AND MenuItemId = @MenuItemId
+                                  AND (Comment = @Comment OR (Comment IS NULL AND @Comment = ''))
+                            )
+                            BEGIN
+                                UPDATE OrderItem
+                                SET OrderItemQuantity = OrderItemQuantity + @Quantity
+                                WHERE OrderId = @OrderId
+                                  AND MenuItemId = @MenuItemId
+                                  AND (Comment = @Comment OR (Comment IS NULL AND @Comment = ''))
+                            END
+                            ELSE
+                            BEGIN
+                                INSERT INTO OrderItem
+                                (OrderId, MenuItemId, OrderItemQuantity, Comment, OrderItemsStatus)
+                                VALUES
+                                (@OrderId, @MenuItemId, @Quantity, @Comment, @Status)
+                            END";
+
+            using (SqlCommand cmd = new SqlCommand(query, connection, transaction))
+            {
+                cmd.Parameters.AddWithValue("@OrderId", orderId);
+                cmd.Parameters.AddWithValue("@MenuItemId", item.MenuItem.MenuItemId);
+                cmd.Parameters.AddWithValue("@Quantity", item.OrderItemQuantity);
+                cmd.Parameters.AddWithValue("@Comment", item.Comment ?? "");
+                cmd.Parameters.AddWithValue("@Status", OrderItemStatus.Ordered.ToString());
+
+                cmd.ExecuteNonQuery();
+            }
+        }
+        public void AddItemsToExistingOrder(Order order, List<OrderItem> items)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string query = @"INSERT INTO OrderItem (OrderId, MenuItemId, OrderItemQuantity, Comment, OrderItemsStatus)
-                                 VALUES (@OrderId, @MenuItemId, @Quantity, @Comment, 'Ordered')";
-
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@OrderId", newOrderItem.Order.OrderId);
-                command.Parameters.AddWithValue("@MenuItemId", newOrderItem.MenuItem.MenuItemId);
-                command.Parameters.AddWithValue("@Quantity", newOrderItem.OrderItemQuantity);
-                command.Parameters.AddWithValue("@Comment", newOrderItem.Comment ?? "");
                 connection.Open();
-                command.ExecuteNonQuery();
+
+                using (SqlTransaction transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        foreach (var item in items)
+                        {
+                            AddOrUpdateOrderItem(connection, transaction, order.OrderId, item);
+                        }
+
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        throw new Exception("An error occurred while saving the order and its items; all operations have been rolled back.", ex);
+                    }
+                }
             }
-        }
-
-        public void IncreaseOrderItemQuantity(OrderItem newOrderItem, int quantity)
-        {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            {
-                string query = @"UPDATE OrderItem SET OrderItemQuantity = OrderItemQuantity + @Quantity
-                                 WHERE OrderId = @OrderId AND MenuItemId = @MenuItemId
-                                 AND (Comment = @Comment OR (Comment IS NULL AND @Comment = ''))";
-
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@OrderId", newOrderItem.Order.OrderId);
-                command.Parameters.AddWithValue("@MenuItemId", newOrderItem.MenuItem.MenuItemId);
-                command.Parameters.AddWithValue("@Quantity", quantity);
-                command.Parameters.AddWithValue("@Comment", newOrderItem.Comment ?? "");
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
-        }
-
-    
+        }*/
         //Private Helpers Methods//
         private Order ReadOrder(SqlDataReader reader)
         {
             Order order = new Order();
             order.OrderId = (int)reader["OrderId"];
             order.OrderTime = (DateTime)reader["OrderTime"];
-            order.WaitingTime = reader["WaitingTime"].ToString();
             order.ServedTime = reader["ServedTime"] == DBNull.Value ? (DateTime?)null : (DateTime)reader["ServedTime"];
             order.OrderStatus = Enum.Parse<OrderStatus>(reader["OrderStatus"].ToString());
             order.Table = ReadTable(reader);
@@ -254,6 +405,7 @@ namespace Chapeau.Repositories
         {
             User employee = new User();
             employee.Id = (int)reader["EmployeeId"];
+
             return employee;
         }
 
@@ -262,7 +414,7 @@ namespace Chapeau.Repositories
             OrderItem orderItem = new OrderItem();
             orderItem.OrderItemId = (int)reader["OrderItemId"];
             orderItem.OrderItemQuantity = (int)reader["OrderItemQuantity"];
-            orderItem.Comment = reader["Comment"]?.ToString() ?? "";
+            orderItem.Comment = reader.IsDBNull(reader.GetOrdinal("Comment"))? string.Empty : reader["Comment"].ToString();
             orderItem.OrderItemStatus = Enum.Parse<OrderItemStatus>(reader["OrderItemsStatus"].ToString());
             orderItem.MenuItem = ReadMenuItem(reader);
             return orderItem;
@@ -273,8 +425,8 @@ namespace Chapeau.Repositories
             MenuItem menuItem = new MenuItem();
             menuItem.MenuItemId = (int)reader["MenuItemId"];
             menuItem.MenuItemName = (string)reader["MenuItemName"];
-            menuItem.MenuItemPrice = Convert.ToDecimal(reader["MenuItemPrice"]);
-            menuItem.VatPercentage = Convert.ToInt32(reader["VatPercentage"]);
+            menuItem.MenuItemPrice = (decimal)reader["MenuItemPrice"];
+            menuItem.VatPercentage = (int)reader["VatPercentage"];
             menuItem.Menu = ReadMenu(reader);
             return menuItem;
         }
@@ -282,10 +434,20 @@ namespace Chapeau.Repositories
         private Menu ReadMenu(SqlDataReader reader)
         {
             Menu menu = new Menu();
-            menu.MenuId = (int)reader["MenuId"];
-            menu.Card = Enum.Parse<Card>(reader["Card"].ToString());
-            menu.Category = Enum.Parse<Category>(reader["Category"].ToString());
+            menu.MenuId = (int)reader["MenuId"]; 
+            menu.Card = (Card)(int)reader["Card"];
+            menu.Category = (Category)(int)reader["Category"];
             return menu;
+        }
+
+        void IOrderRepository.UpdateOrderStatus(Order order, OrderStatus status)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IOrderRepository.UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -4,11 +4,13 @@ using Chapeau.Models;
 using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Chapeau.Controllers
 {
     public class OrderController : Controller
     {
+        private const string CurrentOrderSessionKey = "CurrentOrder";
         private readonly IMenuService _menuService;
         private readonly IOrderService _orderServices;
 
@@ -20,7 +22,7 @@ namespace Chapeau.Controllers
 
         public IActionResult Index()
         {
-            List<Order> runningOrders = _orderServices.GetRunningOrders();
+            List<Order> runningOrders = _orderServices.GetKitchenOrders();
             return View(runningOrders);
         }
 
@@ -69,42 +71,43 @@ namespace Chapeau.Controllers
                 return RedirectToAction("Index");
             }
         }
+        private List<OrderItem> GetCurrentOrder()
+        {
+            return HttpContext.Session
+                .GetObject<List<OrderItem>>(CurrentOrderSessionKey)
+                ?? new List<OrderItem>();
+        }
+
+        private void SaveCurrentOrder(List<OrderItem> items)
+        {
+            HttpContext.Session
+                .SetObject(CurrentOrderSessionKey, items);
+        }
 
         public IActionResult ViewMenuForTakeOrder(Card? selectedCard, Category? selectedCategory, int selectedTableId)
         {
             try
             {
-                HttpContext.Session.SetInt32("SelectedTableId", selectedTableId);
+                MenuFilterData data = _menuService.GetMenuData(selectedCard,selectedCategory,true);
 
-                var allMenus = _menuService.GetMenus(selectedCard, null, true).ToList();
-                var categories = allMenus.Select(m => m.Category).Distinct().ToList();
-
-                if (selectedCategory != null && !categories.Contains(selectedCategory.Value))
-                    selectedCategory = null;
-
-                var filteredMenus = allMenus
-                    .Where(m => selectedCategory == null || m.Category == selectedCategory)
-                    .ToList();
-
-                return View("TakeOrder", new TakeOrderViewModel
-                {
-                    Menu = filteredMenus,
-                    Categories = categories,
-                    SelectedCard = selectedCard,
-                    SelectedCategory = selectedCategory,
-                    SelectedTableId = selectedTableId,
-                    CurrentOrders = HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder") ?? new()
-                });
+                return View("TakeOrder",
+                    new TakeOrderViewModel
+                    {
+                        MenuFilterData = data,
+                        SelectedTableId = selectedTableId,
+                        CurrentOrders = GetCurrentOrder()
+                    });
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return View(new TakeOrderViewModel
-                {
-                    Menu = new List<Menu>(),
-                    SelectedCard = selectedCard,
-                    SelectedTableId = selectedTableId
-                });
+
+                return View("TakeOrder",
+                    new TakeOrderViewModel
+                    {
+                        MenuFilterData = new MenuFilterData(),
+                        CurrentOrders = GetCurrentOrder()
+                    });
             }
         }
 
@@ -113,63 +116,92 @@ namespace Chapeau.Controllers
         {
             try
             {
-                var currentItems = HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder") ?? new List<OrderItem>();
-                var dbMenuItem = _menuService.GetMenuItemById(model.NewOrderItem.MenuItem.MenuItemId);
+                var orders = GetCurrentOrder();
 
-                var newItem = new OrderItem
+                var item = new OrderItem
                 {
-                    MenuItem = dbMenuItem,
-                    Comment = model.NewOrderItem.Comment
+                    MenuItem = new MenuItem
+                    {
+                        MenuItemId = model.NewOrderItem.MenuItem.MenuItemId
+                    },
+                    Comment = model.NewOrderItem?.Comment ?? ""
                 };
 
-                currentItems = _orderServices.ModifyCurrentOrderItem(currentItems, newItem, 1);
-                HttpContext.Session.SetObject("CurrentOrder", currentItems);
+                orders = _orderServices .ModifyCurrentOrderItem(orders, item, 1);
+
+                SaveCurrentOrder(orders);
+
+                return RedirectToAction(
+                    nameof(ViewMenuForTakeOrder),
+                    new
+                    {
+                        model.MenuFilterData,
+                        model.SelectedTableId
+                    });
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-            }
 
-            return RedirectToAction("ViewMenuForTakeOrder", new
-            {
-                selectedCard = model.SelectedCard,
-                selectedCategory = model.SelectedCategory,
-                selectedTableId = HttpContext.Session.GetInt32("SelectedTableId")
-            });
+                return RedirectToAction(
+                    nameof(ViewMenuForTakeOrder),
+                    new
+                    {
+                        model.MenuFilterData,
+                        model.SelectedTableId
+                    });
+            }
         }
 
         [HttpPost]
-        public IActionResult SendOrder()
+        public IActionResult SendOrder(TakeOrderViewModel model)
         {
             try
             {
-                var tableId = HttpContext.Session.GetInt32("SelectedTableId");
-                var currentItems = HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder");
+                var orders = GetCurrentOrder();
 
-                if (currentItems == null || !currentItems.Any())
-                    return RedirectToAction("ViewMenuForTakeOrder", new { selectedTableId = tableId });
-
-                var newOrder = new Order
+                if (!orders.Any())
                 {
-                    TableId = tableId.Value,
+                    return RedirectToAction(
+                        nameof(ViewMenuForTakeOrder),
+                        new
+                        {
+                            model.SelectedTableId
+                        });
+                }
+
+                var order = new Order
+                {
+                    TableId = model.SelectedTableId.Value,
                     OrderTime = DateTime.Now,
                     OrderStatus = OrderStatus.Ordered,
-                    OrderItems = currentItems
+                    OrderItems = orders
                 };
 
-                _orderServices.SendOrder(newOrder);
-                HttpContext.Session.Remove("CurrentOrder");
-                TempData["SuccessMessage"] = "Order sent successfully!";
+                _orderServices.SendOrder(order);
+
+                HttpContext.Session.Remove(CurrentOrderSessionKey);
+
+                TempData["SuccessMessage"] ="Order sent successfully.";
+
+                return RedirectToAction(
+                    nameof(ViewMenuForTakeOrder),
+                    new
+                    {
+                        model.SelectedTableId
+                    });
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-            }
 
-            return RedirectToAction("ViewMenuForTakeOrder", new
-            {
-                selectedTableId = HttpContext.Session.GetInt32("SelectedTableId")
-            });
+                return RedirectToAction(
+                    nameof(ViewMenuForTakeOrder),
+                    new
+                    {
+                        model.SelectedTableId
+                    });
+            }
         }
 
         [HttpPost]
@@ -177,80 +209,140 @@ namespace Chapeau.Controllers
         {
             try
             {
-                var currentItems = HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder") ?? new List<OrderItem>();
-                var dbMenuItem = _menuService.GetMenuItemById(model.NewOrderItem.MenuItem.MenuItemId);
+                var orders = GetCurrentOrder();
 
-                var newItem = new OrderItem
+                var item = new OrderItem
                 {
-                    MenuItem = dbMenuItem,
-                    Comment = model.NewOrderItem.Comment
+                    MenuItem = new MenuItem
+                    {
+                        MenuItemId = model.NewOrderItem.MenuItem.MenuItemId
+                    },
+                    Comment = model.NewOrderItem?.Comment ?? ""
                 };
 
-                currentItems = _orderServices.ModifyCurrentOrderItem(currentItems, newItem, -1);
-                HttpContext.Session.SetObject("CurrentOrder", currentItems);
+                orders = _orderServices.ModifyCurrentOrderItem(orders, item, -1);
+
+                SaveCurrentOrder(orders);
+
+                return RedirectToAction(
+                    nameof(ViewMenuForTakeOrder),
+                    new
+                    {
+                        model.MenuFilterData,
+                        model.SelectedTableId
+                    });
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-            }
 
-            return RedirectToAction("ViewMenuForTakeOrder", new
-            {
-                selectedCard = model.SelectedCard,
-                selectedCategory = model.SelectedCategory,
-                selectedTableId = HttpContext.Session.GetInt32("SelectedTableId")
-            });
+                return RedirectToAction(
+                    nameof(ViewMenuForTakeOrder),
+                    new
+                    {
+                        model.MenuFilterData,
+                        model.SelectedTableId
+                    });
+            }
         }
 
         [HttpPost]
-        public IActionResult RemoveItem(int menuItemId)
-        {
-            var items = HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder");
-
-            if (items != null)
-            {
-                items = _orderServices.RemoveItem(items, menuItemId);
-                HttpContext.Session.SetObject("CurrentOrder", items);
-            }
-
-            return RedirectToAction("ViewMenuForTakeOrder", new
-            {
-                selectedTableId = HttpContext.Session.GetInt32("SelectedTableId")
-            });
-        }
-
-        [HttpPost] 
-        public IActionResult AddNote(int menuItemId, string comment)
-        {
-            var items = HttpContext.Session.GetObject<List<OrderItem>>("CurrentOrder") ?? new List<OrderItem>();
-
-            var itemToUpdate = items.FirstOrDefault(item => item.MenuItem.MenuItemId == menuItemId);
-
-            if (itemToUpdate != null)
-            {
-                itemToUpdate.Comment = comment;
-                HttpContext.Session.SetObject("CurrentOrder", items);
-            }
-
-            return RedirectToAction("ViewMenuForTakeOrder", new
-            {
-                selectedTableId = HttpContext.Session.GetInt32("SelectedTableId")
-            });
-        }
-
-        [HttpPost]
-        public IActionResult CancelOrder(int selectedTableId)
+        public IActionResult RemoveItem(int menuItemId, TakeOrderViewModel model)
         {
             try
             {
-                HttpContext.Session.Remove("CurrentOrder");
-                TempData["SuccessMessage"] = "Order cancelled successfully.";
-                return RedirectToAction("ViewMenuForTakeOrder", new { selectedTableId });
+                var orders = GetCurrentOrder();
+
+                orders =_orderServices.RemoveItem(orders,menuItemId);
+
+                SaveCurrentOrder(orders);
+
+                return RedirectToAction(
+                    nameof(ViewMenuForTakeOrder),
+                    new
+                    {
+                        model.MenuFilterData,
+                        model.SelectedTableId
+                    });
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return RedirectToAction("ViewMenuForTakeOrder", new { selectedTableId });
+
+                return RedirectToAction(
+                    nameof(ViewMenuForTakeOrder),
+                    new
+                    {
+                        model.MenuFilterData,
+                        model.SelectedTableId
+                    });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult AddNote(int menuItemId, string comment, TakeOrderViewModel model)
+        {
+            try
+            {
+                var orders = GetCurrentOrder();
+
+                var item = orders.FirstOrDefault(x => x.MenuItem.MenuItemId == menuItemId);
+
+                if (item != null)
+                {
+                    item.Comment = comment;
+                }
+
+                SaveCurrentOrder(orders);
+
+                return RedirectToAction(
+                    nameof(ViewMenuForTakeOrder),
+                    new
+                    {
+                        model.MenuFilterData,
+                        model.SelectedTableId
+                    });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToAction(
+                    nameof(ViewMenuForTakeOrder),
+                    new
+                    {
+                        model.MenuFilterData,
+                        model.SelectedTableId
+                    });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult CancelOrder(TakeOrderViewModel model)
+        {
+            try
+            {
+                HttpContext.Session.Remove(CurrentOrderSessionKey);
+
+                TempData["SuccessMessage"] = "Order cancelled successfully.";
+
+                return RedirectToAction(
+                    nameof(ViewMenuForTakeOrder),
+                    new
+                    {
+                        model.SelectedTableId
+                    });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToAction(
+                    nameof(ViewMenuForTakeOrder),
+                    new
+                    {
+                        model.SelectedTableId
+                    });
             }
         }
     }

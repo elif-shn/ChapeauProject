@@ -18,11 +18,7 @@ namespace Chapeau.Services
         {
             return _tableRepository.GetAllTables();
         }
-        public List<Table> GetOccupiedTables()
-        {
-            return _tableRepository.GetOccupiedTables();
-        }
-
+       
         public List<ActiveOrderViewModel> GetActiveOrders(int tableId)
         {
             return _tableRepository.GetActiveOrders(tableId);
@@ -32,5 +28,16 @@ namespace Chapeau.Services
         {
             _tableRepository.MarkOrderAsServed(orderId);
         }
+
+        public void UpdateTableStatus(Table table)
+        {
+            _tableRepository.UpdateTableStatus(table);
+        }
+
+        public bool HasActiveOrders(int tableId)
+        {
+            return _tableRepository.HasActiveOrders(tableId);
+        }
+
     }
 }
