@@ -1,0 +1,39 @@
+﻿@{
+    ViewData["Title"] = "Management";
+}
+
+<div class="text-center mb-4">
+    <h1>Management</h1>
+    <p class="text-muted">Choose what you want to manage</p>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-md-3">
+        <div class="card text-center p-3">
+            <h5>👤 Employee Management</h5>
+            <p class="text-muted">Manage staff accounts</p>
+            <a asp-controller="EmployeeManagement" asp-action="Index" class="btn btn-outline-primary">Go</a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-3">
+            <h5>📦 Stock Management</h5>
+            <p class="text-muted">Manage stock levels</p>
+            <a asp-controller="StockManagement" asp-action="Index" class="btn btn-outline-primary">Go</a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-3">
+            <h5>🍽️ Menu Management</h5>
+            <p class="text-muted">Manage menu items</p>
+            <a asp-controller="Menu" asp-action="Management" class="btn btn-outline-primary">Go</a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-3">
+            <h5>💰 Financial Overview</h5>
+            <p class="text-muted">View financial reports</p>
+            <a asp-controller="FinancialOverview" asp-action="Index" class="btn btn-outline-primary">Go</a>
+        </div>
+    </div>
+</div>
