@@ -13,23 +13,30 @@ public class MenuService : IMenuService
     }
     public MenuFilterData GetMenuData(Card? selectedCard, Category? selectedCategory, bool onlyActive)
     {
-        var allMenus = _menuRepository.GetMenus(selectedCard, null, onlyActive).ToList();
+        List<Menu> menusForCategories = _menuRepository
+            .GetMenus(selectedCard, null, onlyActive)
+            .ToList();
 
-        var categories = allMenus.Select(m => m.Category).Distinct().ToList();
+        List<Category> categories = menusForCategories
+            .Select(m => m.Category)
+            .Distinct()
+            .ToList();
 
         if (selectedCategory != null && !categories.Contains(selectedCategory.Value))
         {
             selectedCategory = null;
         }
 
-        var filteredMenus = allMenus.Where(m => selectedCategory == null || m.Category == selectedCategory).ToList();
+        List<Menu> filteredMenus = _menuRepository
+            .GetMenus(selectedCard, selectedCategory, onlyActive)
+            .ToList();
 
         return new MenuFilterData
         {
             Menus = filteredMenus,
             Categories = categories,
             SelectedCard = selectedCard,
-            SelectedCategory = selectedCategory,
+            SelectedCategory = selectedCategory
         };
     }
     /*

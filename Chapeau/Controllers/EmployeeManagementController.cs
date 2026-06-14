@@ -45,6 +45,7 @@ namespace Chapeau.Controllers
                 if (model.EmployeeToEdit != null)
                 {
                     _employeeService.AddEmployee(model.EmployeeToEdit);
+                    TempData["SuccessMessage"] = "Employee added successfully!";
                     return RedirectToAction("Index");
                 }
                 return View(model);
@@ -64,6 +65,8 @@ namespace Chapeau.Controllers
                 if (employee == null)
                     return NotFound();
 
+                employee.EmployeePassword = ""; // don't expose hashed password to the view
+
                 return View(new EmployeeManagementViewModel { EmployeeToEdit = employee });
             }
             catch (Exception ex)
@@ -80,6 +83,7 @@ namespace Chapeau.Controllers
                 if (model.EmployeeToEdit != null)
                 {
                     _employeeService.UpdateEmployee(model.EmployeeToEdit);
+                    TempData["SuccessMessage"] = "Employee updated successfully!";
                     return RedirectToAction("Index");
                 }
                 return View(model);
@@ -90,15 +94,19 @@ namespace Chapeau.Controllers
             }
         }
 
+        [HttpPost]
         public IActionResult Deactivate(int id)
         {
             _employeeService.DeactivateEmployee(id);
+            TempData["SuccessMessage"] = "Employee deactivated successfully!";
             return RedirectToAction("Index");
         }
 
+        [HttpPost]
         public IActionResult Activate(int id)
         {
             _employeeService.ActivateEmployee(id);
+            TempData["SuccessMessage"] = "Employee activated successfully!";
             return RedirectToAction("Index");
         }
     }

@@ -12,7 +12,7 @@ namespace Chapeau.Services
             _financialRepository = financialRepository;
         }
 
-        public FinancialSummary GetOverview(string period, DateTime? startDate, DateTime? endDate)
+        public FinancialOverviewResult GetOverview(string period, DateTime? startDate, DateTime? endDate)
         {
             try
             {
@@ -39,7 +39,12 @@ namespace Chapeau.Services
                         break;
                 }
 
-                return _financialRepository.GetFinancialData(start, end);
+                return new FinancialOverviewResult
+                {
+                    Summary = _financialRepository.GetFinancialData(start, end),
+                    StartDate = start,
+                    EndDate = end
+                };
             }
             catch
             {
