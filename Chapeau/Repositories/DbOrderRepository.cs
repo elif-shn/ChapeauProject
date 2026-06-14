@@ -194,7 +194,6 @@ namespace Chapeau.Repositories
                 throw new Exception("An unexpected error occurred while fetching the order by ID.", ex);
             }
         }
-        //testtttt
         public Order GetActiveOrderForTable(int tableId)
         {
             try
@@ -253,6 +252,7 @@ namespace Chapeau.Repositories
                             foreach (var item in order.OrderItems)
                             {
                                 AddOrderItem(connection, transaction, newOrderId, item);
+                                DecreaseItemStock(connection, transaction, item);
                             }
                         }
                         transaction.Commit();
@@ -260,7 +260,6 @@ namespace Chapeau.Repositories
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-
                         throw new Exception("An error occurred while saving the order and its items; all operations have been rolled back.", ex);
                     }
                 }
@@ -286,6 +285,7 @@ namespace Chapeau.Repositories
             }
 
         }
+        
         private void AddOrderItem(SqlConnection connection, SqlTransaction transaction, int orderId, OrderItem item)
         {
             string query = @"
@@ -304,6 +304,22 @@ namespace Chapeau.Repositories
                 cmd.ExecuteNonQuery();
             }
         }
+        private void DecreaseItemStock(SqlConnection connection, SqlTransaction transaction, OrderItem item)
+        {
+
+            string query = "UPDATE MenuItem " +
+                           "SET Stock = Stock - @Amount " +
+                           "WHERE MenuItemId = @MenuItemId";
+            using (SqlCommand cmd = new SqlCommand(query, connection, transaction))
+            {
+
+                cmd.Parameters.AddWithValue("@Amount", item.OrderItemQuantity);
+                cmd.Parameters.AddWithValue("@MenuItemId", item.MenuItem.MenuItemId);
+                cmd.ExecuteNonQuery();
+            }
+            
+        }
+        
         private void AddOrUpdateOrderItem(SqlConnection connection, SqlTransaction transaction, int orderId, OrderItem item)
         {
             string query = @"
@@ -352,6 +368,7 @@ namespace Chapeau.Repositories
                         foreach (var item in items)
                         {
                             AddOrUpdateOrderItem(connection, transaction, order.OrderId, item);
+                            DecreaseItemStock(connection, transaction, item);
                         }
 
                         transaction.Commit();
@@ -360,6 +377,7 @@ namespace Chapeau.Repositories
                     {
                         transaction.Rollback();
                         throw new Exception("An error occurred while saving the order and its items; all operations have been rolled back.", ex);
+
                     }
                 }
             }

@@ -96,10 +96,32 @@ namespace Chapeau.Repositories
         }
         public MenuItem GetById(int id)
         {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string sql = "SELECT MenuItemId, MenuItemName, MenuItemPrice, MenuId, VatPercentage, Stock, IsActive FROM MenuItem WHERE MenuItemId = @MenuItemId";
-                return conn.QuerySingleOrDefault<MenuItem>(sql, new { MenuItemId = id });
+                string query =
+                    @"SELECT mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.MenuId,
+              mi.VatPercentage, mi.Stock, mi.IsActive,
+              m.Card, m.Category
+              FROM MenuItem mi
+              INNER JOIN Menu m ON mi.MenuId = m.MenuId
+              WHERE mi.MenuItemId = @MenuItemId";
+
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@MenuItemId", id);
+
+                connection.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        int menuId = (int)reader["MenuId"];
+                        Menu menu = ReadMenu(reader, menuId);
+                        MenuItem item = ReadMenuItem(reader);
+                        item.Menu = menu;
+                        return item;
+                    }
+                    return null;
+                }
             }
         }
 
@@ -175,21 +197,6 @@ namespace Chapeau.Repositories
                 conn.Execute(sql, new { MenuItemId = id, IsActive = isActive });
             }
         }
-        public void DecreaseStock(int menuItemId, int amount)
-        {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            {
-                string query = "UPDATE MenuItem " +
-                               "SET Stock = Stock - @Amount " +
-                               "WHERE MenuItemId = @MenuItemId";
-
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@Amount", amount);
-                command.Parameters.AddWithValue("@MenuItemId", menuItemId);
-
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
-        }
+       
     }
 }

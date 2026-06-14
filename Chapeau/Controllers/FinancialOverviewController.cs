@@ -1,5 +1,6 @@
 ﻿using Chapeau.Services;
 using Chapeau.ViewModels;
+using Chapeau.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chapeau.Controllers
@@ -17,38 +18,19 @@ namespace Chapeau.Controllers
         {
             try
             {
-                var summary = _financialService.GetOverview(period, startDate, endDate);
-
-                DateTime start;
-                DateTime end = DateTime.Now;
-
-                switch (period)
-                {
-                    case "month": start = DateTime.Now.AddMonths(-1); break;
-                    case "quarter": start = DateTime.Now.AddMonths(-3); break;
-                    case "year": start = DateTime.Now.AddYears(-1); break;
-                    case "custom":
-                        start = startDate ?? DateTime.Now.AddMonths(-1);
-                        end = endDate ?? DateTime.Now;
-                        break;
-                    default: start = DateTime.Now.AddMonths(-1); break;
-                }
+                FinancialOverviewResult result = _financialService.GetOverview(period, startDate, endDate);
 
                 return View(new FinancialOverviewViewModel
                 {
-                    Summary = summary,
+                    Summary = result.Summary,
                     Period = period,
-                    StartDate = start,
-                    EndDate = end
+                    StartDate = result.StartDate,
+                    EndDate = result.EndDate
                 });
             }
             catch (Exception ex)
             {
-                return View(new FinancialOverviewViewModel
-                {
-                    Summary = new Chapeau.Models.FinancialSummary(),
-                    Period = period
-                });
+                return View(new FinancialOverviewViewModel { Period = period });
             }
         }
     }

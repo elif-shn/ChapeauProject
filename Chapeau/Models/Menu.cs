@@ -7,14 +7,9 @@ namespace Chapeau.Models
         public int MenuId { get; set; }
         public Category Category { get; set; }
         public Card Card { get; set; }
-        public List<MenuItem> MenuItems { get; set; }
+        public List<MenuItem> MenuItems { get; set; } = new List<MenuItem>();
 
         public Menu() { }
-        public Menu(int menuId, Card card, Category category)
-        {
-            MenuId = menuId;
-            Card = card;
-            Category = category;
-        }
+       
     }
 }

@@ -126,6 +126,9 @@
         font-size: 14px;
         font-weight: 600;
         text-decoration: none;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
     }
 
     .btn-activate {
@@ -136,6 +139,9 @@
         font-size: 14px;
         font-weight: 600;
         text-decoration: none;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
     }
 </style>
 
@@ -180,11 +186,15 @@
                             <a asp-action="Edit" asp-route-id="@emp.EmployeeId" class="btn-edit">Edit</a>
                             @if (emp.IsActive)
                             {
-                                <a asp-action="Deactivate" asp-route-id="@emp.EmployeeId" class="btn-deactivate">Deactivate</a>
+                                <form asp-action="Deactivate" asp-route-id="@emp.EmployeeId" method="post" style="display:inline;">
+                                    <button type="submit" class="btn-deactivate">Deactivate</button>
+                                </form>
                             }
                             else
                             {
-                                <a asp-action="Activate" asp-route-id="@emp.EmployeeId" class="btn-activate">Activate</a>
+                                <form asp-action="Activate" asp-route-id="@emp.EmployeeId" method="post" style="display:inline;">
+                                    <button type="submit" class="btn-activate">Activate</button>
+                                </form>
                             }
                         </div>
                     </td>

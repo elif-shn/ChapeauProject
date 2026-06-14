@@ -17,7 +17,15 @@ namespace Chapeau.Models
         public string Comment { get; set; }
 
         public OrderItemStatus OrderItemStatus { get; set; }
+        public void Increase()
+        {
+            OrderItemQuantity++;
+        }
 
+        public void Decrease()
+        {
+            OrderItemQuantity--;
+        }
         public OrderItem()
         {
         }
