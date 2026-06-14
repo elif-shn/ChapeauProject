@@ -1,21 +1,20 @@
 ﻿using Chapeau.Extensions;
 using Chapeau.Models;
+using Chapeau.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-
-using Chapeau.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Chapeau.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly IUserService _userServices;
+        private readonly IEmployeeService _employeeServices;
 
-        public AccountController(IUserService userServices)
+        public AccountController(IEmployeeService employeeServices)
         {
-            this._userServices = userServices;
+            _employeeServices = employeeServices;
         }
 
         [AllowAnonymous]
@@ -30,12 +29,12 @@ namespace Chapeau.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginModel loginModel)
         {
-            User? user =
-                _userServices.GetByUsernameAndPassword(
+            Employee? employee =
+                _employeeServices.GetByUsernameAndPassword(
                     loginModel.Username,
                     loginModel.Password);
 
-            if (user == null)
+            if (employee == null)
             {
                 ViewBag.Error = "Invalid credentials";
 
@@ -44,13 +43,13 @@ namespace Chapeau.Controllers
 
             HttpContext.Session.SetObject(
                 "LoggedInUser",
-                user);
+                employee);
 
             List<Claim> claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.NameIdentifier, employee.EmployeeId.ToString()),
+                new Claim(ClaimTypes.Name, employee.EmployeeName),
+                new Claim(ClaimTypes.Role, employee.EmployeeOccupation.ToString())
             };
 
             ClaimsIdentity identity = new ClaimsIdentity(claims, "ChapeauCookie");

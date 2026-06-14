@@ -36,6 +36,11 @@ namespace Chapeau.Services
             }
             catch { throw; }
         }
+
+        public Employee? GetByUsernameAndPassword(string username, string password)
+        {
+            return _employeeRepository.GetByUsernameAndPassword(username, password);
+        }
         public void AddEmployee(Employee employee)
         {
             try
