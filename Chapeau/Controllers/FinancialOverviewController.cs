@@ -2,6 +2,7 @@
 using Chapeau.ViewModels;
 using Chapeau.Models;
 using Microsoft.AspNetCore.Mvc;
+using Chapeau.Enums;
 
 namespace Chapeau.Controllers
 {
@@ -14,7 +15,7 @@ namespace Chapeau.Controllers
             _financialService = financialService;
         }
 
-        public IActionResult Index(string period = "month", DateTime? startDate = null, DateTime? endDate = null)
+        public IActionResult Index(FinancialPeriod period = FinancialPeriod.Month, DateTime? startDate = null, DateTime? endDate = null)
         {
             try
             {

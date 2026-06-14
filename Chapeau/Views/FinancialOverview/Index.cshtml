@@ -1,4 +1,5 @@
 ﻿@model Chapeau.ViewModels.FinancialOverviewViewModel
+@using Chapeau.Enums
 
 <style>
     body {
@@ -174,44 +175,12 @@
 <form method="get" asp-action="Index" class="filter-container">
     <label>Period:</label>
     <select name="period" class="custom-select" id="periodSelect" onchange="toggleDateRange(this.value)">
-        @if (Model.Period == "month")
-        {
-            <option value="month" selected>Last Month</option>
-        }
-        else
-        {
-            <option value="month">Last Month</option>
-        }
-
-        @if (Model.Period == "quarter")
-        {
-            <option value="quarter" selected>Last Quarter</option>
-        }
-        else
-        {
-            <option value="quarter">Last Quarter</option>
-        }
-
-        @if (Model.Period == "year")
-        {
-            <option value="year" selected>Last Year</option>
-        }
-        else
-        {
-            <option value="year">Last Year</option>
-        }
-
-        @if (Model.Period == "custom")
-        {
-            <option value="custom" selected>Custom Range</option>
-        }
-        else
-        {
-            <option value="custom">Custom Range</option>
-        }
+        <option value="Month" selected="@(Model.Period == FinancialPeriod.Month)">Last Month</option>
+        <option value="Quarter" selected="@(Model.Period == FinancialPeriod.Quarter)">Last Quarter</option>
+        <option value="Year" selected="@(Model.Period == FinancialPeriod.Year)">Last Year</option>
+        <option value="Custom" selected="@(Model.Period == FinancialPeriod.Custom)">Custom Range</option>
     </select>
-
-    <div class="date-range" id="dateRange" style="@(Model.Period == "custom" ? "display:flex;" : "display:none;")">
+    <div class="date-range" id="dateRange" style="@(Model.Period == FinancialPeriod.Custom ? "display:flex;" : "display:none;")">
         <label>From:</label>
         <input type="date" name="startDate" class="date-input" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
         <label>To:</label>
@@ -286,6 +255,6 @@
 <script>
     function toggleDateRange(value) {
         var div = document.getElementById('dateRange');
-        div.style.display = value === 'custom' ? 'flex' : 'none';
+        div.style.display = value === 'Custom' ? 'flex' : 'none';
     }
 </script>

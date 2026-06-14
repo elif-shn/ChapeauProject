@@ -1,11 +1,13 @@
-﻿namespace Chapeau.Models
+﻿using Chapeau.Enums;
+namespace Chapeau.Models
+
 {
     public class Employee
     {
         public int EmployeeId { get; set; }
         public string EmployeeName { get; set; }
         public string EmployeeNumber { get; set; }
-        public string EmployeeOccupation { get; set; }
+        public EmployeeRole EmployeeOccupation { get; set; }
         public string EmployeePassword { get; set; }
         public bool IsActive { get; set; }
 
