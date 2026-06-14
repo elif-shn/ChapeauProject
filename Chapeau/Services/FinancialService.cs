@@ -1,5 +1,6 @@
 ﻿using Chapeau.Models;
 using Chapeau.Repositories;
+using Chapeau.Enums;
 
 namespace Chapeau.Services
 {
@@ -12,7 +13,7 @@ namespace Chapeau.Services
             _financialRepository = financialRepository;
         }
 
-        public FinancialOverviewResult GetOverview(string period, DateTime? startDate, DateTime? endDate)
+        public FinancialOverviewResult GetOverview(FinancialPeriod period, DateTime? startDate, DateTime? endDate)
         {
             try
             {
@@ -21,19 +22,23 @@ namespace Chapeau.Services
 
                 switch (period)
                 {
-                    case "month":
+                    case FinancialPeriod.Month:
                         start = DateTime.Now.AddMonths(-1);
                         break;
-                    case "quarter":
+
+                    case FinancialPeriod.Quarter:
                         start = DateTime.Now.AddMonths(-3);
                         break;
-                    case "year":
+
+                    case FinancialPeriod.Year:
                         start = DateTime.Now.AddYears(-1);
                         break;
-                    case "custom":
+
+                    case FinancialPeriod.Custom:
                         start = startDate ?? DateTime.Now.AddMonths(-1);
                         end = endDate ?? DateTime.Now;
                         break;
+
                     default:
                         start = DateTime.Now.AddMonths(-1);
                         break;
