@@ -44,6 +44,7 @@ namespace Chapeau.Controllers
             try
             {
                 _stockService.UpdateStock(menuItemId, newStock);
+                TempData["SuccessMessage"] = "Stock updated successfully!";
                 return RedirectToAction("Index", new { selectedCard, selectedCategory });
             }
             catch (Exception ex)

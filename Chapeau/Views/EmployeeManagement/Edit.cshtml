@@ -1,5 +1,4 @@
 ﻿@model Chapeau.ViewModels.EmployeeManagementViewModel
-
 <style>
     body {
         background-color: #f8f6f3;
@@ -89,10 +88,8 @@
             background-color: #b92e22;
         }
 </style>
-
 <h2>Edit Employee</h2>
 <div class="title-line"></div>
-
 <div class="form-card">
     <form method="post" asp-action="Edit">
         <input type="hidden" asp-for="EmployeeToEdit.EmployeeId" />
@@ -114,15 +111,13 @@
                 <option value="Bartender">Bartender</option>
             </select>
         </div>
-
         <div class="form-group">
-            <label>New Password / PIN Code</label>
-            <input asp-for="EmployeeToEdit.EmployeePassword" class="input-box" type="password" placeholder="Enter new password or PIN" required />
+            <label>New Password / PIN Code (leave blank to keep current password)</label>
+            <input asp-for="EmployeeToEdit.EmployeePassword" class="input-box" type="password" placeholder="Leave blank to keep current password" />
         </div>
         <div class="btn-row">
             <button type="submit" class="btn btn-save">Save Changes</button>
             <a asp-action="Index" class="btn btn-cancel">Cancel</a>
         </div>
-
     </form>
 </div>
