@@ -159,7 +159,7 @@ namespace Chapeau.Controllers
                             model.SelectedTableId
                         });
                 }
-                var user = HttpContext.Session.GetObject<User>("LoggedInUser");
+                var user = HttpContext.Session.GetObject<Employee>("LoggedInUser");
                 var order = new Order
                 {
                     TableId = model.SelectedTableId.Value,

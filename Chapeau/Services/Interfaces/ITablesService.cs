@@ -16,5 +16,7 @@ namespace Chapeau.Services.Interfaces
         void UpdateTableStatus(Table table);
 
         bool HasActiveOrders(int tableId);
+
+        List<Order> GetRunningTableOrders(int tableId);
     }
 }

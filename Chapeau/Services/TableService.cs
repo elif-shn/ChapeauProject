@@ -29,6 +29,11 @@ namespace Chapeau.Services
             _tableRepository.MarkOrderAsServed(orderId);
         }
 
+        public List<Order> GetRunningTableOrders(int tableId)
+        {
+            return _tableRepository.GetRunningTableOrders(tableId);
+        }
+
         public void UpdateTableStatus(Table table)
         {
             _tableRepository.UpdateTableStatus(table);

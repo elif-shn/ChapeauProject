@@ -248,7 +248,7 @@ namespace Chapeau.Repositories
             }
         }
 
-        /*
+        
         public List<OrderItem> GetOrderItemsByOrderId(Order order)
         {
             try
@@ -293,7 +293,7 @@ namespace Chapeau.Repositories
         
 
         
-        public List<Order> GetRunningOrders()
+        public List<Order> GetRunningTableOrders(int tableId)
         {
             try
             {
@@ -303,10 +303,13 @@ namespace Chapeau.Repositories
                 {
                     string query = $@"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus 
                   FROM [Order] o WHERE o.OrderStatus NOT IN ('{OrderStatus.Paid}', '{OrderStatus.Cancelled}', '{OrderStatus.Served}', '{OrderStatus.Settled}')
+                                                     AND o.TableId = @tableId
                   ORDER BY o.OrderTime ASC";
 
 
                     SqlCommand command = new SqlCommand(query, connection);
+
+                    command.Parameters.AddWithValue("@tableId", tableId);
 
                     connection.Open();
 
@@ -365,9 +368,23 @@ namespace Chapeau.Repositories
             orderItem.OrderItemQuantity = (int)reader["OrderItemQuantity"];
             orderItem.Comment = reader.IsDBNull(reader.GetOrdinal("Comment")) ? string.Empty : reader["Comment"].ToString();
             orderItem.OrderItemStatus = Enum.Parse<OrderItemStatus>(reader["OrderItemsStatus"].ToString());
+            orderItem.MenuItem = new MenuItem()
+            {
+                MenuItemId = (int)reader["MenuItemId"],
+                
+
+                MenuItemName = reader["MenuItemName"].ToString(),
+                
+
+                MenuItemPrice = (decimal)reader["MenuItemPrice"],
+                
+
+                VatPercentage = Convert.ToInt32(reader["VatPercentage"])
+            
+            };
             return orderItem;
         }
-        */
+        
 
     }
 }
