@@ -5,6 +5,5 @@
         public MenuFilterData MenuFilterData { get; set; }
         public bool ShowAddButton { get; set; }
 
-        public int? SelectedTableId { get; set; }
     }
 }

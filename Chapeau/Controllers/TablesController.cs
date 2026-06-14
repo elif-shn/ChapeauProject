@@ -12,13 +12,12 @@ namespace Chapeau.Controllers
     public class TablesController : Controller
     {
         private readonly ITablesService _tableService;
+        private readonly IOrderService _orderServices;
 
-
-        public TablesController(ITablesService tableService)
-
+        public TablesController(ITablesService tableService, IOrderService orderService)
         {
             this._tableService = tableService;
-
+            this._orderServices = orderService;
         }
 
         public IActionResult Index()
@@ -35,7 +34,7 @@ namespace Chapeau.Controllers
         [HttpGet]
         public IActionResult ShowOrders(int tableId)
         {
-            List<ActiveOrderViewModel> orders = _tableService.GetActiveOrders(tableId);
+            List<Order> orders = _tableService.GetRunningTableOrders(tableId);
             
 
             return View(orders);
