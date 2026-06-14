@@ -11,7 +11,7 @@
 @using Chapeau.Extensions
 @using Chapeau.Models
 @{
-        Employee? user = Context.Session.GetObject<Employee>("LoggedInUser");
+        Employee user = Context.Session.GetObject<Employee>("LoggedInUser");
 }
 
 

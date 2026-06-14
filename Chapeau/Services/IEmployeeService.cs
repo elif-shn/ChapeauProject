@@ -11,6 +11,6 @@ namespace Chapeau.Services
         void UpdateEmployee(Employee employee);
         void ActivateEmployee(int id);
         void DeactivateEmployee(int id);
-        Employee? GetByUsernameAndPassword(string username, string password);
+        
     }
 }
