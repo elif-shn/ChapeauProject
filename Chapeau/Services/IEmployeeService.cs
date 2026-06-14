@@ -6,6 +6,7 @@ namespace Chapeau.Services
     {
         List<Employee> GetAllEmployees();
         Employee GetEmployeeById(int id);
+        Employee? GetByUsernameAndPassword(string username, string password);
         void AddEmployee(Employee employee);
         void UpdateEmployee(Employee employee);
         void ActivateEmployee(int id);

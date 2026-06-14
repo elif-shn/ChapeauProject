@@ -1,10 +1,12 @@
 ﻿using Chapeau.Models;
 using Chapeau.Services;
 using Chapeau.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chapeau.Controllers
 {
+    [Authorize(Roles = "Manager")]
     public class EmployeeManagementController : Controller
     {
         private readonly IEmployeeService _employeeService;
@@ -14,6 +16,8 @@ namespace Chapeau.Controllers
             _employeeService = employeeService;
         }
 
+
+        /*for login to the management part user name : Mehedi and Password :12345*/
         public IActionResult Index()
         {
             try
@@ -32,6 +36,7 @@ namespace Chapeau.Controllers
             }
         }
 
+      
         public IActionResult Add()
         {
             return View(new EmployeeManagementViewModel { EmployeeToEdit = new Employee() });
@@ -75,6 +80,7 @@ namespace Chapeau.Controllers
             }
         }
 
+        
         [HttpPost]
         public IActionResult Edit(EmployeeManagementViewModel model)
         {
@@ -94,6 +100,7 @@ namespace Chapeau.Controllers
             }
         }
 
+       
         [HttpPost]
         public IActionResult Deactivate(int id)
         {
@@ -102,6 +109,7 @@ namespace Chapeau.Controllers
             return RedirectToAction("Index");
         }
 
+      
         [HttpPost]
         public IActionResult Activate(int id)
         {

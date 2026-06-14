@@ -1,9 +1,10 @@
 ﻿using Chapeau.Extensions;
 using Chapeau.Models;
-using Chapeau.Repositories;
 using Chapeau.Services;
-using Chapeau.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Chapeau.Controllers
 {
@@ -17,16 +18,17 @@ namespace Chapeau.Controllers
             this._employeeServices = employeeServices;
         }
 
+        [AllowAnonymous]
         public IActionResult Login()
         {
             LoginModel loginModel = new LoginModel();
-            
 
             return View(loginModel);
         }
 
+        [AllowAnonymous]
         [HttpPost]
-        public IActionResult Login(LoginModel loginModel)
+        public async Task<IActionResult> Login(LoginModel loginModel)
         {
             Employee? employee =
                 _employeeServices.GetByUsernameAndPassword(
@@ -44,17 +46,31 @@ namespace Chapeau.Controllers
                 "LoggedInUser",
                 employee);
 
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, employee.EmployeeId.ToString()),
+                new Claim(ClaimTypes.Name, employee.EmployeeName),
+                new Claim(ClaimTypes.Role, employee.EmployeeOccupation.ToString())
+            };
+
+            ClaimsIdentity identity = new ClaimsIdentity(claims, "ChapeauCookie");
+            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync("ChapeauCookie", principal);
+
             return RedirectToAction(
                 "Index",
                 "Home");
         }
 
-        public IActionResult Logout()
+        [Authorize]
+        public async Task<IActionResult> Logout()
         {
             HttpContext.Session.Remove("LoggedInUser");
+
+            await HttpContext.SignOutAsync("ChapeauCookie");
 
             return RedirectToAction("Login");
         }
     }
 }
-
