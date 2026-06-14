@@ -277,7 +277,7 @@ namespace Chapeau.Repositories
             using (SqlCommand orderCommand = new SqlCommand(orderQuery, connection, transaction))
             {
                 orderCommand.Parameters.AddWithValue("@TableId", order.TableId);
-                orderCommand.Parameters.AddWithValue("@EmployeeId", order.Employee?.EmployeeId ?? 1);
+                orderCommand.Parameters.AddWithValue("@EmployeeId", order.Employee.EmployeeId);
                 orderCommand.Parameters.AddWithValue("@OrderStatus", OrderStatus.Ordered.ToString());
 
                 int newOrderId = Convert.ToInt32(orderCommand.ExecuteScalar());

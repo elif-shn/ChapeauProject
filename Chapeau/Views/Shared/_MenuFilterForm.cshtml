@@ -5,11 +5,11 @@
 <h1 class="display-4 pb-4" style="font-family: Arial, sans-serif; font-weight: 300;">Le MENU</h1>
 <form method="get" class="mb-4">
     <div class="row">
-        @if (Model.ShowAddButton && Model.SelectedTableId.HasValue)
+        @if (Model.ShowAddButton && Model.MenuFilterData.SelectedTableId.HasValue)
         {
             <input type="hidden"
                    name="selectedTableId"
-                   value="@Model.SelectedTableId" />
+                   value="@Model.MenuFilterData.SelectedTableId" />
         }
         <div class="col-md-4">
             <select name="selectedCard" class="form-select" onchange="this.form.submit()">
