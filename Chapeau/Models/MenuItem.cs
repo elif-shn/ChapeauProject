@@ -34,4 +34,11 @@ public class MenuItem
             return StockStatus.InStock;
         }
     }
+    public string StockStatusClass =>
+    StockStatus switch
+    {
+        StockStatus.OutOfStock => "text-danger",
+        StockStatus.AlmostOutOfStock => "text-warning",
+        _ => "text-success"
+    };
 }

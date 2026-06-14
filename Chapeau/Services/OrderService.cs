@@ -56,11 +56,57 @@ public class OrderService : IOrderService
     {
         return _orderRepository.GetActiveOrderForTable(tableId);
     }
+    public void AddItemToCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "")
+    {
+        OrderItem ?existingItem = currentOrder.FirstOrDefault(i => i.MenuItem.MenuItemId == menuItemId &&
+        (i.Comment ?? "") == (comment ?? "")
+    );
+        MenuItem menuItem = _menuRepository.GetById(menuItemId);
+
+        if (existingItem != null)
+        {
+
+            if (existingItem.OrderItemQuantity >= menuItem.Stock)
+            {
+                throw new Exception("Not enough stock available.");
+            }
+
+            existingItem.Increase();
+            return;
+        }
+            
+            if(menuItem.Stock <= 0)
+            {
+                throw new Exception("Not enough stock available.");
+            } 
+            currentOrder.Add(new OrderItem
+            {
+                MenuItem = menuItem,
+                OrderItemQuantity = 1,
+                Comment = comment ?? "",
+                OrderItemStatus = OrderItemStatus.Ordered
+            });           
+    }
+
+    public void DecreaseItemQuantityInCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "")
+    {
+        OrderItem ?existingItem = currentOrder.FirstOrDefault(i => i.MenuItem.MenuItemId == menuItemId &&
+        (i.Comment ?? "") == (comment ?? ""));
+
+        if (existingItem == null)
+            return;
+
+        existingItem.Decrease();
+
+        if (existingItem.OrderItemQuantity <= 0)
+        {
+            currentOrder.Remove(existingItem);
+        }
+    }
 
     public void SendOrder(Order newOrder)
     {
-        _orderRepository.CreateOrderWithItems(newOrder);
-        /*Order? activeOrder = GetActiveOrderForTable(newOrder.TableId);
+        Order? activeOrder = GetActiveOrderForTable(newOrder.TableId);
 
         if (activeOrder == null)
         {
@@ -69,59 +115,21 @@ public class OrderService : IOrderService
         else
         {
             _orderRepository.AddItemsToExistingOrder(activeOrder, newOrder.OrderItems);
-        }*/
+        }
     }
-
-    public List<OrderItem> ModifyCurrentOrderItem(List<OrderItem> currentItems, OrderItem newItem, int change)
+    public void AddNote(List<OrderItem> currentItems, int menuItemId, string comment)
     {
-        MenuItem dbItem = _menuRepository.GetById(newItem.MenuItem.MenuItemId);
+        OrderItem item = currentItems.FirstOrDefault(i => i.MenuItem.MenuItemId == menuItemId);
 
-        OrderItem? existingItem = currentItems.FirstOrDefault(item =>
-            item.MenuItem.MenuItemId == newItem.MenuItem.MenuItemId);
-
-        if (change > 0)
+        if (item != null)
         {
-            int currentQuantityInCart = existingItem?.OrderItemQuantity ?? 0;
-
-            if (currentQuantityInCart + change > dbItem.Stock)
-            {
-                throw new Exception("Not enough stock available!");
-            }
+            item.Comment = comment;
         }
-
-        if (existingItem != null)
-        {
-            existingItem.OrderItemQuantity += change;
-
-            if (!string.IsNullOrEmpty(newItem.Comment))
-            {
-                existingItem.Comment = newItem.Comment;
-            }
-
-            if (existingItem.OrderItemQuantity <= 0)
-            {
-                currentItems.Remove(existingItem);
-            }
-        }
-        else if (change > 0)
-        {
-            currentItems.Add(new OrderItem
-            {
-                MenuItem = dbItem,
-                OrderItemQuantity = change,
-                Comment = newItem.Comment ?? ""
-            });
-        }
-
-        return currentItems;
     }
-
-    public List<OrderItem> RemoveItem(List<OrderItem> currentItems, int menuItemId)
+    public void DeleteItem(List<OrderItem> currentItems, int menuItemId, string comment = "")
     {
-        if (currentItems != null)
-            currentItems.RemoveAll(item => item.MenuItem.MenuItemId == menuItemId);
-
-        return  currentItems;
+        currentItems?.RemoveAll(item => item.MenuItem.MenuItemId == menuItemId &&
+        (item.Comment ?? "") == (comment ?? ""));
     }
     public List<Order> GetKitchenOrders()
     {
