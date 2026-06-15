@@ -15,16 +15,9 @@ namespace Chapeau.Models
         public DateTime? ServedTime { get; set; }
         public OrderStatus OrderStatus { get; set; }
         public List<OrderItem> OrderItems { get; set; }
-        public string WaitingTime
+        public TimeSpan WaitingTime
         {
-            get
-            {
-                DateTime endTime = ServedTime ?? DateTime.Now;
-
-                int minutes = (int)(endTime - OrderTime).TotalMinutes;
-
-                return $"{minutes} min";
-            }
+            get { return DateTime.Now - OrderTime; }
         }
         public Order() { }
 
