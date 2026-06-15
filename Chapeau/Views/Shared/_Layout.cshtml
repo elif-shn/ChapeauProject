@@ -11,7 +11,7 @@
 @using Chapeau.Extensions
 @using Chapeau.Models
 @{
-        Employee? user = Context.Session.GetObject<Employee>("LoggedInUser");
+        Employee user = Context.Session.GetObject<Employee>("LoggedInUser");
 }
 
 
@@ -36,8 +36,39 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Menu" asp-action="Index">Menu</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Order" asp-action="Index">Order</a>
+                            <a class="nav-link text-dark"asp-controller="Order"asp-action="GetRunningKitchenOrders">Kitchen</a>
                         </li>
+
+                        <li class="nav-item">  
+                            <a class="nav-link text-dark" asp-controller="Order"asp-action="GetRunningBarOrders">Bar </a>
+                        </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">
+                                Management
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Menu" asp-action="Management">
+                                        🍽️ Menu Management
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="EmployeeManagement" asp-action="Index">
+                                        👤 Employee Management
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="StockManagement" asp-action="Index">
+                                        📦 Stock Management
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="FinancialOverview" asp-action="Index">
+                                        💰 Financial Overview
+                                    </a>
+                                </li>
+                            </ul>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="ManagementHub">Management</a>
                         </li>

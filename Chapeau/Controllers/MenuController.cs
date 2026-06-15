@@ -10,6 +10,7 @@ namespace Chapeau.Controllers
         private readonly IMenuService _menuService;
 
         /*for login to the management part user name : Mehedi and Password :12345*/
+        /*for login to the takeorder part user name : Elif and Password :12345678*/
         public MenuController(IMenuService menuService)
         {
             _menuService = menuService;
@@ -43,7 +44,7 @@ namespace Chapeau.Controllers
             try
             {
                 MenuFilterData data = _menuService.GetMenuData(selectedCard, selectedCategory, false);
-                return View(new MenuViewModel
+                return View(new MenuManagementViewModel
                 {
                     Menu = data.Menus,
                     Categories = data.Categories,
@@ -54,18 +55,18 @@ namespace Chapeau.Controllers
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return View(new MenuViewModel());
+                return View(new MenuManagementViewModel());
             }
         }
         [Authorize(Roles = "Manager")]
         public IActionResult Add()
         {
-            return View(new MenuViewModel { ItemToEdit = new MenuItem() });
+            return View(new MenuManagementViewModel { ItemToEdit = new MenuItem() });
         }
 
         [Authorize(Roles = "Manager")]
         [HttpPost]
-        public IActionResult Add(MenuViewModel model)
+        public IActionResult Add(MenuManagementViewModel model)
         {
             if (model.ItemToEdit != null && model.SelectedCard.HasValue && model.SelectedCategory.HasValue)
             {
@@ -87,7 +88,7 @@ namespace Chapeau.Controllers
             {
                 return NotFound();
             }
-            MenuViewModel viewModel = new MenuViewModel
+            MenuManagementViewModel viewModel = new MenuManagementViewModel
             {
                 ItemToEdit = item,
                 SelectedCard = item.Menu?.Card,
@@ -98,7 +99,7 @@ namespace Chapeau.Controllers
 
         [Authorize(Roles = "Manager")]
         [HttpPost]
-        public IActionResult Edit(MenuViewModel model)
+        public IActionResult Edit(MenuManagementViewModel model)
         {
 
             if (model.ItemToEdit != null && model.SelectedCard.HasValue && model.SelectedCategory.HasValue)
