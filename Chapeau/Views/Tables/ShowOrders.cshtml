@@ -1,11 +1,11 @@
 ﻿@using Chapeau.Models
 @using Chapeau.Enums
 
-@model List<Order>
+@model Chapeau.Models.Order
 
 <h2>Running Orders</h2>
 
-@if (!Model.Any())
+@if (Model == null)
 {
     <div class="alert alert-info">
         No running orders for this table.
@@ -13,36 +13,34 @@
 }
 else
 {
-    @foreach (Order order in Model)
-    {
         <div class="card mb-4">
 
             <div class="card-header d-flex justify-content-between align-items-center">
 
                 <div>
-                    <h4>Order #@order.OrderId</h4>
+                    <h4>Order #@Model.OrderId</h4>
 
                     <p>
                         Status:
-                        <strong>@order.OrderStatus</strong>
+                        <strong>@Model.OrderStatus</strong>
                     </p>
 
                     
                 </div>
 
                 <div>
-                    @if (order.OrderStatus == OrderStatus.Ready)
+                    @if (Model.OrderStatus == OrderStatus.Ready)
                     {
                         <form asp-action="MarkServed"
                               method="post">
 
                             <input type="hidden"
                                    name="orderId"
-                                   value="@order.OrderId" />
+                                   value="@Model.OrderId" />
 
                             <input type="hidden"
                                    name="tableId"
-                                   value="@order.TableId" />
+                                   value="@Model.TableId" />
 
                             <button type="submit"
                                     class="btn btn-success">
@@ -70,7 +68,7 @@ else
 
                     <tbody>
 
-                        @foreach (OrderItem item in order.OrderItems)
+                        @foreach (OrderItem item in Model.OrderItems)
                         {
                             <tr>
 
@@ -98,7 +96,7 @@ else
             </div>
 
         </div>
-    }
+   
 }
 
 <a asp-action="Index"

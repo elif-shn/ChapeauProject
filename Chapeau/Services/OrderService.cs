@@ -20,12 +20,12 @@ namespace Chapeau.Services
         {
             return _orderRepository.GetRunningOrders(isFood);
         }
-        public List<Order> GetRunningTableOrders(int tableId)
+
+        public Order? GetActiveOrderForTable(int tableId)
         {
-            return _orderRepository.GetRunningTableOrders(tableId);
+            return _orderRepository.GetActiveOrderForTable(tableId);
         }
 
-        
 
         public List<Order> GetFinishedOrders(bool isFood)
         {
@@ -52,9 +52,9 @@ namespace Chapeau.Services
             return _orderRepository.GetOrderById(order);
         }
 
-        public Order? GetActiveOrderForTable(int tableId)
+        public Order? GetRunningTableOrder(int tableId)
         {
-            return _orderRepository.GetActiveOrderForTable(tableId);
+            return _orderRepository.GetRunningTableOrder(tableId);
         }
 
         public void AddItemToCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "")
@@ -138,16 +138,10 @@ namespace Chapeau.Services
             _orderRepository.MarkOrderAsServed(orderId);
         }
 
-        public List<Order> GetActiveDrinkOrders(int tableId)
+        public Order? GetActiveFoodOrDrinkOrder(int tableId, int isFood)
         {
-            return _orderRepository.GetActiveDrinkOrders(tableId);
+            return _orderRepository.GetActiveFoodOrDrinkOrder(tableId, isFood);
         }
-        public List<Order> GetActiveFoodOrders(int tableId)
-        {
-            return _orderRepository.GetActiveFoodOrders(tableId);
-        }
-
-
     }
 }
 

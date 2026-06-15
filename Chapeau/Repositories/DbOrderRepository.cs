@@ -87,11 +87,11 @@ namespace Chapeau.Repositories
             return orders;
         }
 
-        public Order GetActiveOrderForTable(int tableId)
+        public Order? GetActiveOrderForTable(int tableId)
         {
             try
             {
-                Order order = new Order();
+                
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     string query = @"
@@ -114,12 +114,12 @@ namespace Chapeau.Repositories
                     {
                         if (reader.Read())
                         {
-                            order = ReadOrder(reader);
+                            return ReadOrder(reader);
                         }
                     }
                 }
 
-                return order;
+                return null;
             }
             catch (SqlException ex)
             {
@@ -498,26 +498,33 @@ namespace Chapeau.Repositories
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        throw new Exception("An error occurred while saving the order and its items; all operations have been rolled back.", ex);
+                        throw new Exception(ex.ToString());
 
                     }
                 }
             }
         }
         //Ahmad Methods
-        public List<Order> GetRunningTableOrders(int tableId)
+        public Order? GetRunningTableOrder(int tableId)
         {
             try
             {
-                List<Order> orders = new List<Order>();
+                Order? order = null;
 
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    string query = $@"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus 
-                  FROM [Order] o WHERE o.OrderStatus NOT IN ('{OrderStatus.Paid}', '{OrderStatus.Cancelled}', '{OrderStatus.Served}', '{OrderStatus.Settled}')
-                                                     AND o.TableId = @tableId
-                  ORDER BY o.OrderTime ASC";
-
+                    string query = $@"
+                                SELECT
+                                    o.OrderId,
+                                    o.TableId,
+                                    o.EmployeeId,
+                                    o.OrderTime,
+                                    o.ServedTime,
+                                    o.OrderStatus
+                                FROM [Order] o
+                                WHERE o.OrderStatus NOT IN('{OrderStatus.Paid}', '{OrderStatus.Cancelled}', '{OrderStatus.Served}', '{OrderStatus.Settled}')
+                
+                                AND o.TableId = @tableId";
 
                     SqlCommand command = new SqlCommand(query, connection);
 
@@ -527,22 +534,22 @@ namespace Chapeau.Repositories
 
                     SqlDataReader reader = command.ExecuteReader();
 
-                    while (reader.Read())
+                    if (reader.Read())
                     {
-                        orders.Add(ReadOrder(reader));
+                        order = ReadOrder(reader);
                     }
                 }
 
-                foreach (Order order in orders)
+                if (order != null)
                 {
                     order.OrderItems = GetOrderItemsByOrderIdNoFilter(order);
                 }
 
-                return orders;
+                return order;
             }
             catch (SqlException ex)
             {
-                throw new Exception("Failed to retrieve running orders.", ex);
+                throw new Exception("Failed to retrieve running order.", ex);
             }
         }
 
@@ -574,11 +581,11 @@ namespace Chapeau.Repositories
 
         }
 
-        public List<Order> GetActiveFoodOrders(int tableId)
+        public Order? GetActiveFoodOrDrinkOrder(int tableId, int isFood)
         {
             try
             {
-                List<Order> orders = new List<Order>();
+                Order? order = null;
 
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                    
@@ -604,7 +611,7 @@ namespace Chapeau.Repositories
                             o.OrderStatus NOT IN
                             ('{OrderStatus.Paid}', '{OrderStatus.Cancelled}', '{OrderStatus.Served}', '{OrderStatus.Settled}')
 
-                            AND mi.IsFood = 1
+                            AND mi.IsFood = @isFood
 
                             AND o.TableId = @tableId";
 
@@ -612,21 +619,26 @@ namespace Chapeau.Repositories
                     
 
                     command.Parameters.AddWithValue("@tableId", tableId);
-                    
+                    command.Parameters.AddWithValue("@isFood", isFood);
 
                     connection.Open();
 
                     SqlDataReader reader = command.ExecuteReader();
 
-                    
 
-                    while (reader.Read())
+
+                    if (reader.Read())
                     {
-                        orders.Add(ReadOrder(reader));
+                        order = ReadOrder(reader);
+                    }
+
+                    if (order != null)
+                    {
+                        order.OrderItems = GetOrderItemsByOrderIdNoFilter(order);
                     }
                 }
 
-                return orders;
+                return order;
             }
             catch (SqlException ex)
             {
@@ -635,65 +647,7 @@ namespace Chapeau.Repositories
             
         }
 
-        public List<Order> GetActiveDrinkOrders(int tableId)
-        {
-            try
-            {
-                List<Order> orders = new List<Order>();
-
-                using (SqlConnection connection = new SqlConnection(_connectionString))
-                    
-                {
-                    string query = $@"
-                                SELECT DISTINCT
-                                    o.OrderId,
-                                    o.TableId,
-                                    o.EmployeeId,
-                                    o.OrderTime,
-                                    o.ServedTime,
-                                    o.OrderStatus
-
-                                FROM [Order] o
-
-                                JOIN OrderItem oi
-                                    ON o.OrderId = oi.OrderId
-
-                                JOIN MenuItem mi
-                                    ON oi.MenuItemId = mi.MenuItemId
-
-                                WHERE
-                                    o.OrderStatus NOT IN
-                                    ('{OrderStatus.Paid}', '{OrderStatus.Cancelled}', '{OrderStatus.Served}', '{OrderStatus.Settled}')
-
-                                    AND mi.IsFood = 0
-
-                                    AND o.TableId = @tableId";
-
-                    SqlCommand command = new SqlCommand(query, connection);
-                    
-
-                    command.Parameters.AddWithValue("@tableId", tableId);
-                    
-
-                    connection.Open();
-
-                    SqlDataReader reader = command.ExecuteReader();
-                    
-
-                    while (reader.Read())
-                    {
-                        orders.Add(ReadOrder(reader));
-                    }
-                }
-
-                return orders;
-            }
-            catch (SqlException ex)
-            {
-                throw new Exception("Database error occurred while fetching Drinks Orders.", ex);
-            }
-            
-        }
+        
 
         public List<OrderItem> GetOrderItemsByOrderId(Order order)
         {
