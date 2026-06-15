@@ -9,14 +9,11 @@ namespace Chapeau.Services.Interfaces
     {
         List<Table> GetAllTables();
 
-        List<ActiveOrderViewModel> GetActiveOrders(int tableId);
-
-        void MarkOrderAsServed(int orderId);
 
         void UpdateTableStatus(Table table);
 
         bool HasActiveOrders(int tableId);
 
-        List<Order> GetRunningTableOrders(int tableId);
+        
     }
 }

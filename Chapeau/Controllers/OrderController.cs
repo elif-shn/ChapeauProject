@@ -1,6 +1,7 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Extensions;
 using Chapeau.Models;
+using Chapeau.Services;
 using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -22,54 +23,136 @@ namespace Chapeau.Controllers
 
         public IActionResult Index()
         {
-            List<Order> runningOrders = _orderServices.GetKitchenOrders();
-            return View(runningOrders);
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult GetRunningKitchenOrders()
+        {
+            try
+            {
+                List<Order> orders = _orderServices.GetRunningOrders(true);
+                return View(orders);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return View(new List<Order>());
+            }
+        }
+
+        [HttpGet]
+        public IActionResult GetRunningBarOrders()
+        {
+            try
+            {
+                List<Order> orders = _orderServices.GetRunningOrders(false);
+                return View(orders);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return View(new List<Order>());
+            }
+        }
+
+        [HttpGet]
+        public IActionResult GetFinishedKitchenOrders()
+        {
+            try
+            {
+                List<Order> orders = _orderServices.GetFinishedOrders(true);
+                return View(orders);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return View(new List<Order>());
+            }
+        }
+
+        [HttpGet]
+        public IActionResult GetFinishedBarOrders()
+        {
+            try
+            {
+                List<Order> orders = _orderServices.GetFinishedOrders(false);
+                return View(orders);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return View(new List<Order>());
+            }
         }
 
         [HttpPost]
-        public IActionResult UpdateStatus(Order order, OrderStatus status)
+        public IActionResult UpdateOrderStatus(Order order, bool isFood)
         {
             try
             {
-                _orderServices.UpdateOrderStatus(order, status);
-                TempData["SuccessMessage"] = "Order status updated successfully.";
-                return RedirectToAction("Index");
+                _orderServices.UpdateOrderStatus(order);
+
+                TempData["SuccessMessage"] =
+                    "Order status updated successfully.";
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return RedirectToAction("Index");
             }
+
+           if (isFood)
+           {
+               return RedirectToAction("GetRunningKitchenOrders");
+           }
+           else
+           {
+               return RedirectToAction("GetRunningBarOrders");
+           }
         }
 
         [HttpPost]
-        public IActionResult UpdateItemStatus(OrderItem orderItem, OrderItemStatus status)
+        public IActionResult UpdateOrderItemStatus(OrderItem orderItem, bool isFood)
         {
             try
             {
-                _orderServices.UpdateOrderItemStatus(orderItem, status);
-                TempData["SuccessMessage"] = "Item status updated.";
-                return RedirectToAction("Index");
+                _orderServices.UpdateOrderItemStatus(orderItem);
+
+                TempData["SuccessMessage"] =
+                    "Order item status updated successfully.";
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return RedirectToAction("Index");
             }
+
+            if (isFood)
+            {
+                return RedirectToAction("GetRunningKitchenOrders");
+            }
+            else
+            {
+                return RedirectToAction("GetRunningBarOrders");
+            }
+
+
         }
 
-        public IActionResult FinishedOrders()
+        [HttpPost]
+        public IActionResult UpdateCourseStatus( Order order, Category category, OrderItemStatus status)
         {
             try
             {
-                List<Order> finishedOrders = _orderServices.GetFinishedOrders();
-                return View(finishedOrders);
+                _orderServices.UpdateCourseStatus(order, category, status);
+
+                TempData["SuccessMessage"]= "Course status updated successfully.";
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return RedirectToAction("Index");
             }
+
+            return RedirectToAction("GetRunningKitchenOrders");
         }
         private List<OrderItem> GetCurrentOrder()
         {
@@ -121,6 +204,11 @@ namespace Chapeau.Controllers
                });
         }
 
+
+
+
+
+
         [HttpPost]
         public IActionResult AddItemToCurrentOrder(TakeOrderViewModel model)
         {
@@ -140,6 +228,11 @@ namespace Chapeau.Controllers
                 return RedirectToTakeOrder(model);
             }
         }
+
+
+
+
+
 
         [HttpPost]
         public IActionResult SendOrder(TakeOrderViewModel model)
@@ -215,6 +308,10 @@ namespace Chapeau.Controllers
             }
         }
 
+
+
+
+
         [HttpPost]
         public IActionResult DeleteItem(TakeOrderViewModel model)
         {
@@ -235,6 +332,10 @@ namespace Chapeau.Controllers
                 return RedirectToTakeOrder(model);
             }
         }
+
+
+
+
 
         [HttpPost]
         public IActionResult AddNote(TakeOrderViewModel model)
