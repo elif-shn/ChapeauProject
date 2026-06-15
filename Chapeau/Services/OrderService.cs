@@ -75,17 +75,17 @@ public class OrderService : IOrderService
             return;
         }
             
-            if(menuItem.Stock <= 0)
-            {
-                throw new Exception("Not enough stock available.");
-            } 
-            currentOrder.Add(new OrderItem
-            {
-                MenuItem = menuItem,
-                OrderItemQuantity = 1,
-                Comment = comment ?? "",
-                OrderItemStatus = OrderItemStatus.Ordered
-            });           
+        if(menuItem.Stock <= 0)
+        {
+            throw new Exception("Not enough stock available.");
+        } 
+        currentOrder.Add(new OrderItem
+        {
+            MenuItem = menuItem,
+            OrderItemQuantity = 1,
+            Comment = comment ?? "",
+            OrderItemStatus = OrderItemStatus.Ordered
+        });           
     }
 
     public void DecreaseItemQuantityInCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "")

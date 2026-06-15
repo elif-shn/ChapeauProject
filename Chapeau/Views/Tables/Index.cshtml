@@ -74,17 +74,16 @@
 
             </form>
 
+            <a asp-controller="Order"
+               asp-action="ViewMenuForTakeOrder"
+               asp-route-selectedTableId="@table.TableId"
+               class="btn btn-sm btn-primary flex-fill text-center">
+                Take Order
+            </a>
 
             <div class="d-flex gap-2 mt-2">
                 @if (isWaiter)
                 {
-                    <a asp-controller="Order"
-                       asp-action="ViewMenuForTakeOrder"
-                       asp-route-selectedTableId="@table.TableId"
-                       class="btn btn-sm btn-primary flex-fill text-center">
-                        Take Order
-                    </a>
-
                     <a asp-controller="Tables"
                        asp-action="ShowOrders"
                        asp-route-tableId="@table.TableId"
@@ -94,9 +93,7 @@
                 }
                 else
                 {
-                    <span class="btn btn-sm btn-secondary flex-fill text-center disabled">
-                        Take Order
-                    </span>
+                   
 
                     <span class="btn btn-sm btn-secondary flex-fill text-center disabled">
                         View Orders
