@@ -13,7 +13,7 @@ public class MenuItem
     public int VatPercentage { get; set; }
     public int Stock { get; set; }
     public bool IsActive { get; set; }
-
+    public bool IsFood { get; set; }
     public MenuItem() { } 
 
 

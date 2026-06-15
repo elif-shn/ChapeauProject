@@ -7,6 +7,7 @@
     <p class="lead text-muted">Your all-in-one restaurant management system</p>
     <hr class="my-4" />
     <div class="row justify-content-center mt-4">
+
         <div class="col-md-3 mb-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
@@ -16,25 +17,37 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-    <div class="card shadow-sm h-100">
-        <div class="card-body text-center">
-            <h5 class="card-title">🍽️ Menu</h5>
-            <p class="card-text text-muted">View the restaurant menu</p>
-            <a asp-controller="Menu" asp-action="Index" class="btn btn-outline-primary btn-sm">Go</a>
-        </div>
-    </div>
-</div>
 
         <div class="col-md-3 mb-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
-                    <h5 class="card-title">🍴 Kitchen-Bar Orders</h5>
-                    <p class="card-text text-muted">Manage running orders</p>
-                    <a asp-controller="Order" asp-action="Index" class="btn btn-outline-primary btn-sm">Go</a>
+                    <h5 class="card-title">🍽️ Menu</h5>
+                    <p class="card-text text-muted">View the restaurant menu</p>
+                    <a asp-controller="Menu" asp-action="Index" class="btn btn-outline-primary btn-sm">Go</a>
                 </div>
             </div>
         </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">🍴 Kitchen</h5>
+                    <p class="card-text text-muted">Manage running kitchen orders</p>
+                    <a asp-controller="Order" asp-action="GetRunningKitchenOrders" class="btn btn-outline-primary btn-sm">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">🍹 Bar </h5>
+                    <p class="card-text text-muted">Manage running bar orders</p>
+                    <a asp-controller="Order" asp-action="GetRunningBarOrders" class="btn btn-outline-primary btn-sm">Go</a>
+                </div>
+            </div>
+        </div>
+
         <div class="col-md-3 mb-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
@@ -44,6 +57,7 @@
                 </div>
             </div>
         </div>
+
         <div class="col-md-3 mb-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
@@ -53,5 +67,6 @@
                 </div>
             </div>
         </div>
+
     </div>
 </div>

@@ -37,8 +37,13 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Menu" asp-action="Index">Menu</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Order" asp-action="Index">Order</a>
+                            <a class="nav-link text-dark"asp-controller="Order"asp-action="GetRunningKitchenOrders">Kitchen</a>
                         </li>
+
+                        <li class="nav-item">  
+                            <a class="nav-link text-dark" asp-controller="Order"asp-action="GetRunningBarOrders">Bar </a>
+                        </li>
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">
                                 Management
@@ -94,6 +99,8 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+
+			@await Html.PartialAsync("_Alerts")
 
             @RenderBody()
         </main>

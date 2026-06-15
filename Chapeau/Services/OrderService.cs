@@ -1,57 +1,51 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
-using Chapeau.Repositories;
 using Chapeau.Repositories.Interfaces;
 using Chapeau.Services.Interfaces;
-using Chapeau.ViewModels;
 
-public class OrderService : IOrderService
+namespace Chapeau.Services
 {
-    private readonly IOrderRepository _orderRepository;
-    private readonly IMenuService _menuService;
+    public class OrderService : IOrderService
+    {
+        private readonly IOrderRepository _orderRepository;
+        private readonly IMenuService _menuService;
 
-    public OrderService(IOrderRepository orderRepository, IMenuService menuService)
-    {
-        _orderRepository = orderRepository;
-        _menuService = menuService;
-    }
-
-    public List<Order> GetRunningOrders()
-    {
-        return _orderRepository.GetRunningOrders();
-    }
-
-    public List<Order> GetFinishedOrders()
-    {
-        return _orderRepository.GetFinishedOrders();
-    }
-    public Order? GetOrderById(Order order)
-    {
-        return _orderRepository.GetOrderById(order);
-    }
-    public void UpdateOrderStatus(Order order, OrderStatus status)
-    {
-        order.OrderStatus = status;
-
-        if (status == OrderStatus.Served)
+        public OrderService(IOrderRepository orderRepository, IMenuService menuService)
         {
-            order.ServedTime = DateTime.Now;
-
-            List<OrderItem> items = _orderRepository.GetOrderItemsByOrderId(order);
-            foreach (OrderItem item in items)
-            {
-                _orderRepository.UpdateOrderItemStatus(item, OrderItemStatus.Served);
-            }
+            _orderRepository = orderRepository;
+            _menuService = menuService;
         }
 
-        _orderRepository.UpdateOrderStatus(order, status);
-    }
-    public void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status)
-    {
-        _orderRepository.UpdateOrderItemStatus(orderItem, status);
-    }
-   
-    public Order? GetActiveOrderForTable(int tableId)
+        public List<Order> GetRunningOrders(bool isFood)
+        {
+            return _orderRepository.GetRunningOrders(isFood);
+        }
+
+        public List<Order> GetFinishedOrders(bool isFood)
+        {
+            return _orderRepository.GetFinishedOrders(isFood);
+        }
+
+        public void UpdateOrderStatus(Order order)
+        {
+            _orderRepository.UpdateOrderStatus(order);
+        }
+
+        public void UpdateOrderItemStatus(OrderItem orderItem)
+        {
+            _orderRepository.UpdateOrderItemStatus(orderItem);
+        }
+
+        public void UpdateCourseStatus(Order order, Category category, OrderItemStatus status)
+        {
+            _orderRepository.UpdateCourseStatus(order, category, status);
+        }
+
+        public Order? GetOrderById(Order order)
+        {
+            return _orderRepository.GetOrderById(order);
+        }
+        public Order? GetActiveOrderForTable(int tableId)
     {
         return _orderRepository.GetActiveOrderForTable(tableId);
     }
@@ -115,20 +109,11 @@ public class OrderService : IOrderService
 
         return  currentItems;
     }
-    public List<Order> GetKitchenOrders()
-    {
-        return _orderRepository.GetRunningOrders()
-            .Where(order => order.OrderItems.Any(item =>
-                item.MenuItem.Menu.Card == Card.Lunch || item.MenuItem.Menu.Card == Card.Dinner))
-            .ToList();
-    }
 
-    public List<Order> GetBarOrders()
-    {
-        return _orderRepository.GetRunningOrders()
-            .Where(order => order.OrderItems.Any(item =>
-                item.MenuItem.Menu.Card == Card.Drink))
-            .ToList();
+       
     }
-
 }
+
+
+
+
