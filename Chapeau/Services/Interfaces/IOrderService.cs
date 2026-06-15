@@ -7,13 +7,12 @@ namespace Chapeau.Services.Interfaces
     {       
         List<Order> GetRunningOrders(bool isFood);
         List<Order> GetFinishedOrders(bool isFood);
-       /*
-        List<Order> GetKitchenOrders();
-        List<Order> GetBarOrders();
-       */
-        List<Order> GetRunningTableOrders(int tableId);
-        List<Order> GetActiveDrinkOrders(int tableId);
-        List<Order> GetActiveFoodOrders(int tableId);
+        /*
+         List<Order> GetKitchenOrders();
+         List<Order> GetBarOrders();
+        */
+        Order? GetRunningTableOrder(int tableId);
+        Order? GetActiveFoodOrDrinkOrder(int tableId, int isFood);
         void MarkOrderAsServed(int orderId);
         Order? GetOrderById(Order order);
         void UpdateOrderStatus(Order order);

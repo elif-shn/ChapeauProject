@@ -13,9 +13,10 @@ public interface IOrderRepository
     void AddItemsToExistingOrder(Order order, List<OrderItem> items);
 
     Order? GetActiveOrderForTable(int tableId);
-    List<Order> GetRunningTableOrders(int tableId);
-    List<Order> GetActiveDrinkOrders(int tableId);
-    List<Order> GetActiveFoodOrders(int tableId);
+    
+    Order? GetRunningTableOrder(int tableId);
+    
+    Order? GetActiveFoodOrDrinkOrder (int tableId, int isFood);
     List<OrderItem> GetOrderItemsByOrderId(int orderId, bool isFood);
     List<OrderItem> GetOrderItemsByOrderIdNoFilter(Order order);
     void MarkOrderAsServed(int orderId);

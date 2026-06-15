@@ -35,10 +35,10 @@ namespace Chapeau.Controllers
                     {
                         Table = table,
 
-                        HasFoodOrders = _orderServices.GetActiveFoodOrders(table.TableId).Any(),
+                        HasFoodOrders = _orderServices.GetActiveFoodOrDrinkOrder(table.TableId, 1) != null,
                         
 
-                        HasDrinkOrders = _orderServices.GetActiveDrinkOrders(table.TableId).Any()
+                        HasDrinkOrders = _orderServices.GetActiveFoodOrDrinkOrder(table.TableId, 0) != null
                             
                     };
 
@@ -51,10 +51,9 @@ namespace Chapeau.Controllers
         [HttpGet]
         public IActionResult ShowOrders(int tableId)
         {
-            List<Order> orders = _orderServices.GetRunningTableOrders(tableId);
-            
+            Order? order = _orderServices.GetRunningTableOrder(tableId);
+            return View(order);
 
-            return View(orders);
         }
 
         [HttpPost]
