@@ -7,7 +7,7 @@ namespace Chapeau.Services.Interfaces
     {       
         List<Order> GetRunningOrders(bool isFood);
         List<Order> GetFinishedOrders(bool isFood);
-    {
+    
         List<Order> GetRunningOrders();
         List<Order> GetFinishedOrders();
         List<Order> GetKitchenOrders();
