@@ -4,14 +4,21 @@ using Chapeau.Models;
 namespace Chapeau.Services.Interfaces
 {
     public interface IOrderService
-    {
-        List<Order> GetRunningOrders();
-        List<Order> GetFinishedOrders();
+    {       
+        List<Order> GetRunningOrders(bool isFood);
+        List<Order> GetFinishedOrders(bool isFood);
+       /*
         List<Order> GetKitchenOrders();
         List<Order> GetBarOrders();
+       */
+        List<Order> GetRunningTableOrders(int tableId);
+        List<Order> GetActiveDrinkOrders(int tableId);
+        List<Order> GetActiveFoodOrders(int tableId);
+        void MarkOrderAsServed(int orderId);
         Order? GetOrderById(Order order);
-        void UpdateOrderStatus(Order order, OrderStatus status);
-        void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status);
+        void UpdateOrderStatus(Order order);
+        void UpdateOrderItemStatus(OrderItem orderItem);
+        void UpdateCourseStatus(Order order, Category category, OrderItemStatus status);
         Order? GetActiveOrderForTable(int tableId);
         void SendOrder(Order newOrder);
         void DecreaseItemQuantityInCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "");

@@ -22,19 +22,36 @@ namespace Chapeau.Controllers
 
         public IActionResult Index()
         {
-            List<Table> tables = new List<Table>();
-
-
-            tables = _tableService.GetAllTables();
+            List<Table> tables = _tableService.GetAllTables();
             
+
+            List<RestaurantOverviewViewModel> overview = new List<RestaurantOverviewViewModel>();
             
-            return View(tables);
+
+            foreach (Table table in tables)
+            {
+                RestaurantOverviewViewModel tableOverview = new RestaurantOverviewViewModel()
+                  
+                    {
+                        Table = table,
+
+                        HasFoodOrders = _orderServices.GetActiveFoodOrders(table.TableId).Any(),
+                        
+
+                        HasDrinkOrders = _orderServices.GetActiveDrinkOrders(table.TableId).Any()
+                            
+                    };
+
+                overview.Add(tableOverview);
+            }
+
+            return View(overview);
         }
 
         [HttpGet]
         public IActionResult ShowOrders(int tableId)
         {
-            List<Order> orders = _tableService.GetRunningTableOrders(tableId);
+            List<Order> orders = _orderServices.GetRunningTableOrders(tableId);
             
 
             return View(orders);
@@ -44,7 +61,7 @@ namespace Chapeau.Controllers
         public IActionResult MarkServed(int orderId, int tableId)
         {
 
-            _tableService.MarkOrderAsServed(orderId);
+            _orderServices.MarkOrderAsServed(orderId);
                 
             return RedirectToAction("ShowOrders", new { tableId });
         }
@@ -84,3 +101,4 @@ namespace Chapeau.Controllers
         }
     }
 }
+//test 2

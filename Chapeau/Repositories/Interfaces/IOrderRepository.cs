@@ -3,15 +3,22 @@ using Chapeau.Models;
 using Chapeau.ViewModels;
 public interface IOrderRepository
 {
-    List<Order> GetRunningOrders();
-    List<OrderItem> GetOrderItemsByOrderId(Order order);
-    List<Order> GetFinishedOrders();
-    void UpdateOrderStatus(Order order, OrderStatus status);
-    void UpdateOrderItemStatus(OrderItem orderItem, OrderItemStatus status);
+    List<Order> GetRunningOrders(bool isFood);
+    List<Order> GetFinishedOrders(bool isFood);
+    void UpdateOrderStatus(Order order);
+    void UpdateOrderItemStatus(OrderItem orderItem);
+    void UpdateCourseStatus(Order order, Category category, OrderItemStatus status);
     Order? GetOrderById(Order order);
-    public void CreateOrderWithItems(Order order);
+    void CreateOrderWithItems(Order order);
     void AddItemsToExistingOrder(Order order, List<OrderItem> items);
-    Order GetActiveOrderForTable(int tableId);
+
+    Order? GetActiveOrderForTable(int tableId);
+    List<Order> GetRunningTableOrders(int tableId);
+    List<Order> GetActiveDrinkOrders(int tableId);
+    List<Order> GetActiveFoodOrders(int tableId);
+    List<OrderItem> GetOrderItemsByOrderId(int orderId, bool isFood);
+    List<OrderItem> GetOrderItemsByOrderIdNoFilter(Order order);
+    void MarkOrderAsServed(int orderId);
 }
 
 
