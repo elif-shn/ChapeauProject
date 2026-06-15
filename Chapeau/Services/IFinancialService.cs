@@ -1,9 +1,10 @@
-﻿using Chapeau.Models;
+﻿using Chapeau.Enums;
+using Chapeau.Models;
 
 namespace Chapeau.Services
 {
     public interface IFinancialService
     {
-        FinancialSummary GetOverview(string period, DateTime? startDate, DateTime? endDate);
+        FinancialOverviewResult GetOverview(FinancialPeriod period, DateTime? startDate, DateTime? endDate);
     }
 }

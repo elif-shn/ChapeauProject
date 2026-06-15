@@ -2,6 +2,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System.Data;
+using Chapeau.Enums;
 
 namespace Chapeau.Repositories
 {
@@ -51,6 +52,8 @@ namespace Chapeau.Repositories
             return employee;
         }
 
+        
+
         public void Add(Employee employee)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -60,7 +63,7 @@ namespace Chapeau.Repositories
                 SqlCommand command = new SqlCommand(query, connection);
                 command.Parameters.AddWithValue("@EmployeeName", employee.EmployeeName);
                 command.Parameters.AddWithValue("@EmployeeNumber", employee.EmployeeNumber);
-                command.Parameters.AddWithValue("@EmployeeOccupation", employee.EmployeeOccupation);
+                command.Parameters.AddWithValue("@EmployeeOccupation", employee.EmployeeOccupation.ToString());
                 command.Parameters.AddWithValue("@EmployeePassword", employee.EmployeePassword);
                 connection.Open();
                 command.ExecuteNonQuery();
@@ -81,7 +84,7 @@ namespace Chapeau.Repositories
                 command.Parameters.AddWithValue("@EmployeeId", employee.EmployeeId);
                 command.Parameters.AddWithValue("@EmployeeName", employee.EmployeeName);
                 command.Parameters.AddWithValue("@EmployeeNumber", employee.EmployeeNumber);
-                command.Parameters.AddWithValue("@EmployeeOccupation", employee.EmployeeOccupation);
+                command.Parameters.AddWithValue("@EmployeeOccupation", employee.EmployeeOccupation.ToString());
                 command.Parameters.AddWithValue("@EmployeePassword", employee.EmployeePassword);
                 connection.Open();
                 command.ExecuteNonQuery();
@@ -120,12 +123,48 @@ namespace Chapeau.Repositories
             return new Employee
             {
                 EmployeeId = (int)reader["EmployeeId"],
-                EmployeeName = reader["EmployeeName"].ToString(),
-                EmployeeNumber = reader["EmployeeNumber"].ToString(),
-                EmployeeOccupation = reader["EmployeeOccupation"].ToString(),
-                EmployeePassword = reader["EmployeePassword"].ToString(),
+                EmployeeName = reader["EmployeeName"].ToString() ?? string.Empty,
+                EmployeeNumber = reader["EmployeeNumber"].ToString() ?? string.Empty,
+                EmployeeOccupation = Enum.Parse<EmployeeRole>(
+                    reader["EmployeeOccupation"].ToString() ?? string.Empty,
+                    ignoreCase: true
+                ),
+                EmployeePassword = reader["EmployeePassword"].ToString() ?? string.Empty,
                 IsActive = (bool)reader["IsActive"]
             };
         }
+
+        public Employee? GetByUsernameAndPassword(string username, string password)
+
+        {
+            Employee? employee = null;
+
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+
+            {
+                string query =
+                    @"SELECT EmployeeId, EmployeeName, EmployeeNumber, EmployeeOccupation, EmployeePassword, IsActive
+                      FROM Employee
+                      WHERE EmployeeName = @username
+                      AND EmployeePassword = @password";
+
+                SqlCommand command = new SqlCommand(query, connection);
+                
+
+                command.Parameters.AddWithValue("@username", username);
+                command.Parameters.AddWithValue("@password", password);
+
+                connection.Open();
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    employee = ReadEmployee(reader);
+                }
+            }
+
+            return employee;
+        }
     }
-}
+}            

@@ -6,9 +6,12 @@ namespace Chapeau.Repositories
     {
         List<Employee> GetAll();
         Employee GetById(int id);
+        Employee? GetByUsernameAndPassword(string username, string password);
         void Add(Employee employee);
         void Update(Employee employee);
         void SetActive(int id, bool isActive);
-        bool EmployeeNumberExists(string employeeNumber); 
+        bool EmployeeNumberExists(string employeeNumber);
+
+        
     }
 }

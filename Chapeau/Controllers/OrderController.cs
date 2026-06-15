@@ -5,11 +5,13 @@ using Chapeau.Services;
 using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Chapeau.Controllers
 {
     public class OrderController : Controller
     {
+        private const string CurrentOrderSessionKey = "CurrentOrder";
         private readonly IMenuService _menuService;
         private readonly IOrderService _orderServices;
 
@@ -152,35 +154,54 @@ namespace Chapeau.Controllers
 
             return RedirectToAction("GetRunningKitchenOrders");
         }
+        private List<OrderItem> GetCurrentOrder()
+        {
+            return HttpContext.Session
+                .GetObject<List<OrderItem>>(CurrentOrderSessionKey)
+                ?? new List<OrderItem>();
+        }
+
+        private void SaveCurrentOrder(List<OrderItem> items)
+        {
+            HttpContext.Session
+                .SetObject(CurrentOrderSessionKey, items);
+        }
 
         public IActionResult ViewMenuForTakeOrder(Card? selectedCard, Category? selectedCategory, int selectedTableId)
         {
             try
             {
-                HttpContext.Session.SetInt32("SelectedTableId", selectedTableId);
-
-                MenuFilterData data = _menuService.GetMenuData(selectedCard, selectedCategory, false);
-
-                return View("TakeOrder", new TakeOrderViewModel
-                {
-                    Menu = data.Menus,
-                    Categories = data.Categories,
-                    SelectedCard = data.SelectedCard,
-                    SelectedCategory = data.SelectedCategory,
-                    SelectedTableId = selectedTableId,
-                    CurrentOrders = new List<OrderItem>()
-                });
+                MenuFilterData data = _menuService.GetMenuData(selectedCard,selectedCategory,true);
+                data.SelectedTableId = selectedTableId;
+                return View("TakeOrder",
+                    new TakeOrderViewModel
+                    {
+                        MenuFilterData = data,
+                        CurrentOrders = GetCurrentOrder()
+                    });
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return View(new TakeOrderViewModel
-                {
-                    Menu = new List<Menu>(),
-                    SelectedCard = selectedCard,
-                    SelectedTableId = selectedTableId
-                });
+
+                return View("TakeOrder",
+                    new TakeOrderViewModel
+                    {
+                        MenuFilterData = new MenuFilterData(),
+                        CurrentOrders = GetCurrentOrder(),
+                    });
             }
+        }
+        private IActionResult RedirectToTakeOrder(TakeOrderViewModel model)
+        {
+            return RedirectToAction(
+               "ViewMenuForTakeOrder",
+               new
+               {
+                   selectedCard = model.MenuFilterData?.SelectedCard,
+                   selectedCategory = model.MenuFilterData?.SelectedCategory,
+                   selectedTableId = model.MenuFilterData?.SelectedTableId
+               });
         }
 
 
@@ -189,28 +210,23 @@ namespace Chapeau.Controllers
 
 
         [HttpPost]
-        public IActionResult AddNewItemToCurrentOrder(TakeOrderViewModel model)
+        public IActionResult AddItemToCurrentOrder(TakeOrderViewModel model)
         {
             try
             {
-                var currentItems = model.CurrentOrders ?? new List<OrderItem>();
-                var dbMenuItem = _menuService.GetMenuItemById(model.NewOrderItem.MenuItem.MenuItemId);
+                List<OrderItem> currentOrder = GetCurrentOrder();
 
-                var newItem = new OrderItem
-                {
-                    MenuItem = dbMenuItem,
-                    Comment = model.NewOrderItem?.Comment ?? ""
-                };
+                _orderServices.AddItemToCurrentOrder(currentOrder, model.NewOrderItem.MenuItem.MenuItemId, model.NewOrderItem.Comment);
 
-                model.CurrentOrders = _orderServices.ModifyCurrentOrderItem(currentItems, newItem, 1);
+                SaveCurrentOrder(currentOrder);
+
+                return RedirectToTakeOrder(model);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
+                return RedirectToTakeOrder(model);
             }
-
-            ViewData["CurrentOrders"] = model.CurrentOrders;
-            return View("TakeOrder", model);
         }
 
 
@@ -223,126 +239,138 @@ namespace Chapeau.Controllers
         {
             try
             {
-                var tableId = model.SelectedTableId;
-                var currentItems = model.CurrentOrders;
+                List<OrderItem> currentOrder = GetCurrentOrder();
 
-                if (currentItems == null || !currentItems.Any())
-                    return RedirectToAction("ViewMenuForTakeOrder", new { selectedTableId = tableId });
-
-                var newOrder = new Order
+                if (!currentOrder.Any())
                 {
-                    TableId = tableId.Value,
+                    return RedirectToAction(
+                        nameof(ViewMenuForTakeOrder),
+                        new
+                        {
+                            selectedTableId = model.MenuFilterData?.SelectedTableId
+                        });
+                }
+                var user = HttpContext.Session.GetObject<Employee>("LoggedInUser");
+                var order = new Order
+                {
+                    TableId = model.MenuFilterData.SelectedTableId.Value,
                     OrderTime = DateTime.Now,
                     OrderStatus = OrderStatus.Ordered,
-                    OrderItems = currentItems
+                    ServedTime = null,
+                    Employee = user,
+                    OrderItems = currentOrder,
                 };
 
-                _orderServices.SendOrder(newOrder);
-                TempData["SuccessMessage"] = "Order sent successfully!";
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-            }
+                _orderServices.SendOrder(order);
 
-            return RedirectToAction("ViewMenuForTakeOrder",
-                     new
-                     {
-                         selectedTableId = model.SelectedTableId
-                     });
-            }
+                HttpContext.Session.Remove(CurrentOrderSessionKey);
 
+                TempData["SuccessMessage"] ="Order sent successfully.";
 
-
-
-        [HttpPost]
-        public IActionResult DecreaseItemQuantityInCurrentOrder(TakeOrderViewModel model)
-        {
-            try
-            {
-                var currentItems = model.CurrentOrders ?? new List<OrderItem>();
-                var dbMenuItem = _menuService.GetMenuItemById(model.NewOrderItem.MenuItem.MenuItemId);
-
-                var newItem = new OrderItem
-                {
-                    MenuItem = dbMenuItem,
-                    Comment = model.NewOrderItem?.Comment ?? ""
-                };
-
-                model.CurrentOrders = _orderServices.ModifyCurrentOrderItem(currentItems, newItem, -1);
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-            }
-
-            ViewData["CurrentOrders"] = model.CurrentOrders;
-            return View("TakeOrder", model);
-        }
-
-
-
-
-
-        [HttpPost]
-        public IActionResult RemoveItem(int menuItemId, TakeOrderViewModel model)
-        {
-            var items = model.CurrentOrders;
-
-            if (items != null)
-            {
-                items = _orderServices.RemoveItem(items, menuItemId);
-                model.CurrentOrders = items;
-            }
-
-            ViewData["CurrentOrders"] = model.CurrentOrders;
-
-            return View("TakeOrder", model);
-        }
-
-
-
-
-
-        [HttpPost]
-        public IActionResult AddNote(int menuItemId, string comment, TakeOrderViewModel model)
-        {
-            var items = model.CurrentOrders;
-
-            var itemToUpdate = items.FirstOrDefault(item => item.MenuItem.MenuItemId == menuItemId);
-
-            if (itemToUpdate != null)
-            {
-                itemToUpdate.Comment = comment;
-            }
-
-            ViewData["CurrentOrders"] = model.CurrentOrders;
-
-            return View("TakeOrder", model);
-        }
-
-
-
-
-
-        [HttpPost]
-        public IActionResult CancelOrder(TakeOrderViewModel model)
-        {
-            try
-            {
-                model.CurrentOrders.Clear();
-                TempData["SuccessMessage"] = "Order cancelled successfully.";
-                return RedirectToAction("ViewMenuForTakeOrder",
+                return RedirectToAction(
+                     "ViewMenuForTakeOrder",
                     new
                     {
-                        selectedTableId = model.SelectedTableId
+                        selectedTableId = model.MenuFilterData?.SelectedTableId
                     });
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return RedirectToAction("ViewMenuForTakeOrder", new { model.SelectedTableId });
+
+                return RedirectToAction(
+                     "ViewMenuForTakeOrder",
+                    new
+                    {
+                        selectedTableId = model.MenuFilterData?.SelectedTableId
+                    });
             }
+        }
+
+        [HttpPost]
+        public IActionResult RemoveItemInCurrentOrder(TakeOrderViewModel model)
+        {
+            try
+            {
+                List<OrderItem> currentOrder = GetCurrentOrder();
+
+                _orderServices.DecreaseItemQuantityInCurrentOrder(currentOrder,model.NewOrderItem.MenuItem.MenuItemId,model.NewOrderItem.Comment);
+
+                SaveCurrentOrder(currentOrder);
+
+                return RedirectToTakeOrder(model);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToTakeOrder(model);
+            }
+        }
+
+
+
+
+
+        [HttpPost]
+        public IActionResult DeleteItem(TakeOrderViewModel model)
+        {
+            try
+            {
+                List<OrderItem> currentOrder = GetCurrentOrder();
+
+                _orderServices.DeleteItem(currentOrder, model.NewOrderItem.MenuItem.MenuItemId, model.NewOrderItem.Comment);
+
+                SaveCurrentOrder(currentOrder);
+
+                return RedirectToTakeOrder(model);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToTakeOrder(model);
+            }
+        }
+
+
+
+
+
+        [HttpPost]
+        public IActionResult AddNote(TakeOrderViewModel model)
+        {
+            try
+            {
+                List<OrderItem> currentOrder = GetCurrentOrder();
+
+                _orderServices.AddNote(currentOrder, model.NewOrderItem.MenuItem.MenuItemId, model.NewOrderItem.Comment);
+
+                SaveCurrentOrder(currentOrder);
+
+                return RedirectToTakeOrder(model);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToTakeOrder(model);
+            }
+        }
+
+        [HttpPost]
+        public IActionResult CancelOrder(TakeOrderViewModel model)
+        {
+            HttpContext.Session.Remove(CurrentOrderSessionKey);
+
+            TempData["SuccessMessage"] = "Order cancelled successfully.";
+
+            return RedirectToAction(
+                    "ViewMenuForTakeOrder",
+                new
+                {
+                    selectedTableId = model.MenuFilterData?.SelectedTableId
+                });
         }
     }
 }

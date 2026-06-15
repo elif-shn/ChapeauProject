@@ -1,83 +1,58 @@
 ﻿@using Chapeau.Enums
 @using Chapeau.Extensions
-@model dynamic
+@model Chapeau.ViewModels.MenuListViewModel
 
 @{
-    bool showAddButton = ViewData["ShowAddButton"] as bool? ?? false;
-    Chapeau.Enums.Card? previousCard = null;
+    Card? previousCard = null;
 }
 
 <table>
     <tbody>
-        @foreach (var menu in Model)
+        @foreach (var menu in Model.MenuFilterData.Menus)
         {
             if (previousCard != menu.Card)
             {
-                <tr>
-                    <td colspan="4" style="padding-top: 35px;">
+                <tr >
+                    <td colspan="4" class="pt-5 pb-2" style="border: none;">
                         <strong>@menu.Card.ToString().ToUpper()</strong>
                     </td>
                 </tr>
                 previousCard = menu.Card;
             }
 
-            <tr>
-                <td colspan="4" style="padding-top: 15px;">
-                    <em>@(((Chapeau.Enums.Category)menu.Category).ToDisplayName().ToUpper())</em>
+            <tr border-spacing: 20px 10px;>
+                <td colspan="4" class="pt-3 pb-2" style="border: none;">
+                    <em>@menu.Category.ToDisplayName().ToUpper()</em>
                 </td>
             </tr>
 
             @foreach (var item in menu.MenuItems)
             {
                 <tr>
-                    <td class="pe-3">
-                        @item.MenuItemName
+                    <td>@item.MenuItemName</td>
+
+                    <td>
+                        <span class="@item.StockStatusClass">
+                            @item.StockStatus.ToDisplayName()
+                        </span>
                     </td>
 
-                    <td class="pe-3">
-                        @if (item.StockStatus == Chapeau.Enums.StockStatus.OutOfStock)
-                        {
-                            <span style="color:red;">Out of stock</span>
-                        }
-                        else if (item.StockStatus == Chapeau.Enums.StockStatus.AlmostOutOfStock)
-                        {
-                            <span style="color:orange;">Almost out of stock</span>
-                        }
-                        else
-                        {
-                            <span style="color:green;">In stock</span>
-                        }
-                    </td>
+                    <td>€ @item.MenuItemPrice.ToString("0.00")</td>
 
-                    <td class="pe-3">
-                        € @item.MenuItemPrice.ToString("0.00")
-                    </td>
-                    @if (showAddButton)
+                    @if (Model.ShowAddButton)
                     {
                         <td>
-                            <form method="post" asp-action="AddNewItemToCurrentOrder">
-                                <input type="hidden" name="SelectedCard" value="@ViewData["SelectedCard"]" />
-                                <input type="hidden" name="SelectedCategory" value="@ViewData["SelectedCategory"]" />
-                                <input type="hidden" name="SelectedTableId" value="@ViewData["SelectedTableId"]" />
+                            <form method="post" asp-action="AddItemToCurrentOrder">
+
+                                <input type="hidden" name="MenuFilterData.SelectedTableId" value="@Model.MenuFilterData.SelectedTableId" />
+                                <input type="hidden" name="MenuFilterData.SelectedCard" value="@Model.MenuFilterData.SelectedCard" />
+                                <input type="hidden" name="MenuFilterData.SelectedCategory" value="@Model.MenuFilterData.SelectedCategory" />
 
                                 <input type="hidden" name="NewOrderItem.MenuItem.MenuItemId" value="@item.MenuItemId" />
 
-                                @{
-                                    var cart = ViewData["CurrentOrders"] as List<Chapeau.Models.OrderItem>;
-
-                                    if (cart != null)
-                                    {
-                                        for (int i = 0; i < cart.Count; i++)
-                                        {
-                                            <input type="hidden" name="CurrentOrders[@i].MenuItem.MenuItemId" value="@cart[i].MenuItem.MenuItemId" />
-                                            <input type="hidden" name="CurrentOrders[@i].MenuItem.MenuItemName" value="@cart[i].MenuItem.MenuItemName" />
-                                            <input type="hidden" name="CurrentOrders[@i].OrderItemQuantity" value="@cart[i].OrderItemQuantity" />
-                                            <input type="hidden" name="CurrentOrders[@i].Comment" value="@cart[i].Comment" />
-                                        }
-                                    }
-                                }
                                 <button class="btn btn-success">+</button>
                             </form>
+
                         </td>
                     }
                 </tr>

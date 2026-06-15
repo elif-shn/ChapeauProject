@@ -1,6 +1,6 @@
 ﻿@using Chapeau.Enums
 @using Chapeau.Extensions
-@model Chapeau.ViewModels.MenuViewModel
+@model Chapeau.ViewModels.MenuManagementViewModel
 
 <style>
 
@@ -298,11 +298,15 @@
 
                                 @if (item.IsActive)
                                 {
-                                    <a asp-action="Deactivate" asp-route-id="@item.MenuItemId" class="btn-deactivate">Deactivate</a>
+                                    <form asp-action="Deactivate" asp-route-id="@item.MenuItemId" method="post" style="display:inline;">
+                                        <button type="submit" class="btn-deactivate">Deactivate</button>
+                                    </form>
                                 }
                                 else
                                 {
-                                    <a asp-action="Activate" asp-route-id="@item.MenuItemId" class="btn-activate">Activate</a>
+                                    <form asp-action="Activate" asp-route-id="@item.MenuItemId" method="post" style="display:inline;">
+                                        <button type="submit" class="btn-activate">Activate</button>
+                                    </form>
                                 }
 
                             </div>

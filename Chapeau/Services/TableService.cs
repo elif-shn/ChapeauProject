@@ -19,15 +19,6 @@ namespace Chapeau.Services
             return _tableRepository.GetAllTables();
         }
        
-        public List<ActiveOrderViewModel> GetActiveOrders(int tableId)
-        {
-            return _tableRepository.GetActiveOrders(tableId);
-        }
-
-        public void MarkOrderAsServed(int orderId)
-        {
-            _tableRepository.MarkOrderAsServed(orderId);
-        }
 
         public void UpdateTableStatus(Table table)
         {
