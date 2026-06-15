@@ -8,7 +8,7 @@ using Chapeau.Enums;
 namespace Chapeau.Controllers
 {
 
-    [Authorize(Roles = "Manager")]
+    [Authorize(Roles = "Manager")] 
     public class FinancialOverviewController : Controller
     {
         private readonly IFinancialService _financialService;
