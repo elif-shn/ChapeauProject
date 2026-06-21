@@ -16,9 +16,22 @@ namespace Chapeau.Services
             _menuService = menuService;
         }
 
+<<<<<<< HEAD
         public List<Order> GetRunningOrders(bool isFood) => _orderRepository.GetRunningOrders(isFood);
 
         public List<Order> GetRunningTableOrders(int tableId) => _orderRepository.GetRunningTableOrders(tableId);
+=======
+        public List<Order> GetRunningOrders(bool isFood)
+        {
+            return _orderRepository.GetRunningOrders(isFood);
+        }
+
+        public Order? GetActiveOrderForTable(int tableId)
+        {
+            return _orderRepository.GetActiveOrderForTable(tableId);
+        }
+
+>>>>>>> origin/Dev
 
         public List<Order> GetFinishedOrders(bool isFood) => _orderRepository.GetFinishedOrders(isFood);
 
@@ -35,7 +48,14 @@ namespace Chapeau.Services
 
         public Order? GetOrderById(Order order) => _orderRepository.GetOrderById(order);
 
+<<<<<<< HEAD
         public Order? GetActiveOrderForTable(int tableId) => _orderRepository.GetActiveOrderForTable(tableId);
+=======
+        public Order? GetRunningTableOrder(int tableId)
+        {
+            return _orderRepository.GetRunningTableOrder(tableId);
+        }
+>>>>>>> origin/Dev
 
         public void AddItemToCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "")
         {
@@ -105,6 +125,7 @@ namespace Chapeau.Services
 
         public void MarkOrderAsServed(int orderId) => _orderRepository.MarkOrderAsServed(orderId);
 
+<<<<<<< HEAD
         public List<Order> GetActiveDrinkOrders(int tableId) => _orderRepository.GetActiveDrinkOrders(tableId);
 
         public List<Order> GetActiveFoodOrders(int tableId) => _orderRepository.GetActiveFoodOrders(tableId);
@@ -116,5 +137,11 @@ namespace Chapeau.Services
         public List<OrderItem> GetOrderItemsByOrderId(int orderId, bool isFood) => _orderRepository.GetOrderItemsByOrderId(orderId, isFood);
 
         public List<OrderItem> GetOrderItemsByOrderIdNoFilter(Order order) => throw new NotImplementedException();
+=======
+        public Order? GetActiveFoodOrDrinkOrder(int tableId, int isFood)
+        {
+            return _orderRepository.GetActiveFoodOrDrinkOrder(tableId, isFood);
+        }
+>>>>>>> origin/Dev
     }
 }

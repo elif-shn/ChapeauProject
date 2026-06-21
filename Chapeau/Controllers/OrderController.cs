@@ -4,6 +4,7 @@ using Chapeau.Models;
 using Chapeau.Services;
 using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -38,7 +39,7 @@ namespace Chapeau.Controllers
             HttpContext.Session
                 .SetObject(CurrentOrderSessionKey, items);
         }
-
+        [Authorize(Roles = "Waiter")]
         public IActionResult ViewMenuForTakeOrder(Card? selectedCard, Category? selectedCategory, int selectedTableId)
         {
             try
@@ -79,6 +80,7 @@ namespace Chapeau.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Waiter")]
         public IActionResult AddItemToCurrentOrder(TakeOrderViewModel model)
         {
             try
@@ -102,6 +104,7 @@ namespace Chapeau.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Waiter")]
         public IActionResult SendOrder(TakeOrderViewModel model)
         {
             try
@@ -155,6 +158,7 @@ namespace Chapeau.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Waiter")]
         public IActionResult RemoveItemInCurrentOrder(TakeOrderViewModel model)
         {
             try
@@ -180,6 +184,7 @@ namespace Chapeau.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Waiter")]
         public IActionResult DeleteItem(TakeOrderViewModel model)
         {
             try
@@ -205,6 +210,7 @@ namespace Chapeau.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Waiter")]
         public IActionResult AddNote(TakeOrderViewModel model)
         {
             try
@@ -226,6 +232,7 @@ namespace Chapeau.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Waiter")]
         public IActionResult CancelOrder(TakeOrderViewModel model)
         {
             HttpContext.Session.Remove(CurrentOrderSessionKey);
