@@ -1,6 +1,7 @@
 ﻿using Chapeau.Models;
 using Chapeau.Repositories;
 using Chapeau.Repositories.Interfaces;
+using Chapeau.Services.Interfaces;
 using System.Security.Cryptography;
 using System.Text;
 namespace Chapeau.Services
