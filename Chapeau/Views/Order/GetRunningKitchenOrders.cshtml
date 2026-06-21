@@ -88,6 +88,7 @@
                     else if (order.OrderStatus.ToString() == "Preparing")
                     {
                         <form asp-action="UpdateOrderStatus" method="post">
+                            inp
                             <input type="hidden" name="OrderId" value="@order.OrderId" />
                             <input type="hidden" name="OrderStatus" value="Ready" />
                             <button type="submit" class="btn btn-success w-100">Ready to Serve </button>

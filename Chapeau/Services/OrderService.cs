@@ -25,17 +25,7 @@ namespace Chapeau.Services
             return _orderRepository.GetRunningTableOrders(tableId);
         }
 
-        public List<Order> GetFinishedOrders()
-        {
-            return _orderRepository.GetFinishedOrders();
-        }
-        public Order? GetOrderById(Order order)
-        {
-            return _orderRepository.GetOrderById(order);
-        }
-        public void UpdateOrderStatus(Order order, OrderStatus status)
-        {
-            order.OrderStatus = status;
+        
 
         public List<Order> GetFinishedOrders(bool isFood)
         {
@@ -61,16 +51,18 @@ namespace Chapeau.Services
         {
             return _orderRepository.GetOrderById(order);
         }
+
         public Order? GetActiveOrderForTable(int tableId)
         {
             return _orderRepository.GetActiveOrderForTable(tableId);
         }
+
         public void AddItemToCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "")
         {
-            OrderItem? existingItem = currentOrder.FirstOrDefault(i => i.MenuItem.MenuItemId == menuItemId &&
+            OrderItem ?existingItem = currentOrder.FirstOrDefault(i => i.MenuItem.MenuItemId == menuItemId &&
             (i.Comment ?? "") == (comment ?? "")
         );
-            MenuItem menuItem = _menuRepository.GetById(menuItemId);
+            MenuItem menuItem = _menuService.GetMenuItemById(menuItemId);
 
             if (existingItem != null)
             {
@@ -83,23 +75,23 @@ namespace Chapeau.Services
                 existingItem.Increase();
                 return;
             }
-
-            if (menuItem.Stock <= 0)
-            {
-                throw new Exception("Not enough stock available.");
-            }
-            currentOrder.Add(new OrderItem
-            {
-                MenuItem = menuItem,
-                OrderItemQuantity = 1,
-                Comment = comment ?? "",
-                OrderItemStatus = OrderItemStatus.Ordered
-            });
+            
+                if(menuItem.Stock <= 0)
+                {
+                    throw new Exception("Not enough stock available.");
+                } 
+                currentOrder.Add(new OrderItem
+                {
+                    MenuItem = menuItem,
+                    OrderItemQuantity = 1,
+                    Comment = comment ?? "",
+                    OrderItemStatus = OrderItemStatus.Ordered
+                });           
         }
 
         public void DecreaseItemQuantityInCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "")
         {
-            OrderItem? existingItem = currentOrder.FirstOrDefault(i => i.MenuItem.MenuItemId == menuItemId &&
+            OrderItem ?existingItem = currentOrder.FirstOrDefault(i => i.MenuItem.MenuItemId == menuItemId &&
             (i.Comment ?? "") == (comment ?? ""));
 
             if (existingItem == null)
@@ -115,7 +107,7 @@ namespace Chapeau.Services
 
         public void SendOrder(Order newOrder)
         {
-            Order? activeOrder = GetActiveOrderForTable(newOrder.TableId);
+            Order? activeOrder = _orderRepository.GetActiveOrderForTable(newOrder.TableId);
 
             if (activeOrder == null)
             {
@@ -141,7 +133,6 @@ namespace Chapeau.Services
             (item.Comment ?? "") == (comment ?? ""));
         }
 
-
         public void MarkOrderAsServed(int orderId)
         {
             _orderRepository.MarkOrderAsServed(orderId);
@@ -156,5 +147,13 @@ namespace Chapeau.Services
             return _orderRepository.GetActiveFoodOrders(tableId);
         }
 
+
     }
 }
+
+
+
+
+    
+
+

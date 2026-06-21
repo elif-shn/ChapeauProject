@@ -86,6 +86,50 @@ namespace Chapeau.Repositories
 
             return orders;
         }
+
+        public Order GetActiveOrderForTable(int tableId)
+        {
+            try
+            {
+                Order order = new Order();
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = @"
+                         SELECT OrderId, TableId, EmployeeId, OrderTime, WaitingTime, ServedTime, OrderStatus
+                         FROM [Order]
+                         WHERE TableId = @TableId
+                         AND OrderStatus NOT IN (@Settled, @Cancelled, @Paid, @Served)";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+
+                    command.Parameters.AddWithValue("@TableId", tableId);
+                    command.Parameters.AddWithValue("@Settled", OrderStatus.Settled.ToString());
+                    command.Parameters.AddWithValue("@Cancelled", OrderStatus.Cancelled.ToString());
+                    command.Parameters.AddWithValue("@Paid", OrderStatus.Paid.ToString());
+                    command.Parameters.AddWithValue("@Served", OrderStatus.Served.ToString());
+
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            order = ReadOrder(reader);
+                        }
+                    }
+                }
+
+                return order;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error occurred while getting active order for table.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Unexpected error occurred while getting active order for table.", ex);
+            }
+        }
         public List<Order> GetFinishedOrders(bool isFood)
         {
             List<Order> orders = new List<Order>();
@@ -205,49 +249,8 @@ namespace Chapeau.Repositories
                 throw new Exception("Database error while updating course status.", ex);
             }
         }
-        public Order GetActiveOrderForTable(int tableId)
-        {
-            try
-            {
-                using (SqlConnection connection = new SqlConnection(_connectionString))
-                {
-                    string query = @"
-                SELECT OrderId, TableId, EmployeeId, OrderTime, WaitingTime, ServedTime, OrderStatus
-                FROM [Order]
-                WHERE TableId = @TableId
-                AND OrderStatus NOT IN (@Settled, @Cancelled, @Paid, @Served)";
-
-                    SqlCommand command = new SqlCommand(query, connection);
-
-                    command.Parameters.AddWithValue("@TableId", tableId);
-                    command.Parameters.AddWithValue("@Settled", OrderStatus.Settled.ToString());
-                    command.Parameters.AddWithValue("@Cancelled", OrderStatus.Cancelled.ToString());
-                    command.Parameters.AddWithValue("@Paid", OrderStatus.Paid.ToString());
-                    command.Parameters.AddWithValue("@Served", OrderStatus.Served.ToString());
-
-                    connection.Open();
-
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            return ReadOrder(reader);
-                        }
-                    }
-                }
-
-                return null;
-            }
-            catch (SqlException ex)
-            {
-                throw new Exception("Database error occurred while getting active order for table.", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Unexpected error occurred while getting active order for table.", ex);
-            }
-        }
-        private List<OrderItem> GetOrderItemsByOrderId(int orderId, bool isFood)
+        
+        public List<OrderItem> GetOrderItemsByOrderId(int orderId, bool isFood)
         {
             List<OrderItem> items = new List<OrderItem>();
 
@@ -278,6 +281,48 @@ namespace Chapeau.Repositories
             }
 
             return items;
+        }
+
+        public List<OrderItem> GetOrderItemsByOrderIdNoFilter(Order order)
+        {
+            try
+            {
+                List<OrderItem> items = new List<OrderItem>();
+
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemsStatus,
+                                    mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.VatPercentage,
+                                    mi.MenuId, m.Card, m.Category
+                             FROM OrderItem oi
+                             JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
+                             JOIN Menu m      ON mi.MenuId = m.MenuId
+                             WHERE oi.OrderId = @OrderId";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@OrderId", order.OrderId);
+
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            items.Add(ReadOrderItem(reader));
+                        }
+                    }
+                }
+
+                return items;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error occurred while fetching order items.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while fetching order items.", ex);
+            }
         }
 
         public void CreateOrderWithItems(Order order)
@@ -490,7 +535,7 @@ namespace Chapeau.Repositories
 
                 foreach (Order order in orders)
                 {
-                    order.OrderItems = GetOrderItemsByOrderId(order);
+                    order.OrderItems = GetOrderItemsByOrderIdNoFilter(order);
                 }
 
                 return orders;
@@ -639,7 +684,7 @@ namespace Chapeau.Repositories
                     {
                         orders.Add(ReadOrder(reader));
                     }
-                }
+                }   
 
                 return orders;
             }
@@ -650,17 +695,65 @@ namespace Chapeau.Repositories
             
         }
 
+        public List<OrderItem> GetOrderItemsByOrderId(Order order)
+        {
+            try
+            {
+                List<OrderItem> items = new List<OrderItem>();
+
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemsStatus,
+                                    mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.VatPercentage,
+                                    mi.MenuId, m.Card, m.Category
+                             FROM OrderItem oi
+                             JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
+                             JOIN Menu m      ON mi.MenuId = m.MenuId
+                             WHERE oi.OrderId = @OrderId";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@OrderId", order.OrderId);
+
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            items.Add(ReadOrderItem(reader));
+                        }
+                    }
+                }
+
+                return items;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error occurred while fetching order items.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while fetching order items.", ex);
+            }
+        }
         private Order ReadOrder(SqlDataReader reader)
         {
             Order order = new Order();
             order.OrderId = (int)reader["OrderId"];
             order.OrderTime = (DateTime)reader["OrderTime"];
-
-            order.ServedTime = reader["ServedTime"] == DBNull.Value? null : (DateTime?)reader["ServedTime"];
+            order.ServedTime = reader["ServedTime"] == DBNull.Value ? (DateTime?)null : (DateTime)reader["ServedTime"];
             order.OrderStatus = Enum.Parse<OrderStatus>(reader["OrderStatus"].ToString());
+            order.Table = ReadTable(reader);
+            order.Employee = ReadEmployee(reader);
+            return order;
+        }
 
-            order.Table = new Table { TableId = (int)reader["TableId"] };
-            order.Employee = new User { Id = (int)reader["EmployeeId"] };
+        private Table ReadTable(SqlDataReader reader)
+        {
+            Table table = new Table();
+            table.TableId = (int)reader["TableId"];
+            return table;
+        }
 
         private Employee ReadEmployee(SqlDataReader reader)
         {
@@ -672,25 +765,13 @@ namespace Chapeau.Repositories
 
         private OrderItem ReadOrderItem(SqlDataReader reader)
         {
-
-            OrderItem item = new OrderItem();
-
-            item.OrderItemId = (int)reader["OrderItemId"];
-            item.OrderItemQuantity = (int)reader["OrderItemQuantity"];
-            item.Comment = reader["Comment"].ToString();
-            item.OrderItemStatus = Enum.Parse<OrderItemStatus>(reader["OrderItemsStatus"].ToString());
-
-            item.MenuItem = new MenuItem();
-            item.MenuItem.MenuItemId = (int)reader["MenuItemId"];
-            item.MenuItem.MenuItemName = (string)reader["MenuItemName"];
-            item.MenuItem.MenuItemPrice = (decimal)reader["MenuItemPrice"];
-            item.MenuItem.VatPercentage = (int)reader["VatPercentage"];
-            item.MenuItem.IsFood = (bool)reader["IsFood"];
-            item.MenuItem.Menu = new Menu();
-            item.MenuItem.Menu.MenuId = (int)reader["MenuId"];
-            item.MenuItem.Menu.Category = (Category)(int)reader["Category"];
-            item.MenuItem.Menu.Card = (Card)(int)reader["Card"];
-            return item;
+            OrderItem orderItem = new OrderItem();
+            orderItem.OrderItemId = (int)reader["OrderItemId"];
+            orderItem.OrderItemQuantity = (int)reader["OrderItemQuantity"];
+            orderItem.Comment = reader.IsDBNull(reader.GetOrdinal("Comment")) ? string.Empty : reader["Comment"].ToString();
+            orderItem.OrderItemStatus = Enum.Parse<OrderItemStatus>(reader["OrderItemsStatus"].ToString());
+            orderItem.MenuItem = ReadMenuItem(reader);
+            return orderItem;
         }
 
         private MenuItem ReadMenuItem(SqlDataReader reader)
@@ -700,7 +781,17 @@ namespace Chapeau.Repositories
             menuItem.MenuItemName = (string)reader["MenuItemName"];
             menuItem.MenuItemPrice = (decimal)reader["MenuItemPrice"];
             menuItem.VatPercentage = (int)reader["VatPercentage"];
+            menuItem.Menu = ReadMenu(reader);
             return menuItem;
+        }
+
+        private Menu ReadMenu(SqlDataReader reader)
+        {
+            Menu menu = new Menu();
+            menu.MenuId = (int)reader["MenuId"];
+            menu.Card = (Card)(int)reader["Card"];
+            menu.Category = (Category)(int)reader["Category"];
+            return menu;
         }
     }
 }
