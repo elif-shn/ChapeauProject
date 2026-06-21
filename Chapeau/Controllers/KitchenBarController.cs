@@ -8,30 +8,32 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Chapeau.Controllers
 {
-     [Authorize(Roles = "Kitchen,Bar")]
-        public class KitchenBarController : Controller
-        {
+    public class KitchenBarController : Controller
+    {
         private readonly IOrderService _orderServices;
+
         public KitchenBarController(IOrderService orderServices)
         {
             _orderServices = orderServices;
         }
+
         public IActionResult Index()
         {
             return View();
         }
+
         [HttpGet]
         public IActionResult GetRunningKitchenOrders()
         {
             try
             {
                 List<Order> orders = _orderServices.GetRunningOrders(true);
-                return View(orders);
+                return View("GetRunningOrders", orders);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return View(new List<Order>());
+                return View("GetRunningOrders", new List<Order>());
             }
         }
 
@@ -41,12 +43,12 @@ namespace Chapeau.Controllers
             try
             {
                 List<Order> orders = _orderServices.GetRunningOrders(false);
-                return View(orders);
+                return View("GetRunningOrders", orders);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return View(new List<Order>());
+                return View("GetRunningOrders", new List<Order>());
             }
         }
 
@@ -56,12 +58,12 @@ namespace Chapeau.Controllers
             try
             {
                 List<Order> orders = _orderServices.GetFinishedOrders(true);
-                return View(orders);
+                return View("GetFinishedOrders", orders);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return View(new List<Order>());
+                return View("GetFinishedOrders", new List<Order>());
             }
         }
 
@@ -71,12 +73,12 @@ namespace Chapeau.Controllers
             try
             {
                 List<Order> orders = _orderServices.GetFinishedOrders(false);
-                return View(orders);
+                return View("GetFinishedOrders", orders);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return View(new List<Order>());
+                return View("GetFinishedOrders", new List<Order>());
             }
         }
 
@@ -86,9 +88,7 @@ namespace Chapeau.Controllers
             try
             {
                 _orderServices.UpdateOrderStatus(order);
-
-                TempData["SuccessMessage"] =
-                    "Order status updated successfully.";
+                TempData["SuccessMessage"] = "Order status updated successfully.";
             }
             catch (Exception ex)
             {
@@ -111,9 +111,7 @@ namespace Chapeau.Controllers
             try
             {
                 _orderServices.UpdateOrderItemStatus(orderItem);
-
-                TempData["SuccessMessage"] =
-                    "Order item status updated successfully.";
+                TempData["SuccessMessage"] = "Order item status updated successfully.";
             }
             catch (Exception ex)
             {
@@ -128,8 +126,6 @@ namespace Chapeau.Controllers
             {
                 return RedirectToAction("GetRunningBarOrders");
             }
-
-
         }
 
         [HttpPost]

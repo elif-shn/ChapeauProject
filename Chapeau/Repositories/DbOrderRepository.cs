@@ -12,6 +12,7 @@ namespace Chapeau.Repositories
         {
             _connectionString = configuration.GetConnectionString("ChapeauDatabase");
         }
+
         public Order? GetOrderById(Order order)
         {
             try
@@ -43,26 +44,29 @@ namespace Chapeau.Repositories
                 throw new Exception("Error occurred while fetching the order by ID.", ex);
             }
         }
+
+
         public List<Order> GetRunningOrders(bool isFood)
         {
             List<Order> orders = new List<Order>();
 
             try
-            {
+            {          
+
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     string query = @"SELECT DISTINCT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus
-                                     FROM [Order] o
-                                     INNER JOIN OrderItem oi ON o.OrderId = oi.OrderId
-                                     INNER JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
-                                     WHERE mi.IsFood = @IsFood
-                                     AND o.OrderStatus IN (@Ordered, @Pending, @Preparing)
-                                     ORDER BY o.OrderTime ASC";
+                             FROM [Order] o
+                             INNER JOIN OrderItem oi ON o.OrderId = oi.OrderId
+                             INNER JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
+                             WHERE mi.IsFood = @IsFood
+                             AND OrderStatus NOT IN (@Settled, @Cancelled, @Paid, @Served)"";
+
+                             ORDER BY o.OrderTime ASC";
 
                     SqlCommand command = new SqlCommand(query, connection);
                     command.Parameters.AddWithValue("@IsFood", isFood);
                     command.Parameters.AddWithValue("@Ordered", OrderStatus.Ordered.ToString());
-                    command.Parameters.AddWithValue("@Pending", OrderStatus.Pending.ToString());
                     command.Parameters.AddWithValue("@Preparing", OrderStatus.Preparing.ToString());
 
                     connection.Open();
@@ -87,49 +91,8 @@ namespace Chapeau.Repositories
             return orders;
         }
 
-        public Order GetActiveOrderForTable(int tableId)
-        {
-            try
-            {
-                Order order = new Order();
-                using (SqlConnection connection = new SqlConnection(_connectionString))
-                {
-                    string query = @"
-                         SELECT OrderId, TableId, EmployeeId, OrderTime, WaitingTime, ServedTime, OrderStatus
-                         FROM [Order]
-                         WHERE TableId = @TableId
-                         AND OrderStatus NOT IN (@Settled, @Cancelled, @Paid, @Served)";
-
-                    SqlCommand command = new SqlCommand(query, connection);
-
-                    command.Parameters.AddWithValue("@TableId", tableId);
-                    command.Parameters.AddWithValue("@Settled", OrderStatus.Settled.ToString());
-                    command.Parameters.AddWithValue("@Cancelled", OrderStatus.Cancelled.ToString());
-                    command.Parameters.AddWithValue("@Paid", OrderStatus.Paid.ToString());
-                    command.Parameters.AddWithValue("@Served", OrderStatus.Served.ToString());
-
-                    connection.Open();
-
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            order = ReadOrder(reader);
-                        }
-                    }
-                }
-
-                return order;
-            }
-            catch (SqlException ex)
-            {
-                throw new Exception("Database error occurred while getting active order for table.", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Unexpected error occurred while getting active order for table.", ex);
-            }
-        }
+<<<<<<< HEAD
+        
         public List<Order> GetFinishedOrders(bool isFood)
         {
             List<Order> orders = new List<Order>();
@@ -139,12 +102,13 @@ namespace Chapeau.Repositories
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     string query = @"SELECT DISTINCT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus
-                                     FROM [Order] o
-                                     INNER JOIN OrderItem oi ON o.OrderId = oi.OrderId
-                                     INNER JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
-                                     WHERE mi.IsFood = @IsFood
-                                     AND o.OrderStatus IN (@Ready, @Served)
-                                     ORDER BY o.OrderTime DESC";
+                             FROM [Order] o
+                             INNER JOIN OrderItem oi ON o.OrderId = oi.OrderId
+                             INNER JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
+                             WHERE mi.IsFood = @IsFood
+                             AND o.OrderStatus IN (@Ready, @Served)
+                             AND CAST(o.OrderTime AS DATE) = CAST(GETDATE() AS DATE)
+                             ORDER BY o.OrderTime DESC";
 
                     SqlCommand command = new SqlCommand(query, connection);
                     command.Parameters.AddWithValue("@IsFood", isFood);
@@ -173,6 +137,7 @@ namespace Chapeau.Repositories
             return orders;
         }
 
+
         public void UpdateOrderStatus(Order order)
         {
             try
@@ -197,6 +162,7 @@ namespace Chapeau.Repositories
         }
 
 
+
         public void UpdateOrderItemStatus(OrderItem orderItem)
         {
             try
@@ -219,6 +185,8 @@ namespace Chapeau.Repositories
                 throw new Exception("Database error while updating order item status.", ex);
             }
         }
+
+
 
         public void UpdateCourseStatus(Order order, Category category, OrderItemStatus status)
         {
@@ -249,7 +217,61 @@ namespace Chapeau.Repositories
                 throw new Exception("Database error while updating course status.", ex);
             }
         }
-        
+
+
+
+
+
+        public Order GetActiveOrderForTable(int tableId)
+=======
+        public Order? GetActiveOrderForTable(int tableId)
+>>>>>>> origin/Dev
+        {
+            try
+            {
+                
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = @"
+                         SELECT OrderId, TableId, EmployeeId, OrderTime, WaitingTime, ServedTime, OrderStatus
+                         FROM [Order]
+                         WHERE TableId = @TableId
+                         AND OrderStatus NOT IN (@Settled, @Cancelled, @Paid, @Served)";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+
+                    command.Parameters.AddWithValue("@TableId", tableId);
+                    command.Parameters.AddWithValue("@Settled", OrderStatus.Settled.ToString());
+                    command.Parameters.AddWithValue("@Cancelled", OrderStatus.Cancelled.ToString());
+                    command.Parameters.AddWithValue("@Paid", OrderStatus.Paid.ToString());
+                    command.Parameters.AddWithValue("@Served", OrderStatus.Served.ToString());
+
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return ReadOrder(reader);
+                        }
+                    }
+                }
+
+                return null;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error occurred while getting active order for table.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Unexpected error occurred while getting active order for table.", ex);
+            }
+        }
+
+
+
+
         public List<OrderItem> GetOrderItemsByOrderId(int orderId, bool isFood)
         {
             List<OrderItem> items = new List<OrderItem>();
@@ -282,6 +304,9 @@ namespace Chapeau.Repositories
 
             return items;
         }
+
+
+
 
         public List<OrderItem> GetOrderItemsByOrderIdNoFilter(Order order)
         {
@@ -325,6 +350,9 @@ namespace Chapeau.Repositories
             }
         }
 
+
+
+
         public void CreateOrderWithItems(Order order)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -354,6 +382,10 @@ namespace Chapeau.Repositories
                 }
             }
         }
+
+
+
+
         private int CreateNewOrder(SqlConnection connection, SqlTransaction transaction, Order order)
         {
             try
@@ -385,6 +417,8 @@ namespace Chapeau.Repositories
                 throw new Exception("An unexpected error occurred while creating a new order.", ex);
             }
         }
+
+
         
         private void AddOrderItem(SqlConnection connection, SqlTransaction transaction, int orderId, OrderItem item)
         {
@@ -415,6 +449,8 @@ namespace Chapeau.Repositories
                 throw new Exception("An unexpected error occurred while adding order item.", ex);
             }
         }
+
+
         private void DecreaseItemStock(SqlConnection connection, SqlTransaction transaction, OrderItem item)
         {
 
@@ -477,6 +513,7 @@ namespace Chapeau.Repositories
                 throw new Exception("An unexpected error occurred while adding or updating an order item.", ex);
             }
         }
+
         public void AddItemsToExistingOrder(Order order, List<OrderItem> items)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -498,26 +535,34 @@ namespace Chapeau.Repositories
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        throw new Exception("An error occurred while saving the order and its items; all operations have been rolled back.", ex);
+                        throw new Exception(ex.ToString());
 
                     }
                 }
             }
         }
+
         //Ahmad Methods
-        public List<Order> GetRunningTableOrders(int tableId)
+        public Order? GetRunningTableOrder(int tableId)
         {
             try
             {
-                List<Order> orders = new List<Order>();
+                Order? order = null;
 
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    string query = $@"SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus 
-                  FROM [Order] o WHERE o.OrderStatus NOT IN ('{OrderStatus.Paid}', '{OrderStatus.Cancelled}', '{OrderStatus.Served}', '{OrderStatus.Settled}')
-                                                     AND o.TableId = @tableId
-                  ORDER BY o.OrderTime ASC";
-
+                    string query = $@"
+                                SELECT
+                                    o.OrderId,
+                                    o.TableId,
+                                    o.EmployeeId,
+                                    o.OrderTime,
+                                    o.ServedTime,
+                                    o.OrderStatus
+                                FROM [Order] o
+                                WHERE o.OrderStatus NOT IN('{OrderStatus.Paid}', '{OrderStatus.Cancelled}', '{OrderStatus.Served}', '{OrderStatus.Settled}')
+                
+                                AND o.TableId = @tableId";
 
                     SqlCommand command = new SqlCommand(query, connection);
 
@@ -527,22 +572,22 @@ namespace Chapeau.Repositories
 
                     SqlDataReader reader = command.ExecuteReader();
 
-                    while (reader.Read())
+                    if (reader.Read())
                     {
-                        orders.Add(ReadOrder(reader));
+                        order = ReadOrder(reader);
                     }
                 }
 
-                foreach (Order order in orders)
+                if (order != null)
                 {
                     order.OrderItems = GetOrderItemsByOrderIdNoFilter(order);
                 }
 
-                return orders;
+                return order;
             }
             catch (SqlException ex)
             {
-                throw new Exception("Failed to retrieve running orders.", ex);
+                throw new Exception("Failed to retrieve running order.", ex);
             }
         }
 
@@ -574,11 +619,11 @@ namespace Chapeau.Repositories
 
         }
 
-        public List<Order> GetActiveFoodOrders(int tableId)
+        public Order? GetActiveFoodOrDrinkOrder(int tableId, int isFood)
         {
             try
             {
-                List<Order> orders = new List<Order>();
+                Order? order = null;
 
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                    
@@ -604,7 +649,7 @@ namespace Chapeau.Repositories
                             o.OrderStatus NOT IN
                             ('{OrderStatus.Paid}', '{OrderStatus.Cancelled}', '{OrderStatus.Served}', '{OrderStatus.Settled}')
 
-                            AND mi.IsFood = 1
+                            AND mi.IsFood = @isFood
 
                             AND o.TableId = @tableId";
 
@@ -612,21 +657,26 @@ namespace Chapeau.Repositories
                     
 
                     command.Parameters.AddWithValue("@tableId", tableId);
-                    
+                    command.Parameters.AddWithValue("@isFood", isFood);
 
                     connection.Open();
 
                     SqlDataReader reader = command.ExecuteReader();
 
-                    
 
-                    while (reader.Read())
+
+                    if (reader.Read())
                     {
-                        orders.Add(ReadOrder(reader));
+                        order = ReadOrder(reader);
+                    }
+
+                    if (order != null)
+                    {
+                        order.OrderItems = GetOrderItemsByOrderIdNoFilter(order);
                     }
                 }
 
-                return orders;
+                return order;
             }
             catch (SqlException ex)
             {
@@ -635,6 +685,7 @@ namespace Chapeau.Repositories
             
         }
 
+<<<<<<< HEAD
         public List<Order> GetActiveDrinkOrders(int tableId)
         {
             try
@@ -694,6 +745,9 @@ namespace Chapeau.Repositories
             }
             
         }
+=======
+        
+>>>>>>> origin/Dev
 
         public List<OrderItem> GetOrderItemsByOrderId(Order order)
         {
