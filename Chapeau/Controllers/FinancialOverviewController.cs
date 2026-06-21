@@ -1,9 +1,9 @@
-﻿using Chapeau.Services;
-using Chapeau.ViewModels;
+﻿using Chapeau.ViewModels;
 using Chapeau.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Chapeau.Enums;
+using Chapeau.Services.Interfaces;
 
 namespace Chapeau.Controllers
 {

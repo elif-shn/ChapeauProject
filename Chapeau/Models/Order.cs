@@ -19,6 +19,7 @@ namespace Chapeau.Models
         {
             get { return DateTime.Now - OrderTime; }
         }
+
         public Order() { }
 
         public Order(int orderId, int tableId, Table table, Employee employee, DateTime orderTime, DateTime? servedTime, OrderStatus orderStatus)
@@ -32,7 +33,23 @@ namespace Chapeau.Models
             OrderStatus = orderStatus;
             OrderItems = new List<OrderItem>();
         }
+        public void UpdateOrderStatus()
+        {
+            if (OrderItems.All(i => i.OrderItemStatus == OrderItemStatus.Ready))
+            {
+                OrderStatus = OrderStatus.Ready;
+
+            }
+            else if (OrderItems.Any(i => i.OrderItemStatus == OrderItemStatus.Preparing))
+            {
+                OrderStatus = OrderStatus.Preparing;
+            }
+            else
+            {
+                OrderStatus = OrderStatus.Ordered;
+            }
 
 
+        }
     }
 }

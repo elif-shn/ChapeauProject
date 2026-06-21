@@ -1,0 +1,26 @@
+﻿@using Chapeau.Enums
+@model List<Chapeau.Models.Order>
+
+@{
+    ViewData["Title"] = "Finished Orders";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Finished Orders</h2>
+    <div>
+        <button onclick="location.reload();" class="btn btn-outline-secondary me-2">Refresh</button>
+        <a asp-action="GetRunningKitchenOrders" class="btn btn-outline-primary">Back to Running Orders</a>
+
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No finished orders today.</div>
+}
+else
+{
+    <div class="row">
+        @await Html.PartialAsync("_OrderCardPartial", Model)
+    </div>
+}
