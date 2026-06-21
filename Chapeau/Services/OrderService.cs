@@ -40,12 +40,38 @@ namespace Chapeau.Services
         public void UpdateOrderItemStatus(OrderItem orderItem)
         {
             _orderRepository.UpdateOrderItemStatus(orderItem);
+            
         }
-
         public void UpdateCourseStatus(Order order, Category category, OrderItemStatus status)
         {
             _orderRepository.UpdateCourseStatus(order, category, status);
+
+            Order? updatedOrder = _orderRepository.GetOrderById(order);
+
+            if (updatedOrder != null)
+            {
+                updatedOrder.OrderItems =
+                    _orderRepository.GetOrderItemsByOrderId(updatedOrder.OrderId, true);
+
+                // ADD THIS HERE
+                System.Diagnostics.Debug.WriteLine(
+                    $"Items loaded: {updatedOrder.OrderItems.Count}"
+                );
+
+                foreach (var item in updatedOrder.OrderItems)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        $"{item.OrderItemId} - {item.OrderItemStatus}"
+                    );
+                }
+
+                updatedOrder.UpdateOrderStatus();
+
+                _orderRepository.UpdateOrderStatus(updatedOrder);
+            }
         }
+
+
 
         public Order? GetOrderById(Order order)
         {
