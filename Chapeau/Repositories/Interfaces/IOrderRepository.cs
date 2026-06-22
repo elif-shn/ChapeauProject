@@ -19,6 +19,7 @@ public interface IOrderRepository
     List<OrderItem> GetOrderItemsByOrderId(int orderId, bool isFood);
     List<OrderItem> GetOrderItemsByOrderIdNoFilter(Order order);
     void MarkOrderAsServed(int orderId);
+    List<Order> GetRunningTableOrders(int tableId);
 }
 
 
