@@ -10,6 +10,7 @@ namespace Chapeau.Controllers
 {
     public class KitchenBarController : Controller
     {
+
         private readonly IOrderService _orderServices;
 
         public KitchenBarController(IOrderService orderServices)
@@ -27,12 +28,14 @@ namespace Chapeau.Controllers
         {
             try
             {
+                ViewBag.Department = "Kitchen";
+
                 List<Order> orders = _orderServices.GetRunningOrders(true);
                 return View("GetRunningOrders", orders);
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = ex.Message;
+                TempData["ErrorMessage"] = ex.InnerException?.Message ?? ex.Message;
                 return View("GetRunningOrders", new List<Order>());
             }
         }
@@ -42,6 +45,8 @@ namespace Chapeau.Controllers
         {
             try
             {
+                ViewBag.Department = "Bar";
+
                 List<Order> orders = _orderServices.GetRunningOrders(false);
                 return View("GetRunningOrders", orders);
             }
