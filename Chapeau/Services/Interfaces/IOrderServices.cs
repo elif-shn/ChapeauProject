@@ -20,6 +20,7 @@ public interface IOrderService
     List<OrderItem> GetOrderItemsByOrderId(int orderId, bool isFood);
     List<OrderItem> GetOrderItemsByOrderIdNoFilter(Order order);
     void MarkOrderAsServed(int orderId);
+    void AddItemToCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment);
 }
 
 

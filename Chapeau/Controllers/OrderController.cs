@@ -21,7 +21,6 @@ namespace Chapeau.Controllers
             _menuService = menuService;
             _orderServices = orderServices;
         }
-
         public IActionResult Index()
         {
             return View();
@@ -88,6 +87,15 @@ namespace Chapeau.Controllers
                 List<OrderItem> currentOrder = GetCurrentOrder();
 
                 _orderServices.AddItemToCurrentOrder(currentOrder, model.NewOrderItem.MenuItem.MenuItemId, model.NewOrderItem.Comment);
+                if (currentOrder.Any(oi => oi.MenuItem.MenuItemId == model.NewOrderItem.MenuItem.MenuItemId && oi.Comment == model.NewOrderItem.Comment))
+                {
+                    var orderItem = currentOrder.First(oi => oi.MenuItem.MenuItemId == model.NewOrderItem.MenuItem.MenuItemId && oi.Comment == model.NewOrderItem.Comment);
+                    orderItem.Decrease();
+                    if (orderItem.OrderItemQuantity <= 0)
+                    {
+                        currentOrder.Remove(orderItem);
+                    }
+                }
 
                 SaveCurrentOrder(currentOrder);
 
@@ -131,7 +139,7 @@ namespace Chapeau.Controllers
                     OrderItems = currentOrder,
                 };
 
-                _orderServices.SendOrder(order);
+                _orderServices.CreateOrderWithItems(order);
 
                 HttpContext.Session.Remove(CurrentOrderSessionKey);
 
@@ -165,7 +173,19 @@ namespace Chapeau.Controllers
             {
                 List<OrderItem> currentOrder = GetCurrentOrder();
 
-                _orderServices.DecreaseItemQuantityInCurrentOrder(currentOrder,model.NewOrderItem.MenuItem.MenuItemId,model.NewOrderItem.Comment);
+             
+                var orderItem = currentOrder.FirstOrDefault(oi =>
+                    oi.MenuItem.MenuItemId == model.NewOrderItem.MenuItem.MenuItemId &&
+                    oi.Comment == model.NewOrderItem.Comment);
+
+                if (orderItem != null)
+                {
+                    orderItem.Decrease();
+                    if (orderItem.OrderItemQuantity <= 0)
+                    {
+                        currentOrder.Remove(orderItem);
+                    }
+                }
 
                 SaveCurrentOrder(currentOrder);
 
@@ -191,7 +211,15 @@ namespace Chapeau.Controllers
             {
                 List<OrderItem> currentOrder = GetCurrentOrder();
 
-                _orderServices.DeleteItem(currentOrder, model.NewOrderItem.MenuItem.MenuItemId, model.NewOrderItem.Comment);
+                // Remove the item from the current order manually, since IOrderService does not have DeleteItem
+                var orderItem = currentOrder.FirstOrDefault(oi =>
+                    oi.MenuItem.MenuItemId == model.NewOrderItem.MenuItem.MenuItemId &&
+                    oi.Comment == model.NewOrderItem.Comment);
+
+                if (orderItem != null)
+                {
+                    currentOrder.Remove(orderItem);
+                }
 
                 SaveCurrentOrder(currentOrder);
 
@@ -217,7 +245,14 @@ namespace Chapeau.Controllers
             {
                 List<OrderItem> currentOrder = GetCurrentOrder();
 
-                _orderServices.AddNote(currentOrder, model.NewOrderItem.MenuItem.MenuItemId, model.NewOrderItem.Comment);
+                // Manually add or update the comment for the matching order item
+                var orderItem = currentOrder.FirstOrDefault(oi =>
+                    oi.MenuItem.MenuItemId == model.NewOrderItem.MenuItem.MenuItemId);
+
+                if (orderItem != null)
+                {
+                    orderItem.Comment = model.NewOrderItem.Comment;
+                }
 
                 SaveCurrentOrder(currentOrder);
 
