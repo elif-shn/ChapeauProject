@@ -31,9 +31,8 @@ namespace Chapeau.Controllers
                 {
                     Table = table,
 
-                    HasFoodOrders = _orderServices.GetActiveFoodOrders(table.TableId)?.Count > 0,
-
-                    HasDrinkOrders = _orderServices.GetActiveDrinkOrders(table.TableId)?.Count > 0
+                    HasFoodOrders = _orderServices.GetActiveFoodOrDrinkOrder(table.TableId, 1) != null,
+                    HasDrinkOrders = _orderServices.GetActiveFoodOrDrinkOrder(table.TableId, 0) != null
                 };
 
                 overview.Add(tableOverview);

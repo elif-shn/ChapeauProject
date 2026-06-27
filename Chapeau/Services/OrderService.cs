@@ -22,7 +22,7 @@ namespace Chapeau.Services
         }
 
         public List<Order> GetRunningTableOrders(int tableId)
-        { 
+        {
             return _orderRepository.GetRunningTableOrders(tableId);
         }
 
@@ -30,19 +30,34 @@ namespace Chapeau.Services
         {
             return _orderRepository.GetFinishedOrders(isFood);
         }
-        public void UpdateOrderStatus(Order order)
-
-        { _orderRepository.UpdateOrderStatus(order); }
-
-        public void UpdateOrderItemStatus(OrderItem orderItem)
+        public void UpdateOrderStatus(Order order, bool isFood)
         {
-
-            _orderRepository.UpdateOrderItemStatus(orderItem);
+            order.OrderItems = _orderRepository.GetOrderItemsByOrderId(order.OrderId, isFood);
+            order.UpdateOrderStatus();
+            _orderRepository.UpdateOrderStatus(order);
         }
 
-        public void UpdateCourseStatus(Order order, Category category, OrderItemStatus status)
+        public void UpdateOrderItemStatus(OrderItem orderItem, Order order, bool isFood)
+        {
+            if (orderItem.OrderItemStatus == OrderItemStatus.Ordered)
+            {
+                orderItem.OrderItemStatus = OrderItemStatus.Preparing;
+            }
+            else if (orderItem.OrderItemStatus == OrderItemStatus.Preparing)
+            {
+                orderItem.OrderItemStatus = OrderItemStatus.Ready;
+            }
+
+            _orderRepository.UpdateOrderItemStatus(orderItem);
+            order.OrderItems = _orderRepository.GetOrderItemsByOrderId(order.OrderId, isFood);
+            order.UpdateOrderStatus();
+            _orderRepository.UpdateOrderStatus(order);
+        }
+
+        public void UpdateCourseStatus(Order order, Category category, OrderItemStatus status, bool isFood)
         {
             _orderRepository.UpdateCourseStatus(order, category, status);
+            order.OrderItems = _orderRepository.GetOrderItemsByOrderId(order.OrderId, isFood);
             order.UpdateOrderStatus();
             _orderRepository.UpdateOrderStatus(order);
         }
@@ -56,7 +71,6 @@ namespace Chapeau.Services
         {
             return _orderRepository.GetActiveOrderForTable(tableId);
         }
-
 
         public void AddItemToCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "")
         {
@@ -129,23 +143,6 @@ namespace Chapeau.Services
             _orderRepository.MarkOrderAsServed(orderId);
         }
 
-        public List<Order> GetActiveDrinkOrders(int tableId)
-        {
-            // There is no GetActiveDrinkOrders in IOrderRepository.
-            // Use GetActiveFoodOrDrinkOrder or GetRunningTableOrders as appropriate.
-            // Here, assuming you want all active drink orders for a table:
-            var order = _orderRepository.GetActiveFoodOrDrinkOrder(tableId, 0); // 0 for drinks, if that's the convention
-            return order != null ? new List<Order> { order } : new List<Order>();
-        }
-
-        public List<Order> GetActiveFoodOrders(int tableId)
-        {
-            // There is no GetActiveFoodOrders in IOrderRepository.
-            // Use GetActiveFoodOrDrinkOrder with isFood = 1 (assuming 1 means food).
-            var order = _orderRepository.GetActiveFoodOrDrinkOrder(tableId, 1);
-            return order != null ? new List<Order> { order } : new List<Order>();
-        }
-
         public void CreateOrderWithItems(Order order)
         {
             _orderRepository.CreateOrderWithItems(order);
@@ -155,7 +152,10 @@ namespace Chapeau.Services
         {
             _orderRepository.AddItemsToExistingOrder(order, items);
         }
-
+        public Order? GetActiveFoodOrDrinkOrder(int tableId, int isFood)
+        {
+            return _orderRepository.GetActiveFoodOrDrinkOrder(tableId, isFood);
+        }
         public List<OrderItem> GetOrderItemsByOrderId(int orderId, bool isFood)
         {
             return _orderRepository.GetOrderItemsByOrderId(orderId, isFood);
@@ -167,3 +167,4 @@ namespace Chapeau.Services
         }
     }
 }
+

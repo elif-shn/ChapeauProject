@@ -1,11 +1,10 @@
 ﻿@using Chapeau.Models
 @using Chapeau.Enums
-
-@model Chapeau.Models.Order
+@model List<Chapeau.Models.Order>
 
 <h2>Running Orders</h2>
 
-@if (Model == null)
+@if (Model == null || !Model.Any())
 {
     <div class="alert alert-info">
         No running orders for this table.
@@ -13,93 +12,51 @@
 }
 else
 {
+    @foreach (Order order in Model)
+    {
         <div class="card mb-4">
-
             <div class="card-header d-flex justify-content-between align-items-center">
-
                 <div>
-                    <h4>Order #@Model.OrderId</h4>
-
+                    <h4>Order #@order.OrderId</h4>
                     <p>
                         Status:
-                        <strong>@Model.OrderStatus</strong>
+                        <strong>@order.OrderStatus</strong>
                     </p>
-
-                    
                 </div>
-
                 <div>
-                    @if (Model.OrderStatus == OrderStatus.Ready)
+                    @if (order.OrderStatus == OrderStatus.Ready)
                     {
-                        <form asp-action="MarkServed"
-                              method="post">
-
-                            <input type="hidden"
-                                   name="orderId"
-                                   value="@Model.OrderId" />
-
-                            <input type="hidden"
-                                   name="tableId"
-                                   value="@Model.TableId" />
-
-                            <button type="submit"
-                                    class="btn btn-success">
-                                Serve
-                            </button>
-
+                        <form asp-action="MarkServed" method="post">
+                            <input type="hidden" name="orderId" value="@order.OrderId" />
+                            <input type="hidden" name="tableId" value="@order.TableId" />
+                            <button type="submit" class="btn btn-success">Serve</button>
                         </form>
                     }
                 </div>
-
             </div>
-
             <div class="card-body">
-
                 <table class="table">
-
                     <thead>
                         <tr>
                             <th>Item</th>
                             <th>Quantity</th>
                             <th>Status</th>
-                            
                         </tr>
                     </thead>
-
                     <tbody>
-
-                        @foreach (OrderItem item in Model.OrderItems)
+                        @foreach (OrderItem item in order.OrderItems)
                         {
                             <tr>
-
-                                <td>
-                                    @item.MenuItem.MenuItemName
-                                </td>
-
-                                <td>
-                                    @item.OrderItemQuantity
-                                </td>
-
-                                <td>
-                                    @item.OrderItemStatus
-                                </td>
-
-                                
-
+                                <td>@item.MenuItem.MenuItemName</td>
+                                <td>@item.OrderItemQuantity</td>
+                                <td>@item.OrderItemStatus</td>
                             </tr>
                         }
-
                     </tbody>
-
                 </table>
-
             </div>
-
         </div>
-   
+    }
 }
 
-<a asp-action="Index"
-   class="btn btn-secondary">
-    Back
-</a>
+<a asp-action="Index" class="btn btn-secondary">Back</a>
