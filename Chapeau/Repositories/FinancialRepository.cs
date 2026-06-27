@@ -12,7 +12,7 @@ namespace Chapeau.Repositories
 
         public FinancialRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("ChapeauDataBase");
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
         public FinancialSummary GetFinancialData(DateTime startDate, DateTime endDate)

@@ -12,7 +12,7 @@ namespace Chapeau.Repositories
 
         public MenuRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("ChapeauDataBase");
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
         public List<Menu> GetMenus(Card? card, Category? category, bool onlyActive)
         {
