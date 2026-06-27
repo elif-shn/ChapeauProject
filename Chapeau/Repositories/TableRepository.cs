@@ -14,7 +14,7 @@ namespace Chapeau.Repositories
         public TableRepository(IConfiguration configuration)
         {
             _connectionString =
-                configuration.GetConnectionString("ChapeauDataBase");
+                configuration.GetConnectionString("DefaultConnection");
 
         }
 
