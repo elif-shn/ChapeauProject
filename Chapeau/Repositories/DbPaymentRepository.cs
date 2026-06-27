@@ -14,37 +14,6 @@ namespace Chapeau.Repositories
             _connectionString = configuration.GetConnectionString("DefaultConnection") ?? "";
         }
 
-        public List<Table> GetAllTables()
-        {
-            List<Table> tables = new List<Table>();
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            {
-                string query = "SELECT TableId, TableCapacity, TableStatus FROM [Table]";
-
-                SqlCommand command = new SqlCommand(query, connection);
-
-                connection.Open();
-
-                SqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    Table table = new Table();
-
-                    table.TableId = Convert.ToInt32(reader["TableId"]);
-                    table.TableCapacity = Convert.ToInt32(reader["TableCapacity"]);
-                    table.TableStatus = Enum.Parse<TableStatus>(reader["TableStatus"].ToString());
-
-                    tables.Add(table);
-                }
-
-                reader.Close();
-            }
-
-            return tables;
-        }
-
         public Order? GetActiveOrderByTableId(int tableId)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -53,7 +22,7 @@ namespace Chapeau.Repositories
                     "SELECT TOP 1 OrderId, TableId, OrderTime, OrderStatus " +
                     "FROM [Order] " +
                     "WHERE TableId = @TableId " +
-                    "AND OrderStatus NOT IN ('Paid', 'Cancelled') " +
+                    "AND OrderStatus NOT IN ('Paid', 'Cancelled', 'Settled') " +
                     "ORDER BY OrderTime DESC";
 
                 SqlCommand command = new SqlCommand(query, connection);
@@ -169,6 +138,23 @@ namespace Chapeau.Repositories
             }
         }
 
+        public decimal GetTotalPaidByOrderId(int orderId)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = "SELECT ISNULL(SUM(TotalAmount), 0) FROM Payment WHERE OrderId = @OrderId";
+
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@OrderId", orderId);
+
+                connection.Open();
+
+                object result = command.ExecuteScalar();
+
+                return Convert.ToDecimal(result);
+            }
+        }
+
         public void UpdateOrderStatusToPaid(int orderId)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -179,23 +165,6 @@ namespace Chapeau.Repositories
 
                 command.Parameters.AddWithValue("@OrderStatus", OrderStatus.Paid.ToString());
                 command.Parameters.AddWithValue("@OrderId", orderId);
-
-                connection.Open();
-
-                command.ExecuteNonQuery();
-            }
-        }
-
-        public void UpdateTableStatusToFree(int tableId)
-        {
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            {
-                string query = "UPDATE [Table] SET TableStatus = @TableStatus WHERE TableId = @TableId";
-
-                SqlCommand command = new SqlCommand(query, connection);
-
-                command.Parameters.AddWithValue("@TableStatus", "Free");
-                command.Parameters.AddWithValue("@TableId", tableId);
 
                 connection.Open();
 
