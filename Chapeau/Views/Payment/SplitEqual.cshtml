@@ -1,0 +1,296 @@
+﻿@using Chapeau.Enums
+@model Chapeau.ViewModels.SplitPaymentViewModel
+
+@{
+    ViewData["Title"] = "Split Bill Equally";
+}
+
+<div class="split-page">
+    <div class="split-header">
+        <div>
+            <h1>Split Bill Equally</h1>
+            <p>Divide the remaining bill equally between guests.</p>
+        </div>
+
+        <a asp-controller="Payment"
+           asp-action="LoadBill"
+           asp-route-tableId="@Model.TableId"
+           class="back-link">
+            Back to Bill
+        </a>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert-message">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="split-summary">
+        <div>
+            <span>Table</span>
+            <strong>@Model.TableId</strong>
+        </div>
+
+        <div>
+            <span>Total Bill</span>
+            <strong>€ @Model.TotalBillAmount.ToString("0.00")</strong>
+        </div>
+
+        <div>
+            <span>Already Paid</span>
+            <strong>€ @Model.TotalPaidAmount.ToString("0.00")</strong>
+        </div>
+
+        <div>
+            <span>Remaining</span>
+            <strong>€ @Model.RemainingAmount.ToString("0.00")</strong>
+        </div>
+    </div>
+
+    <form asp-controller="Payment" asp-action="SplitEqual" method="post">
+        <input type="hidden" asp-for="TableId" />
+        <input type="hidden" asp-for="OrderId" />
+        <input type="hidden" asp-for="TotalBillAmount" />
+        <input type="hidden" asp-for="TotalPaidAmount" />
+        <input type="hidden" asp-for="RemainingAmount" />
+        <input type="hidden" asp-for="IsEqualSplit" value="true" />
+
+        <div class="people-card">
+            <label>Number Of People</label>
+
+            <input asp-for="NumberOfPeople"
+                   id="numberOfPeople"
+                   type="number"
+                   min="1"
+                   max="10"
+                   oninput="createPaymentRows()" />
+
+            <p>
+                Amount per person:
+                <strong>€ <span id="amountPerPerson">0.00</span></strong>
+            </p>
+        </div>
+
+        <div class="payment-card">
+            <h2>Guest Payments</h2>
+
+            <div id="paymentRows">
+            </div>
+        </div>
+
+        <button type="submit" class="confirm-button">
+            Confirm Split Payment
+        </button>
+    </form>
+</div>
+
+<style>
+    .split-page {
+        max-width: 1100px;
+        margin: 30px auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+
+    .split-header {
+        background: linear-gradient(135deg, #1f2937, #374151);
+        color: white;
+        border-radius: 18px;
+        padding: 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 22px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+        .split-header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+        .split-header p {
+            margin: 8px 0 0 0;
+            color: #d1d5db;
+        }
+
+    .back-link {
+        background-color: white;
+        color: #1f2937;
+        padding: 13px 20px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .alert-message {
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 14px 18px;
+        border-radius: 12px;
+        margin-bottom: 18px;
+        font-weight: bold;
+    }
+
+    .split-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+
+        .split-summary div {
+            background-color: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+
+        .split-summary span {
+            display: block;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .split-summary strong {
+            font-size: 22px;
+            color: #111827;
+        }
+
+    .people-card,
+    .payment-card {
+        background-color: white;
+        padding: 24px;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        margin-bottom: 22px;
+    }
+
+        .people-card label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .people-card input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            margin-bottom: 14px;
+        }
+
+        .payment-card h2 {
+            margin-top: 0;
+            color: #111827;
+        }
+
+    .person-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 2fr;
+        gap: 12px;
+        margin-bottom: 14px;
+        padding: 16px;
+        background-color: #f9fafb;
+        border-radius: 14px;
+    }
+
+        .person-row label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #374151;
+        }
+
+        .person-row input,
+        .person-row select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 9px;
+        }
+
+    .confirm-button {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 13px;
+        background-color: #16a34a;
+        color: white;
+        font-size: 17px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    @@media (max-width: 900px) {
+        .split-summary {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .person-row {
+            grid-template-columns: 1fr;
+        }
+
+        .split-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+        }
+    }
+</style>
+
+<script>
+    function createPaymentRows() {
+        var peopleInput = document.getElementById("numberOfPeople");
+        var numberOfPeople = parseInt(peopleInput.value);
+        var paymentRows = document.getElementById("paymentRows");
+
+        var remainingAmount = parseFloat('@Model.RemainingAmount.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)');
+
+        if (isNaN(numberOfPeople) || numberOfPeople <= 0) {
+            numberOfPeople = 1;
+        }
+
+        var amountPerPerson = remainingAmount / numberOfPeople;
+
+        document.getElementById("amountPerPerson").innerText = amountPerPerson.toFixed(2);
+
+        paymentRows.innerHTML = "";
+
+        for (var i = 0; i < numberOfPeople; i++) {
+            var row = document.createElement("div");
+            row.className = "person-row";
+
+            row.innerHTML =
+                '<div>' +
+                    '<label>Amount</label>' +
+                    '<input name="Payments[' + i + '].AmountToPay" value="' + amountPerPerson.toFixed(2) + '" readonly />' +
+                '</div>' +
+
+                '<div>' +
+                    '<label>Tip</label>' +
+                    '<input name="Payments[' + i + '].TipAmount" type="number" step="0.01" min="0" value="0" />' +
+                '</div>' +
+
+                '<div>' +
+                    '<label>Payment Method</label>' +
+                    '<select name="Payments[' + i + '].PaymentMethod">' +
+                        '<option value="1">Cash</option>' +
+                        '<option value="2">Debit Card</option>' +
+                        '<option value="3">Credit Card</option>' +
+                    '</select>' +
+                '</div>' +
+
+                '<div>' +
+                    '<label>Feedback</label>' +
+                    '<input name="Payments[' + i + '].Feedback" placeholder="Guest feedback" />' +
+                '</div>';
+
+            paymentRows.appendChild(row);
+        }
+    }
+
+    createPaymentRows();
+</script>

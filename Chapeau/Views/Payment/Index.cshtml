@@ -2,7 +2,7 @@
 @model Chapeau.ViewModels.PaymentViewModel
 
 @{
-    ViewData["Title"] = "Payment Deashboard";
+    ViewData["Title"] = "Payment Dashboard";
 }
 
 <div class="payment-page">
@@ -11,6 +11,7 @@
             <h1>Payment Dashboard</h1>
             <p>Select a table, load the bill and complete the payment.</p>
         </div>
+
         <div class="payment-badge">
             Chapeau
         </div>
@@ -34,21 +35,34 @@
         <label>Select Table</label>
 
         <div class="search-wrapper">
-            <input type="text" id="tableSearch" placeholder="Click here to search table..." onfocus="showTablePopup()" onkeyup="filterTables()" />
-            <button type="button" onclick="showTablePopup()">Search</button>
+            <input type="text"
+                   id="tableSearch"
+                   placeholder="Search table number or status..."
+                   onkeyup="filterTables()" />
+
+            <button type="button" onclick="openTablePopup()">
+                Show Tables
+            </button>
         </div>
 
         <div id="tablePopup" class="table-popup">
-            @foreach (var table in Model.Tables)
-            {
-                <a asp-controller="Payment"
-                   asp-action="LoadBill"
-                   asp-route-tableId="@table.TableId"
-                   class="table-option">
-                    <span>Table @table.TableId</span>
-                    <small>@table.TableStatus</small>
-                </a>
-            }
+            <div class="popup-header">
+                <h3>Select a Table</h3>
+                <button type="button" onclick="closeTablePopup()">×</button>
+            </div>
+
+            <div id="tableList">
+                @foreach (var table in Model.Tables)
+                {
+                    <a asp-controller="Payment"
+                       asp-action="LoadBill"
+                       asp-route-tableId="@table.TableId"
+                       class="table-option">
+                        <span>Table @table.TableId</span>
+                        <small>@table.TableStatus</small>
+                    </a>
+                }
+            </div>
         </div>
     </div>
 
@@ -56,6 +70,7 @@
         <div class="items-card">
             <div class="card-title">
                 <h2>Ordered Items</h2>
+
                 @if (Model.TableId > 0)
                 {
                     <span>Table @Model.TableId</span>
@@ -84,12 +99,14 @@
                             <th>Total</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         @foreach (var item in Model.OrderItems)
                         {
                             <tr>
                                 <td>
                                     <strong>@item.MenuItem.MenuItemName</strong>
+
                                     @if (!string.IsNullOrEmpty(item.Comment))
                                     {
                                         <small>@item.Comment</small>
@@ -99,9 +116,16 @@
                                         <small>No comment</small>
                                     }
                                 </td>
+
                                 <td>@item.OrderItemQuantity</td>
-                                <td>€ @item.MenuItem.MenuItemPrice.ToString("0.00")</td>
-                                <td>€ @((item.MenuItem.MenuItemPrice * item.OrderItemQuantity).ToString("0.00"))</td>
+
+                                <td>
+                                    € @item.MenuItem.MenuItemPrice.ToString("0.00")
+                                </td>
+
+                                <td>
+                                    € @((item.MenuItem.MenuItemPrice * item.OrderItemQuantity).ToString("0.00"))
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -132,12 +156,37 @@
                 <strong>€ <span id="totalAmount">@Model.TotalAmount.ToString("0.00")</span></strong>
             </div>
 
-            <form asp-controller="Payment" asp-action="ConfirmPayment" method="post" class="payment-form">
+            @if (Model.OrderId > 0)
+            {
+                <div class="split-buttons">
+                    <a asp-controller="Payment"
+                       asp-action="SplitEqual"
+                       asp-route-tableId="@Model.TableId"
+                       class="split-equal-button">
+                        Split Equally
+                    </a>
+
+                    <a asp-controller="Payment"
+                       asp-action="SplitDifferent"
+                       asp-route-tableId="@Model.TableId"
+                       class="split-different-button">
+                        Split Different
+                    </a>
+                </div>
+            }
+
+            <form asp-controller="Payment"
+                  asp-action="ConfirmPayment"
+                  method="post"
+                  class="payment-form">
+
                 <input type="hidden" asp-for="OrderId" />
                 <input type="hidden" asp-for="TableId" />
 
                 <label>Tip Amount</label>
+
                 <input asp-for="TipAmount"
+                       id="TipAmount"
                        type="number"
                        step="0.01"
                        min="0"
@@ -145,6 +194,7 @@
                        oninput="updateTotal()" />
 
                 <label>Payment Method</label>
+
                 <select asp-for="PaymentMethod">
                     <option value="@PaymentMethod.Cash">Cash</option>
                     <option value="@PaymentMethod.DebitCard">Debit Card</option>
@@ -152,21 +202,26 @@
                 </select>
 
                 <label>Guest Feedback</label>
-                <textarea asp-for="Feedback" placeholder="Write guest feedback here..."></textarea>
+
+                <textarea asp-for="Feedback"
+                          placeholder="Write guest feedback here..."></textarea>
 
                 @if (Model.OrderId > 0)
                 {
-                    <button type="submit" class="confirm-button">Confirm Payment</button>
+                    <button type="submit" class="confirm-button">
+                        Confirm Payment
+                    </button>
                 }
                 else
                 {
-                    <button type="button" class="confirm-button disabled-button">Confirm Payment</button>
+                    <button type="button" class="confirm-button disabled-button">
+                        Confirm Payment
+                    </button>
                 }
             </form>
         </div>
     </div>
 </div>
-
 <style>
     .payment-page {
         max-width: 1200px;
@@ -205,20 +260,19 @@
         font-weight: bold;
     }
 
-    .table-search-card {
+    .table-search-card,
+    .items-card,
+    .summary-card {
         background-color: white;
         border-radius: 16px;
         padding: 22px;
-        margin-bottom: 22px;
         box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-        position: relative;
     }
 
-        .table-search-card label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
+    .table-search-card {
+        margin-bottom: 22px;
+        position: relative;
+    }
 
     .search-wrapper {
         display: flex;
@@ -231,7 +285,6 @@
             border: 1px solid #d1d5db;
             border-radius: 10px;
             font-size: 16px;
-            background-color: #f9fafb;
         }
 
         .search-wrapper button {
@@ -244,6 +297,10 @@
             cursor: pointer;
         }
 
+            .search-wrapper button:hover {
+                background-color: #1d4ed8;
+            }
+
     .table-popup {
         display: none;
         position: absolute;
@@ -254,10 +311,33 @@
         border-radius: 14px;
         box-shadow: 0 14px 36px rgba(0,0,0,0.18);
         padding: 14px;
-        z-index: 10;
-        max-height: 260px;
+        z-index: 100;
+        max-height: 320px;
         overflow-y: auto;
     }
+
+    .popup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+        .popup-header h3 {
+            margin: 0;
+        }
+
+        .popup-header button {
+            border: none;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
 
     .table-option {
         display: flex;
@@ -274,26 +354,10 @@
             background-color: #dbeafe;
         }
 
-        .table-option span {
-            font-weight: bold;
-        }
-
-        .table-option small {
-            color: #6b7280;
-        }
-
     .dashboard-grid {
         display: grid;
         grid-template-columns: 2fr 1fr;
         gap: 22px;
-    }
-
-    .items-card,
-    .summary-card {
-        background-color: white;
-        border-radius: 18px;
-        padding: 24px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
     }
 
     .card-title {
@@ -302,12 +366,6 @@
         align-items: center;
         margin-bottom: 18px;
     }
-
-        .card-title h2,
-        .summary-card h2 {
-            margin: 0;
-            color: #111827;
-        }
 
         .card-title span {
             background-color: #eef2ff;
@@ -323,22 +381,10 @@
         border-collapse: collapse;
     }
 
-        .payment-table th {
-            text-align: left;
-            color: #6b7280;
-            border-bottom: 1px solid #e5e7eb;
-            padding: 12px;
-        }
-
+        .payment-table th,
         .payment-table td {
-            padding: 14px 12px;
-            border-bottom: 1px solid #f3f4f6;
-        }
-
-        .payment-table small {
-            display: block;
-            margin-top: 4px;
-            color: #6b7280;
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
     .summary-row {
@@ -359,12 +405,29 @@
         font-size: 20px;
     }
 
-    .payment-form label {
-        display: block;
-        margin-top: 14px;
-        margin-bottom: 6px;
+    .split-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .split-equal-button,
+    .split-different-button {
+        flex: 1;
+        text-align: center;
+        text-decoration: none;
+        color: white;
+        padding: 13px;
+        border-radius: 12px;
         font-weight: bold;
-        color: #374151;
+    }
+
+    .split-equal-button {
+        background-color: #f59e0b;
+    }
+
+    .split-different-button {
+        background-color: #0ea5e9;
     }
 
     .payment-form input,
@@ -374,23 +437,20 @@
         padding: 13px;
         border-radius: 10px;
         border: 1px solid #d1d5db;
-        font-size: 15px;
+        margin-bottom: 12px;
     }
 
     .payment-form textarea {
         min-height: 120px;
-        resize: vertical;
     }
 
     .confirm-button {
         width: 100%;
-        margin-top: 20px;
         padding: 15px;
         border: none;
         border-radius: 12px;
         background-color: #16a34a;
         color: white;
-        font-size: 16px;
         font-weight: bold;
         cursor: pointer;
     }
@@ -400,53 +460,39 @@
         cursor: not-allowed;
     }
 
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        background-color: #f9fafb;
-        border-radius: 14px;
-        color: #6b7280;
-    }
-
-        .empty-state h3 {
-            color: #111827;
-            margin-bottom: 8px;
-        }
-
     .alert-message {
         background-color: #fee2e2;
         color: #991b1b;
-        padding: 14px 18px;
-        border-radius: 12px;
+        padding: 14px;
+        border-radius: 10px;
         margin-bottom: 18px;
-        font-weight: bold;
     }
 
-    @@media (max-width: 900px) {
-        .dashboard-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .payment-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 16px;
-        }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
     }
 </style>
 
 <script>
-    function showTablePopup() {
+    function openTablePopup() {
         document.getElementById("tablePopup").style.display = "block";
+        filterTables();
+    }
+
+    function closeTablePopup() {
+        document.getElementById("tablePopup").style.display = "none";
     }
 
     function filterTables() {
         var input = document.getElementById("tableSearch");
         var filter = input.value.toLowerCase();
+
         var popup = document.getElementById("tablePopup");
-        var links = popup.getElementsByTagName("a");
+        var links = popup.getElementsByClassName("table-option");
 
         for (var i = 0; i < links.length; i++) {
+
             var text = links[i].innerText.toLowerCase();
 
             if (text.indexOf(filter) > -1) {
@@ -459,7 +505,9 @@
     }
 
     function updateTotal() {
-        var subTotal = @Model.SubTotal.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+
+        var subTotal = parseFloat('@Model.SubTotal');
+
         var tipInput = document.getElementById("TipAmount");
         var totalAmount = document.getElementById("totalAmount");
 
@@ -469,16 +517,15 @@
             tip = 0;
         }
 
-        var finalTotal = subTotal + tip;
-
-        totalAmount.innerText = finalTotal.toFixed(2);
+        totalAmount.innerText = (subTotal + tip).toFixed(2);
     }
 
     document.addEventListener("click", function (event) {
-        var popup = document.getElementById("tablePopup");
-        var search = document.getElementById("tableSearch");
 
-        if (!popup.contains(event.target) && event.target !== search) {
+        var searchCard = document.querySelector(".table-search-card");
+        var popup = document.getElementById("tablePopup");
+
+        if (searchCard && !searchCard.contains(event.target)) {
             popup.style.display = "none";
         }
     });
