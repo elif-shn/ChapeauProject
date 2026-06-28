@@ -20,26 +20,45 @@ namespace Chapeau.Services
         {
             return _orderRepository.GetRunningOrders(isFood);
         }
-    public List<Order> GetRunningTableOrders(int tableId)
-    {
-        return _orderRepository.GetRunningTableOrders(tableId);
-    }
-
-    public List<Order> GetFinishedOrders()
-    {
-        return _orderRepository.GetFinishedOrders();
-    }
-    public Order? GetOrderById(Order order)
-    {
-        return _orderRepository.GetOrderById(order);
-    }
-    public void UpdateOrderStatus(Order order, OrderStatus status)
-    {
-        order.OrderStatus = status;
 
         public List<Order> GetFinishedOrders(bool isFood)
         {
             return _orderRepository.GetFinishedOrders(isFood);
+        }
+
+        public List<Order> GetKitchenOrders()
+        {
+            return _orderRepository.GetRunningOrders(true);
+        }
+
+        public List<Order> GetBarOrders()
+        {
+            return _orderRepository.GetRunningOrders(false);
+        }
+
+        public List<Order> GetRunningTableOrders(int tableId)
+        {
+            return _orderRepository.GetRunningTableOrders(tableId);
+        }
+
+        public List<Order> GetActiveDrinkOrders(int tableId)
+        {
+            return _orderRepository.GetActiveDrinkOrders(tableId);
+        }
+
+        public List<Order> GetActiveFoodOrders(int tableId)
+        {
+            return _orderRepository.GetActiveFoodOrders(tableId);
+        }
+
+        public void MarkOrderAsServed(int orderId)
+        {
+            _orderRepository.MarkOrderAsServed(orderId);
+        }
+
+        public Order? GetOrderById(Order order)
+        {
+            return _orderRepository.GetOrderById(order);
         }
 
         public void UpdateOrderStatus(Order order)
@@ -57,109 +76,92 @@ namespace Chapeau.Services
             _orderRepository.UpdateCourseStatus(order, category, status);
         }
 
-        public Order? GetOrderById(Order order)
-        {
-            return _orderRepository.GetOrderById(order);
-        }
         public Order? GetActiveOrderForTable(int tableId)
-    {
-        return _orderRepository.GetActiveOrderForTable(tableId);
-    }
-    public void AddItemToCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "")
-    {
-        OrderItem ?existingItem = currentOrder.FirstOrDefault(i => i.MenuItem.MenuItemId == menuItemId &&
-        (i.Comment ?? "") == (comment ?? "")
-    );
-        MenuItem menuItem = _menuRepository.GetById(menuItemId);
-
-        if (existingItem != null)
         {
+            return _orderRepository.GetActiveOrderForTable(tableId);
+        }
 
-            if (existingItem.OrderItemQuantity >= menuItem.Stock)
+        public void AddItemToCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "")
+        {
+            OrderItem? existingItem = currentOrder.FirstOrDefault(i =>
+                i.MenuItem.MenuItemId == menuItemId &&
+                (i.Comment ?? "") == (comment ?? ""));
+
+            MenuItem menuItem = _menuService.GetMenuItemById(menuItemId);
+
+            if (existingItem != null)
+            {
+                if (existingItem.OrderItemQuantity >= menuItem.Stock)
+                {
+                    throw new Exception("Not enough stock available.");
+                }
+
+                existingItem.Increase();
+                return;
+            }
+
+            if (menuItem.Stock <= 0)
             {
                 throw new Exception("Not enough stock available.");
             }
 
-            existingItem.Increase();
-            return;
-        }
-            
-            if(menuItem.Stock <= 0)
-            {
-                throw new Exception("Not enough stock available.");
-            } 
             currentOrder.Add(new OrderItem
             {
                 MenuItem = menuItem,
                 OrderItemQuantity = 1,
                 Comment = comment ?? "",
                 OrderItemStatus = OrderItemStatus.Ordered
-            });           
-    }
+            });
+        }
 
-    public void DecreaseItemQuantityInCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "")
-    {
-        OrderItem ?existingItem = currentOrder.FirstOrDefault(i => i.MenuItem.MenuItemId == menuItemId &&
-        (i.Comment ?? "") == (comment ?? ""));
-
-        if (existingItem == null)
-            return;
-
-        existingItem.Decrease();
-
-        if (existingItem.OrderItemQuantity <= 0)
+        public void DecreaseItemQuantityInCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "")
         {
-            currentOrder.Remove(existingItem);
+            OrderItem? existingItem = currentOrder.FirstOrDefault(i =>
+                i.MenuItem.MenuItemId == menuItemId &&
+                (i.Comment ?? "") == (comment ?? ""));
+
+            if (existingItem == null)
+            {
+                return;
+            }
+
+            existingItem.Decrease();
+
+            if (existingItem.OrderItemQuantity <= 0)
+            {
+                currentOrder.Remove(existingItem);
+            }
+        }
+
+        public void SendOrder(Order newOrder)
+        {
+            Order? activeOrder = GetActiveOrderForTable(newOrder.TableId);
+
+            if (activeOrder == null)
+            {
+                _orderRepository.CreateOrderWithItems(newOrder);
+            }
+            else
+            {
+                _orderRepository.AddItemsToExistingOrder(activeOrder, newOrder.OrderItems);
+            }
+        }
+
+        public void AddNote(List<OrderItem> currentItems, int menuItemId, string comment)
+        {
+            OrderItem? item = currentItems.FirstOrDefault(i => i.MenuItem.MenuItemId == menuItemId);
+
+            if (item != null)
+            {
+                item.Comment = comment;
+            }
+        }
+
+        public void DeleteItem(List<OrderItem> currentItems, int menuItemId, string comment = "")
+        {
+            currentItems.RemoveAll(item =>
+                item.MenuItem.MenuItemId == menuItemId &&
+                (item.Comment ?? "") == (comment ?? ""));
         }
     }
-
-    public void SendOrder(Order newOrder)
-    {
-        Order? activeOrder = GetActiveOrderForTable(newOrder.TableId);
-
-        if (activeOrder == null)
-        {
-            _orderRepository.CreateOrderWithItems(newOrder);
-        }
-        else
-        {
-            _orderRepository.AddItemsToExistingOrder(activeOrder, newOrder.OrderItems);
-        }
-    }
-    public void AddNote(List<OrderItem> currentItems, int menuItemId, string comment)
-    {
-        OrderItem item = currentItems.FirstOrDefault(i => i.MenuItem.MenuItemId == menuItemId);
-
-        if (item != null)
-        {
-            item.Comment = comment;
-        }
-    }
-    public void DeleteItem(List<OrderItem> currentItems, int menuItemId, string comment = "")
-    {
-        currentItems?.RemoveAll(item => item.MenuItem.MenuItemId == menuItemId &&
-        (item.Comment ?? "") == (comment ?? ""));
-    }
-
-       
-    }
-}
-
-
-
-
-    public void MarkOrderAsServed(int orderId)
-    {
-        _orderRepository.MarkOrderAsServed(orderId);
-    }
-
-    public List<Order> GetActiveDrinkOrders(int tableId)
-    {
-        return _orderRepository.GetActiveDrinkOrders(tableId);
-    }
-    public List<Order> GetActiveFoodOrders(int tableId)
-    {
-        return _orderRepository.GetActiveFoodOrders(tableId);
-    }
-
 }

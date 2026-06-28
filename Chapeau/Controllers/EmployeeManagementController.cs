@@ -1,6 +1,7 @@
 ﻿using Chapeau.Models;
 using Chapeau.Services;
 using Chapeau.ViewModels;
+using Chapeau.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -102,14 +103,24 @@ namespace Chapeau.Controllers
 
        
         [HttpPost]
+       
         public IActionResult Deactivate(int id)
         {
+            Employee? loggedInEmployee =
+                HttpContext.Session.GetObject<Employee>("LoggedInUser");
+
+            if (loggedInEmployee != null && loggedInEmployee.EmployeeId == id)
+            {
+                TempData["ErrorMessage"] = "You cannot deactivate your own account while logged in.";
+                return RedirectToAction("Index");
+            }
+
             _employeeService.DeactivateEmployee(id);
             TempData["SuccessMessage"] = "Employee deactivated successfully!";
             return RedirectToAction("Index");
         }
 
-      
+
         [HttpPost]
         public IActionResult Activate(int id)
         {

@@ -4,12 +4,9 @@ using Chapeau.Models;
 namespace Chapeau.Services.Interfaces
 {
     public interface IOrderService
-    {       
+    {
         List<Order> GetRunningOrders(bool isFood);
         List<Order> GetFinishedOrders(bool isFood);
-    {
-        List<Order> GetRunningOrders();
-        List<Order> GetFinishedOrders();
         List<Order> GetKitchenOrders();
         List<Order> GetBarOrders();
         List<Order> GetRunningTableOrders(int tableId);
@@ -24,7 +21,7 @@ namespace Chapeau.Services.Interfaces
         void SendOrder(Order newOrder);
         void DecreaseItemQuantityInCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "");
         void AddItemToCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "");
-        void AddNote(List<OrderItem> currentItems,int menuItemId, string comment);
+        void AddNote(List<OrderItem> currentItems, int menuItemId, string comment);
         void DeleteItem(List<OrderItem> currentItems, int menuItemId, string comment = "");
     }
 }

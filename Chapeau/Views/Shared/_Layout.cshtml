@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Chapeau.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 @using Chapeau.Extensions
 @using Chapeau.Models
@@ -43,32 +44,7 @@
                             <a class="nav-link text-dark" asp-controller="Order"asp-action="GetRunningBarOrders">Bar </a>
                         </li>
 
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">
-                                Management
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Menu" asp-action="Management">
-                                        🍽️ Menu Management
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="EmployeeManagement" asp-action="Index">
-                                        👤 Employee Management
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="StockManagement" asp-action="Index">
-                                        📦 Stock Management
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="FinancialOverview" asp-action="Index">
-                                        💰 Financial Overview
-                                    </a>
-                                </li>
-                            </ul>
+                    
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="ManagementHub">Management</a>
                         </li>
@@ -106,7 +82,7 @@
     <div class="container">
         <main role="main" class="pb-3">
 
-            <partial name="Alerts" />
+                <partial name="_Alerts" />
 
             @RenderBody()
         </main>
