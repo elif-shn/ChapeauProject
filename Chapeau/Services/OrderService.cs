@@ -21,9 +21,9 @@ namespace Chapeau.Services
             return _orderRepository.GetRunningOrders(isFood);
         }
 
-        public Order? GetRunningTableOrder(int tableId)
+        public List<Order>? GetRunningTableOrders(int tableId)
         {
-            return _orderRepository.GetRunningTableOrder(tableId);
+            return _orderRepository.GetRunningTableOrders(tableId);
         }
 
         public List<Order> GetFinishedOrders(bool isFood)
@@ -142,6 +142,11 @@ namespace Chapeau.Services
         public void MarkOrderAsServed(int orderId)
         {
             _orderRepository.MarkOrderAsServed(orderId);
+        }
+
+        public void MarkFoodOrDrinkAsServed(int orderId, bool isFood)
+        {
+            _orderRepository.MarkFoodOrDrinkAsServed(orderId, isFood);
         }
 
         public void CreateOrderWithItems(Order order)

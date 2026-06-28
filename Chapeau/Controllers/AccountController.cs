@@ -1,4 +1,5 @@
-﻿using Chapeau.Extensions;
+﻿using Chapeau.Enums;
+using Chapeau.Extensions;
 using Chapeau.Models;
 using Chapeau.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
@@ -10,9 +11,9 @@ namespace Chapeau.Controllers
 {
     public class AccountController : Controller
     {
-         
+
         private readonly IEmployeeService _employeeServices;
-        
+
         public AccountController(IEmployeeService employeeServices)
         {
             this._employeeServices = employeeServices;
@@ -44,7 +45,7 @@ namespace Chapeau.Controllers
             }
 
             HttpContext.Session.SetObject("LoggedInUser", employee);
-            
+
 
             List<Claim> claims = new List<Claim>
             {
@@ -58,8 +59,21 @@ namespace Chapeau.Controllers
 
             await HttpContext.SignInAsync("ChapeauCookie", principal);
 
-            return RedirectToAction("Index", "Home");
-            
+            switch (employee.EmployeeOccupation)
+            {
+                case EmployeeRole.Waiter:
+                    return RedirectToAction("Index", "Tables");
+
+                case EmployeeRole.Chef:
+                    return RedirectToAction("KitchenBar", "GetRunningKitchenOrders");
+
+                case EmployeeRole.Bartender:
+                    return RedirectToAction("KitchenBar", "GetRunningBarOrders");
+
+                default:
+                    return RedirectToAction("Index", "Home");
+            }
+
         }
 
         [Authorize]

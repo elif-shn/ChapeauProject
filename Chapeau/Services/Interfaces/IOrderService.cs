@@ -6,7 +6,7 @@ namespace Chapeau.Services.Interfaces
     public interface IOrderService
     {
         List<Order> GetRunningOrders(bool isFood);
-        Order? GetRunningTableOrder(int tableId);
+        List<Order>? GetRunningTableOrders(int tableId);
         List<Order> GetFinishedOrders(bool isFood);
 
         void UpdateOrderStatus(Order order, bool isFood);
@@ -23,6 +23,7 @@ namespace Chapeau.Services.Interfaces
         void DeleteItem(List<OrderItem> currentItems, int menuItemId, string comment = "");
 
         void SendOrder(Order newOrder);
+        void MarkFoodOrDrinkAsServed(int orderId, bool isFood);
         void MarkOrderAsServed(int orderId);
         void CreateOrderWithItems(Order order);
         void AddItemsToExistingOrder(Order order, List<OrderItem> items);
