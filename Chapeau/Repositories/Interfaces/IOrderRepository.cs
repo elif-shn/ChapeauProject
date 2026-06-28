@@ -7,12 +7,13 @@ public interface IOrderRepository
     List<Order> GetFinishedOrders(bool isFood);
     void UpdateOrderStatus(Order order);
     void UpdateOrderItemStatus(OrderItem orderItem);
+    void UpdateAllOrderItemsStatus(Order order, bool isFood, OrderItemStatus status);
     void UpdateCourseStatus(Order order, Category category, OrderItemStatus status);
     Order? GetOrderById(Order order);
     void CreateOrderWithItems(Order order);
     void AddItemsToExistingOrder(Order order, List<OrderItem> items);
     Order? GetActiveOrderForTable(int tableId);
-    List<Order> GetRunningTableOrders(int tableId);
+    Order? GetRunningTableOrder(int tableId);
     
     Order? GetActiveFoodOrDrinkOrder(int tableId, int isFood);
     List<OrderItem> GetOrderItemsByOrderId(int orderId, bool isFood);
