@@ -12,7 +12,7 @@ namespace Chapeau.Repositories
 
         public StockRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("ChapeauDataBase");
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
        

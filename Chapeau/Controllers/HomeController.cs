@@ -1,6 +1,7 @@
-using System.Diagnostics;
 using Chapeau.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace Chapeau.Controllers  
 {

@@ -1,5 +1,4 @@
-﻿
-using Chapeau.Enums;
+﻿using Chapeau.Enums;
 using Chapeau.Models;
 using Chapeau.Repositories;
 using Chapeau.Repositories.Interfaces;
@@ -23,24 +22,18 @@ namespace Chapeau.Controllers
         public IActionResult Index()
         {
             List<Table> tables = _tableService.GetAllTables();
-            
 
             List<RestaurantOverviewViewModel> overview = new List<RestaurantOverviewViewModel>();
-            
 
             foreach (Table table in tables)
             {
                 RestaurantOverviewViewModel tableOverview = new RestaurantOverviewViewModel()
-                  
-                    {
-                        Table = table,
+                {
+                    Table = table,
 
-                        HasFoodOrders = _orderServices.GetActiveFoodOrders(table.TableId).Any(),
-                        
-
-                        HasDrinkOrders = _orderServices.GetActiveDrinkOrders(table.TableId).Any()
-                            
-                    };
+                    HasFoodOrders = _orderServices.GetActiveFoodOrDrinkOrder(table.TableId, 1) != null,
+                    HasDrinkOrders = _orderServices.GetActiveFoodOrDrinkOrder(table.TableId, 0) != null
+                };
 
                 overview.Add(tableOverview);
             }
@@ -51,10 +44,9 @@ namespace Chapeau.Controllers
         [HttpGet]
         public IActionResult ShowOrders(int tableId)
         {
-            List<Order> orders = _orderServices.GetRunningTableOrders(tableId);
-            
-
+            List<Order>? orders = _orderServices.GetRunningTableOrders(tableId);
             return View(orders);
+
         }
 
         [HttpPost]

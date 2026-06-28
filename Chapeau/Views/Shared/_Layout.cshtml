@@ -36,11 +36,11 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Menu" asp-action="Index">Menu</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark"asp-controller="Order"asp-action="GetRunningKitchenOrders">Kitchen</a>
+                            <a class="nav-link text-dark"asp-controller="KitchenBar"asp-action="GetRunningKitchenOrders">Kitchen</a>
                         </li>
 
                         <li class="nav-item">  
-                            <a class="nav-link text-dark" asp-controller="Order"asp-action="GetRunningBarOrders">Bar </a>
+                            <a class="nav-link text-dark" asp-controller="KitchenBar"asp-action="GetRunningBarOrders">Bar </a>
                         </li>
 
                         <li class="nav-item dropdown">
@@ -106,7 +106,7 @@
     <div class="container">
         <main role="main" class="pb-3">
 
-                @* <partial name="Alerts" /> *@
+                <partial name="_AlertsPartial" />
 
             @RenderBody()
         </main>

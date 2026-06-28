@@ -8,7 +8,7 @@
         Ready,
         Served,
         Settled,
+        Paid,
         Cancelled,
-        Paid
     }
 }

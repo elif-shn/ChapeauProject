@@ -1,0 +1,57 @@
+﻿@using Chapeau.Enums
+@using Chapeau.Models
+@model List<Order>
+
+@{
+    ViewData["Title"] = "Finished Orders";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Finished Orders</h2>
+    <div>
+        <button onclick="location.reload();" class="btn btn-outline-secondary me-2">Refresh</button>
+        <a asp-action="@ViewBag.RunningAction" class="btn btn-outline-primary">Running Orders</a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No finished orders today.</div>
+}
+else
+{
+    <div class="row">
+        @foreach (Order order in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between">
+                            <strong>Table @order.Table.TableId</strong>
+                            <strong>Order #@order.OrderId</strong>
+                        </div>
+                        <small>Order time: @order.OrderTime.ToString("HH:mm")</small><br />
+                        <small>Status: @order.OrderStatus</small>
+                    </div>
+                    <div class="card-body">
+                        @foreach (OrderItem item in order.OrderItems)
+                        {
+                            <div class="mb-3 border-bottom pb-2">
+                                <strong>@item.MenuItem.MenuItemName</strong><br />
+                                Category: @item.MenuItem.Menu.Category<br />
+                                Quantity: @item.OrderItemQuantity<br />
+                                Status: @item.OrderItemStatus
+
+                                @if (!string.IsNullOrEmpty(item.Comment))
+                                {
+                                    <br />
+                                    <small class="text-muted">Comment: @item.Comment</small>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
