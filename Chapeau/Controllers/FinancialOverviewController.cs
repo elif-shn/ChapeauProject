@@ -1,14 +1,14 @@
-﻿using Chapeau.Services;
-using Chapeau.ViewModels;
+﻿using Chapeau.ViewModels;
 using Chapeau.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Chapeau.Enums;
+using Chapeau.Services.Interfaces;
 
 namespace Chapeau.Controllers
 {
 
-    [Authorize(Roles = "Manager")]
+    [Authorize(Roles = "Manager")] 
     public class FinancialOverviewController : Controller
     {
         private readonly IFinancialService _financialService;

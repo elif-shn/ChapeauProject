@@ -11,7 +11,7 @@ namespace Chapeau.Repositories
 
         public DbOrderRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("ChapeauDatabase");
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
         public Order? GetOrderById(Order order)
@@ -134,6 +134,8 @@ namespace Chapeau.Repositories
             return orders;
         }
 
+
+
         public void UpdateOrderStatus(Order order)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -174,6 +176,21 @@ namespace Chapeau.Repositories
         {
             orderItem.OrderItemStatus = status;
             UpdateOrderItemStatus(orderItem);
+        }
+
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@OrderId", order.OrderId);
+                    command.Parameters.AddWithValue("@IsFood", isFood);
+                    command.Parameters.AddWithValue("@Status", status.ToString());
+
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error while updating all order items status.", ex);
+            }
         }
 
         public void UpdateCourseStatus(Order order, Category category, OrderItemStatus status)
@@ -238,7 +255,9 @@ namespace Chapeau.Repositories
 
         private List<OrderItem> GetOrderItemsByOrderId(int orderId, bool isFood)
         {
-            List<OrderItem> items = new List<OrderItem>();
+            try
+            {
+                List<OrderItem> items = new List<OrderItem>();
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
@@ -251,22 +270,72 @@ namespace Chapeau.Repositories
                                  WHERE oi.OrderId = @OrderId
                                  AND mi.IsFood = @IsFood";
 
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@OrderId", orderId);
-                command.Parameters.AddWithValue("@IsFood", isFood);
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@OrderId", orderId);
+                    command.Parameters.AddWithValue("@IsFood", isFood);
 
-                connection.Open();
+                    connection.Open();
 
-                using (SqlDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        items.Add(ReadOrderItem(reader));
+                        while (reader.Read())
+                        {
+                            items.Add(ReadOrderItem(reader));
+                        }
                     }
                 }
+                return items;
             }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error occurred while fetching order items.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while fetching order items.", ex);
+            }
+        }
 
-            return items;
+        public List<OrderItem> GetOrderItemsByOrderIdNoFilter(Order order)
+        {
+            try
+            {
+                List<OrderItem> items = new List<OrderItem>();
+
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = @"SELECT oi.OrderItemId, oi.OrderItemQuantity, oi.Comment, oi.OrderItemsStatus,
+                                    mi.MenuItemId, mi.MenuItemName, mi.MenuItemPrice, mi.VatPercentage, mi.IsFood,
+                                    m.MenuId, m.Card, m.Category
+                             FROM OrderItem oi
+                             JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
+                             JOIN Menu m      ON mi.MenuId = m.MenuId
+                             WHERE oi.OrderId = @OrderId";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@OrderId", order.OrderId);
+
+                    connection.Open();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            items.Add(ReadOrderItem(reader));
+                        }
+                    }
+                }
+
+                return items;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error occurred while fetching order items.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while fetching order items.", ex);
+            }
         }
 
         public void CreateOrderWithItems(Order order)
@@ -444,6 +513,7 @@ namespace Chapeau.Repositories
             return orders;
         }
 
+
         public void MarkOrderAsServed(int orderId)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -468,7 +538,7 @@ namespace Chapeau.Repositories
             }
         }
 
-        public List<Order> GetActiveFoodOrders(int tableId)
+        public Order? GetActiveFoodOrDrinkOrder(int tableId, int isFood)
         {
             return GetActiveOrdersByFoodType(tableId, true);
         }
@@ -522,6 +592,10 @@ namespace Chapeau.Repositories
             order.OrderTime = (DateTime)reader["OrderTime"];
             order.ServedTime = reader["ServedTime"] == DBNull.Value ? null : (DateTime?)reader["ServedTime"];
             order.OrderStatus = Enum.Parse<OrderStatus>(reader["OrderStatus"].ToString());
+            order.Table = ReadTable(reader);
+            order.Employee = ReadEmployee(reader);
+            return order;
+        }
 
             order.Table = new Table
             {

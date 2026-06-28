@@ -1,6 +1,6 @@
 ﻿using Chapeau.Extensions;
 using Chapeau.Models;
-using Chapeau.Services;
+using Chapeau.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

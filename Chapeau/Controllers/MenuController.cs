@@ -10,7 +10,7 @@ namespace Chapeau.Controllers
         private readonly IMenuService _menuService;
 
         /*for login to the management part user name : Mehedi and Password :12345*/
-        /*for login to the takeorder part user name : Elif and Password :12345678*/
+        /*for login for the waiter user name : Elif and Password :1234*/
         public MenuController(IMenuService menuService)
         {
             _menuService = menuService;

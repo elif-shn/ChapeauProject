@@ -4,6 +4,7 @@ using Chapeau.Models;
 using Chapeau.Services;
 using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -20,140 +21,11 @@ namespace Chapeau.Controllers
             _menuService = menuService;
             _orderServices = orderServices;
         }
-
         public IActionResult Index()
         {
             return View();
         }
 
-        [HttpGet]
-        public IActionResult GetRunningKitchenOrders()
-        {
-            try
-            {
-                List<Order> orders = _orderServices.GetRunningOrders(true);
-                return View(orders);
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-                return View(new List<Order>());
-            }
-        }
-
-        [HttpGet]
-        public IActionResult GetRunningBarOrders()
-        {
-            try
-            {
-                List<Order> orders = _orderServices.GetRunningOrders(false);
-                return View(orders);
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-                return View(new List<Order>());
-            }
-        }
-
-        [HttpGet]
-        public IActionResult GetFinishedKitchenOrders()
-        {
-            try
-            {
-                List<Order> orders = _orderServices.GetFinishedOrders(true);
-                return View(orders);
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-                return View(new List<Order>());
-            }
-        }
-
-        [HttpGet]
-        public IActionResult GetFinishedBarOrders()
-        {
-            try
-            {
-                List<Order> orders = _orderServices.GetFinishedOrders(false);
-                return View(orders);
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-                return View(new List<Order>());
-            }
-        }
-
-        [HttpPost]
-        public IActionResult UpdateOrderStatus(Order order, bool isFood)
-        {
-            try
-            {
-                _orderServices.UpdateOrderStatus(order);
-
-                TempData["SuccessMessage"] =
-                    "Order status updated successfully.";
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-            }
-
-           if (isFood)
-           {
-               return RedirectToAction("GetRunningKitchenOrders");
-           }
-           else
-           {
-               return RedirectToAction("GetRunningBarOrders");
-           }
-        }
-
-        [HttpPost]
-        public IActionResult UpdateOrderItemStatus(OrderItem orderItem, bool isFood)
-        {
-            try
-            {
-                _orderServices.UpdateOrderItemStatus(orderItem);
-
-                TempData["SuccessMessage"] =
-                    "Order item status updated successfully.";
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-            }
-
-            if (isFood)
-            {
-                return RedirectToAction("GetRunningKitchenOrders");
-            }
-            else
-            {
-                return RedirectToAction("GetRunningBarOrders");
-            }
-
-
-        }
-
-        [HttpPost]
-        public IActionResult UpdateCourseStatus( Order order, Category category, OrderItemStatus status)
-        {
-            try
-            {
-                _orderServices.UpdateCourseStatus(order, category, status);
-
-                TempData["SuccessMessage"]= "Course status updated successfully.";
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-            }
-
-            return RedirectToAction("GetRunningKitchenOrders");
-        }
         private List<OrderItem> GetCurrentOrder()
         {
             return HttpContext.Session
@@ -166,7 +38,7 @@ namespace Chapeau.Controllers
             HttpContext.Session
                 .SetObject(CurrentOrderSessionKey, items);
         }
-
+        [Authorize(Roles = "Waiter")]
         public IActionResult ViewMenuForTakeOrder(Card? selectedCard, Category? selectedCategory, int selectedTableId)
         {
             try
@@ -206,10 +78,8 @@ namespace Chapeau.Controllers
 
 
 
-
-
-
         [HttpPost]
+        [Authorize(Roles = "Waiter")]
         public IActionResult AddItemToCurrentOrder(TakeOrderViewModel model)
         {
             try
@@ -217,6 +87,15 @@ namespace Chapeau.Controllers
                 List<OrderItem> currentOrder = GetCurrentOrder();
 
                 _orderServices.AddItemToCurrentOrder(currentOrder, model.NewOrderItem.MenuItem.MenuItemId, model.NewOrderItem.Comment);
+                if (currentOrder.Any(oi => oi.MenuItem.MenuItemId == model.NewOrderItem.MenuItem.MenuItemId && oi.Comment == model.NewOrderItem.Comment))
+                {
+                    var orderItem = currentOrder.First(oi => oi.MenuItem.MenuItemId == model.NewOrderItem.MenuItem.MenuItemId && oi.Comment == model.NewOrderItem.Comment);
+                    orderItem.Decrease();
+                    if (orderItem.OrderItemQuantity <= 0)
+                    {
+                        currentOrder.Remove(orderItem);
+                    }
+                }
 
                 SaveCurrentOrder(currentOrder);
 
@@ -232,9 +111,8 @@ namespace Chapeau.Controllers
 
 
 
-
-
         [HttpPost]
+        [Authorize(Roles = "Waiter")]
         public IActionResult SendOrder(TakeOrderViewModel model)
         {
             try
@@ -261,7 +139,7 @@ namespace Chapeau.Controllers
                     OrderItems = currentOrder,
                 };
 
-                _orderServices.SendOrder(order);
+                _orderServices.CreateOrderWithItems(order);
 
                 HttpContext.Session.Remove(CurrentOrderSessionKey);
 
@@ -288,13 +166,26 @@ namespace Chapeau.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Waiter")]
         public IActionResult RemoveItemInCurrentOrder(TakeOrderViewModel model)
         {
             try
             {
                 List<OrderItem> currentOrder = GetCurrentOrder();
 
-                _orderServices.DecreaseItemQuantityInCurrentOrder(currentOrder,model.NewOrderItem.MenuItem.MenuItemId,model.NewOrderItem.Comment);
+             
+                var orderItem = currentOrder.FirstOrDefault(oi =>
+                    oi.MenuItem.MenuItemId == model.NewOrderItem.MenuItem.MenuItemId &&
+                    oi.Comment == model.NewOrderItem.Comment);
+
+                if (orderItem != null)
+                {
+                    orderItem.Decrease();
+                    if (orderItem.OrderItemQuantity <= 0)
+                    {
+                        currentOrder.Remove(orderItem);
+                    }
+                }
 
                 SaveCurrentOrder(currentOrder);
 
@@ -313,13 +204,22 @@ namespace Chapeau.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Waiter")]
         public IActionResult DeleteItem(TakeOrderViewModel model)
         {
             try
             {
                 List<OrderItem> currentOrder = GetCurrentOrder();
 
-                _orderServices.DeleteItem(currentOrder, model.NewOrderItem.MenuItem.MenuItemId, model.NewOrderItem.Comment);
+                // Remove the item from the current order manually, since IOrderService does not have DeleteItem
+                var orderItem = currentOrder.FirstOrDefault(oi =>
+                    oi.MenuItem.MenuItemId == model.NewOrderItem.MenuItem.MenuItemId &&
+                    oi.Comment == model.NewOrderItem.Comment);
+
+                if (orderItem != null)
+                {
+                    currentOrder.Remove(orderItem);
+                }
 
                 SaveCurrentOrder(currentOrder);
 
@@ -338,13 +238,21 @@ namespace Chapeau.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Waiter")]
         public IActionResult AddNote(TakeOrderViewModel model)
         {
             try
             {
                 List<OrderItem> currentOrder = GetCurrentOrder();
 
-                _orderServices.AddNote(currentOrder, model.NewOrderItem.MenuItem.MenuItemId, model.NewOrderItem.Comment);
+                // Manually add or update the comment for the matching order item
+                var orderItem = currentOrder.FirstOrDefault(oi =>
+                    oi.MenuItem.MenuItemId == model.NewOrderItem.MenuItem.MenuItemId);
+
+                if (orderItem != null)
+                {
+                    orderItem.Comment = model.NewOrderItem.Comment;
+                }
 
                 SaveCurrentOrder(currentOrder);
 
@@ -359,6 +267,7 @@ namespace Chapeau.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Waiter")]
         public IActionResult CancelOrder(TakeOrderViewModel model)
         {
             HttpContext.Session.Remove(CurrentOrderSessionKey);

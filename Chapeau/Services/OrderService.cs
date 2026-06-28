@@ -61,19 +61,36 @@ namespace Chapeau.Services
             return _orderRepository.GetOrderById(order);
         }
 
-        public void UpdateOrderStatus(Order order)
+        public void UpdateOrderStatus(Order order, bool isFood)
         {
+            if (order.OrderStatus == OrderStatus.Ordered)
+                _orderRepository.UpdateAllOrderItemsStatus(order, isFood, OrderItemStatus.Preparing);
+            else if (order.OrderStatus == OrderStatus.Preparing)
+                _orderRepository.UpdateAllOrderItemsStatus(order, isFood, OrderItemStatus.Ready);
+
+            order.OrderItems = _orderRepository.GetOrderItemsByOrderIdNoFilter(order);
+            order.UpdateOrderStatus();
             _orderRepository.UpdateOrderStatus(order);
         }
 
-        public void UpdateOrderItemStatus(OrderItem orderItem)
+        public void UpdateOrderItemStatus(OrderItem orderItem, Order order, bool isFood)
         {
+            if (orderItem.OrderItemStatus == OrderItemStatus.Ordered) orderItem.Prepare();
+            else if (orderItem.OrderItemStatus == OrderItemStatus.Preparing) orderItem.MarkAsReady();
+
             _orderRepository.UpdateOrderItemStatus(orderItem);
+            order.OrderItems = _orderRepository.GetOrderItemsByOrderIdNoFilter(order);
+            order.UpdateOrderStatus();
+            _orderRepository.UpdateOrderStatus(order);
         }
 
-        public void UpdateCourseStatus(Order order, Category category, OrderItemStatus status)
+
+        public void UpdateCourseStatus(Order order, Category category, OrderItemStatus status, bool isFood)
         {
             _orderRepository.UpdateCourseStatus(order, category, status);
+            order.OrderItems = _orderRepository.GetOrderItemsByOrderIdNoFilter(order);
+            order.UpdateOrderStatus();
+            _orderRepository.UpdateOrderStatus(order);
         }
 
         public Order? GetActiveOrderForTable(int tableId)

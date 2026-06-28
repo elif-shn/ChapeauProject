@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Chapeau.Enums;
 
 namespace Chapeau.Models
@@ -15,11 +14,16 @@ namespace Chapeau.Models
         public DateTime? ServedTime { get; set; }
         public OrderStatus OrderStatus { get; set; }
         public List<OrderItem> OrderItems { get; set; }
+
         public TimeSpan WaitingTime
         {
             get { return DateTime.Now - OrderTime; }
         }
-        public Order() { }
+
+        public Order()
+        {
+            OrderItems = new List<OrderItem>();
+        }
 
         public Order(int orderId, int tableId, Table table, Employee employee, DateTime orderTime, DateTime? servedTime, OrderStatus orderStatus)
         {
@@ -33,6 +37,16 @@ namespace Chapeau.Models
             OrderItems = new List<OrderItem>();
         }
 
+        // Method to update the order status based on the statuses of its order items
+        public void UpdateOrderStatus()
+        {
+            if (OrderItems.All(i => i.OrderItemStatus == OrderItemStatus.Ready))
+                OrderStatus = OrderStatus.Ready;
+            else if (OrderItems.Any(i => i.OrderItemStatus == OrderItemStatus.Preparing))
+                OrderStatus = OrderStatus.Preparing;
+            else
+                OrderStatus = OrderStatus.Ordered;
+        }
 
     }
 }

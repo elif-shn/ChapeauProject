@@ -1,5 +1,5 @@
 ﻿using Chapeau.Models;
-using Chapeau.Services;
+using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
 using Chapeau.Extensions;
 using Microsoft.AspNetCore.Authorization;

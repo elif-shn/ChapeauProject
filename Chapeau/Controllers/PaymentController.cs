@@ -32,17 +32,71 @@ namespace Chapeau.Controllers
         {
             try
             {
-                viewModel.OrderItems = _paymentService.GetBillByTableId(viewModel.TableId).OrderItems;
+                PaymentViewModel billViewModel = _paymentService.GetBillByTableId(viewModel.TableId);
 
-                _paymentService.ConfirmPayment(viewModel);
+                billViewModel.TipAmount = viewModel.TipAmount;
+                billViewModel.PaymentMethod = viewModel.PaymentMethod;
+                billViewModel.Feedback = viewModel.Feedback ?? string.Empty;
 
-                return RedirectToAction("Success");
+                _paymentService.ConfirmPayment(billViewModel);
+
+                return RedirectToAction(nameof(Success));
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
 
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        public IActionResult SplitEqual(int tableId)
+        {
+            SplitPaymentViewModel viewModel = _paymentService.GetSplitPaymentByTableId(tableId);
+            viewModel.IsEqualSplit = true;
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public IActionResult SplitEqual(SplitPaymentViewModel viewModel)
+        {
+            try
+            {
+                _paymentService.ConfirmSplitEqualPayment(viewModel);
+
+                return RedirectToAction(nameof(Success));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToAction(nameof(SplitEqual), new { tableId = viewModel.TableId });
+            }
+        }
+
+        public IActionResult SplitDifferent(int tableId)
+        {
+            SplitPaymentViewModel viewModel = _paymentService.GetSplitPaymentByTableId(tableId);
+            viewModel.IsEqualSplit = false;
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public IActionResult SplitDifferent(SplitPaymentViewModel viewModel)
+        {
+            try
+            {
+                _paymentService.ConfirmSplitDifferentPayment(viewModel);
+
+                return RedirectToAction(nameof(Success));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToAction(nameof(SplitDifferent), new { tableId = viewModel.TableId });
             }
         }
 

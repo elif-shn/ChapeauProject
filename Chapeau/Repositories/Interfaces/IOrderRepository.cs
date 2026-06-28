@@ -1,6 +1,6 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
-using Chapeau.ViewModels;
+
 public interface IOrderRepository
 {
     List<Order> GetRunningOrders(bool isFood);
@@ -27,6 +27,3 @@ public interface IOrderRepository
     Order GetActiveOrderForTable(int tableId);*/
     void MarkOrderAsServed(int orderId);
 }
-
-
-
