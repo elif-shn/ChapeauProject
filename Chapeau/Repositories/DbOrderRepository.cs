@@ -127,7 +127,7 @@ namespace Chapeau.Repositories
                 throw new Exception("Database error while updating order status.", ex);
             }
         }
-       
+
 
         public void UpdateOrderItemStatus(OrderItem orderItem)
         {
