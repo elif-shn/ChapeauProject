@@ -1,6 +1,7 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
 using Microsoft.Data.SqlClient;
+using System.Reflection.PortableExecutable;
 
 namespace Chapeau.Repositories
 {
@@ -536,18 +537,24 @@ namespace Chapeau.Repositories
                 }
             }
         }
-        public Order? GetRunningTableOrder(int tableId)
+        public List<Order>? GetRunningTableOrders(int tableId)
         {
             try
             {
+                List<Order> orders = new List<Order>();
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     string query = @"
-                SELECT TOP 1 o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus
-                FROM [Order] o
-                WHERE o.OrderStatus NOT IN (@Paid, @Cancelled, @Served, @Settled)
-                AND o.TableId = @tableId
-                ORDER BY o.OrderTime ASC";
+                                    SELECT o.OrderId,
+                                           o.TableId,
+                                           o.EmployeeId,
+                                           o.OrderTime,
+                                           o.ServedTime,
+                                           o.OrderStatus
+                                    FROM [Order] o
+                                    WHERE o.OrderStatus NOT IN (@Paid,@Cancelled,@Served,@Settled)
+                                      AND o.TableId = @tableId
+                                    ORDER BY o.OrderTime ASC;";
 
                     SqlCommand command = new SqlCommand(query, connection);
                     command.Parameters.AddWithValue("@tableId", tableId);
@@ -560,16 +567,20 @@ namespace Chapeau.Repositories
 
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        if (reader.Read())
+                        while (reader.Read())
                         {
-                            Order order = ReadOrder(reader);
-                            order.OrderItems = GetOrderItemsByOrderIdNoFilter(order);
-                            return order;
+                            orders.Add(ReadOrder(reader));
                         }
                     }
+
+
+                }
+                foreach (Order order in orders)
+                {
+                    order.OrderItems = GetOrderItemsByOrderIdNoFilter(order);
                 }
 
-                return null;
+                return orders;
             }
             catch (SqlException ex)
             {
@@ -577,6 +588,68 @@ namespace Chapeau.Repositories
             }
         }
 
+        public void MarkFoodOrDrinkAsServed(int orderId, bool isFood)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = @"
+                    UPDATE oi
+                    SET oi.OrderItemsStatus = @served
+                    FROM OrderItem oi
+                    JOIN MenuItem mi
+                        ON oi.MenuItemId = mi.MenuItemId
+                    WHERE oi.OrderId = @orderId
+                      AND mi.IsFood = @isFood
+                      AND oi.OrderItemsStatus = @ready";
+
+                
+
+                SqlCommand command = new SqlCommand(query, connection);
+
+                command.Parameters.AddWithValue("@orderId", orderId);
+                command.Parameters.AddWithValue("@isFood", isFood);
+                command.Parameters.AddWithValue("@ready", OrderItemStatus.Ready.ToString());
+                command.Parameters.AddWithValue("@served", OrderItemStatus.Served.ToString());
+
+                connection.Open();
+
+                int noOfRowsAffected = command.ExecuteNonQuery();
+                if (noOfRowsAffected == 0)
+                {
+                    throw new Exception("No record updated!");
+                }
+            }
+
+            if (AreAllOrderItemsServed(orderId))
+            {
+                MarkOrderAsServed(orderId);
+            }
+
+
+        }
+
+        private bool AreAllOrderItemsServed(int orderId)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = @"
+                                SELECT COUNT(*)
+                                FROM OrderItem
+                                WHERE OrderId = @orderId
+                                  AND OrderItemsStatus <> @status";
+
+                SqlCommand command = new SqlCommand(query, connection);
+
+                command.Parameters.AddWithValue("@orderId", orderId);
+                command.Parameters.AddWithValue("@status", OrderItemStatus.Served.ToString());
+
+                connection.Open();
+
+                int count = Convert.ToInt32(command.ExecuteScalar());
+
+                return count == 0;
+            }
+        }
 
         public void MarkOrderAsServed(int orderId)
         {

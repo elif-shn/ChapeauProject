@@ -1,17 +1,26 @@
-﻿@using Chapeau.Enums;
-@using Chapeau.Extensions;
-
+﻿@using Chapeau.Enums
+@using Chapeau.Extensions
 @using Chapeau.ViewModels
-@model List<RestaurantOverviewViewModel>
+
+@model IEnumerable<RestaurantOverviewViewModel>
+
 @{
     var employee = Context.Session.GetObject<Employee>("LoggedInUser");
-    bool isWaiter = employee != null && employee.EmployeeOccupation == EmployeeRole.Waiter;
+    bool isWaiter = employee != null &&
+                    employee.EmployeeOccupation == EmployeeRole.Waiter;
 }
 
-@if (TempData["Error"] != null)
+@if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger">
-        @TempData["Error"]
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
     </div>
 }
 
@@ -26,35 +35,108 @@
     @foreach (var item in Model)
     {
         string cssClass =
-                item.Table.TableStatus == TableStatus.Occupied
-                ? "occupied"
-                : "free";
+            item.Table.TableStatus == TableStatus.Occupied
+            ? "occupied"
+            : "free";
 
         <div class="table-card @cssClass">
 
             <h3>Table @item.Table.TableId</h3>
 
-            <p>Capacity: @item.Table.TableCapacity</p>
+            <p>
+                <strong>Capacity:</strong>
+                @item.Table.TableCapacity
+            </p>
 
-            <p>Status: @item.Table.TableStatus</p>
+            <p>
+                <strong>Status:</strong>
+                @item.Table.TableStatus
+            </p>
 
-            @if(item.HasFoodOrders && item.HasDrinkOrders)
+            @if (!item.Orders.Any())
             {
-                <span class="badge bg-primary">
-                    Food & Drink
-                </span>
+                <p>No active orders.</p>
             }
-            else if(item.HasFoodOrders)
+            else
             {
-                <span class="badge bg-success">
-                    Food
-                </span>
-            }
-            else if(item.HasDrinkOrders)
-            {
-                <span class="badge bg-info">
-                    Drink
-                </span>
+                @foreach (var order in item.Orders)
+                {
+                    <div class="border rounded p-2 mb-2">
+
+                        <strong>Order #@order.OrderId</strong>
+
+                        @foreach (var orderItem in order.OrderItems)
+                        {
+                            <div>
+
+                                @orderItem.MenuItem.MenuItemName
+
+                                @if (orderItem.MenuItem.IsFood)
+                                {
+                                    <span class="badge bg-success">
+                                        Food
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-info">
+                                        Drink
+                                    </span>
+                                }
+
+                                (@orderItem.OrderItemStatus)
+
+                            </div>
+                        }
+
+                        <br />
+
+                        @if (order.OrderItems.Any(i =>
+                            !i.MenuItem.IsFood &&
+                            i.OrderItemStatus == OrderItemStatus.Ready))
+                        {
+                            <form asp-action="MarkFoodOrDrinkServed"
+                                  method="post">
+
+                                <input type="hidden"
+                                       name="orderId"
+                                       value="@order.OrderId" />
+
+                                <input type="hidden"
+                                       name="isFood"
+                                       value="false" />
+
+                                <button class="btn btn-primary btn-sm">
+                                    Serve Drinks
+                                </button>
+
+                            </form>
+                        }
+
+                        @if (order.OrderItems.Any(i =>
+                            i.MenuItem.IsFood &&
+                            i.OrderItemStatus == OrderItemStatus.Ready))
+                        {
+                            <form asp-action="MarkFoodOrDrinkServed"
+                                  method="post">
+
+                                <input type="hidden"
+                                       name="orderId"
+                                       value="@order.OrderId" />
+
+                                <input type="hidden"
+                                       name="isFood"
+                                       value="true" />
+
+                                <button class="btn btn-success btn-sm">
+                                    Serve Food
+                                </button>
+
+                            </form>
+                        }
+
+                    </div>
+                }
             }
 
             <form asp-action="ChangeTableStatus"
@@ -72,56 +154,54 @@
                        name="TableStatus"
                        value="@item.Table.TableStatus" />
 
-                @if (item.Table.TableStatus ==
-                    TableStatus.Free)
+                @if (item.Table.TableStatus == TableStatus.Free)
                 {
                     <button type="submit"
                             class="btn btn-success">
-
                         Mark Occupied
-
                     </button>
                 }
                 else
                 {
                     <button type="submit"
                             class="btn btn-warning">
-
                         Mark Free
-
                     </button>
                 }
 
             </form>
 
+            <br />
+
             <a asp-controller="Order"
-               asp-action="ViewMenuForTakeOrder"
-               asp-route-selectedTableId="@item.Table.TableId"
-               class="btn btn-sm btn-primary flex-fill text-center">
+                   asp-action="ViewMenuForTakeOrder"
+                   asp-route-selectedTableId="@item.Table.TableId"
+                   class="btn btn-primary w-100 mb-2">
+
                 Take Order
+
             </a>
 
-            <div class="d-flex gap-2 mt-2">
-                @if (isWaiter)
-                {
-                    <a asp-controller="Tables"
+            @if (isWaiter)
+            {
+                <a asp-controller="Tables"
                        asp-action="ShowOrders"
                        asp-route-tableId="@item.Table.TableId"
-                       class="btn btn-sm btn-primary flex-fill text-center">
-                        View Orders
-                    </a>
-                }
-                else
-                {
-                   
+                       class="btn btn-secondary w-100">
 
-                    <span class="btn btn-sm btn-secondary flex-fill text-center disabled">
-                        View Orders
-                    </span>
-                }
-                
+                    View Orders
 
-            </div>
+                </a>
+            }
+            else
+            {
+                <button class="btn btn-secondary w-100"
+                        disabled>
+
+                    View Orders
+
+                </button>
+            }
 
         </div>
     }

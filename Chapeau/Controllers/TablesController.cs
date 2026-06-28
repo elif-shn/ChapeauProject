@@ -1,5 +1,8 @@
 ﻿using Chapeau.Enums;
 using Chapeau.Models;
+using Chapeau.Repositories;
+using Chapeau.Repositories.Interfaces;
+using Chapeau.Services;
 using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -22,16 +25,40 @@ namespace Chapeau.Controllers
             try
             {
                 List<Table> tables = _tableService.GetAllTables();
+
+
                 List<RestaurantOverviewViewModel> overview = new List<RestaurantOverviewViewModel>();
+
 
                 foreach (Table table in tables)
                 {
+                    List<Order> orders = _orderServices.GetRunningTableOrders(table.TableId);
                     RestaurantOverviewViewModel tableOverview = new RestaurantOverviewViewModel()
+
                     {
                         Table = table,
-                        HasFoodOrders = _orderServices.GetActiveFoodOrDrinkOrder(table.TableId, 1) != null,
-                        HasDrinkOrders = _orderServices.GetActiveFoodOrDrinkOrder(table.TableId, 0) != null,
-                        Order  = _orderServices.GetRunningTableOrder(table.TableId)
+
+                        Orders = orders,
+
+                        HasFoodOrders =
+                orders.Any(o =>
+                    o.OrderItems.Any(i => i.MenuItem.IsFood)),
+
+                        HasDrinkOrders =
+                orders.Any(o =>
+                    o.OrderItems.Any(i => !i.MenuItem.IsFood)),
+
+                        FoodReady =
+                orders.Any(o =>
+                    o.OrderItems.Any(i =>
+                        i.MenuItem.IsFood &&
+                        i.OrderItemStatus == OrderItemStatus.Ready)),
+
+                        DrinkReady =
+                orders.Any(o =>
+                    o.OrderItems.Any(i =>
+                        !i.MenuItem.IsFood &&
+                        i.OrderItemStatus == OrderItemStatus.Ready))
                     };
 
                     overview.Add(tableOverview);
@@ -44,27 +71,43 @@ namespace Chapeau.Controllers
                 TempData["ErrorMessage"] = ex.Message;
                 return View(new List<RestaurantOverviewViewModel>());
             }
+
         }
+
         [HttpGet]
         public IActionResult ShowOrders(int tableId)
         {
             try
             {
-                Order order = _orderServices.GetRunningTableOrder(tableId);
-
                 List<Order> orders = new List<Order>();
-                if (order != null)
-                {
-                    orders.Add(order);
-                }
 
+                orders = _orderServices.GetRunningTableOrders(tableId);
                 return View(orders);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return View(new List<Order>());
+                return View();
             }
+
+
+        }
+
+        [HttpPost]
+        public IActionResult MarkFoodOrDrinkServed(int orderId, bool isFood)
+        {
+            try
+            {
+                _orderServices.MarkFoodOrDrinkAsServed(orderId, isFood);
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return View(new List<RestaurantOverviewViewModel>());
+            }
+
         }
 
         [HttpPost]
@@ -73,13 +116,15 @@ namespace Chapeau.Controllers
             try
             {
                 _orderServices.MarkOrderAsServed(orderId);
+
+                return RedirectToAction("ShowOrders", new { tableId });
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction("Index");
             }
 
-            return RedirectToAction("ShowOrders", new { tableId });
         }
 
         [HttpPost]
@@ -90,32 +135,42 @@ namespace Chapeau.Controllers
                 if (table.TableStatus == TableStatus.Free)
                 {
                     table.TableStatus = TableStatus.Occupied;
+
+
                     _tableService.UpdateTableStatus(table);
+
                 }
                 else
                 {
                     bool hasActiveOrders = _tableService.HasActiveOrders(table.TableId);
 
+
                     if (!hasActiveOrders)
                     {
                         table.TableStatus = TableStatus.Free;
+
+
                         _tableService.UpdateTableStatus(table);
+
                     }
                     else
                     {
                         TempData["Error"] = "Table has active orders.";
+
                     }
                 }
+
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
+                return View(new List<RestaurantOverviewViewModel>());
             }
 
-            return RedirectToAction("Index");
         }
+
+
     }
 }
 //test
-//test 2
-//test 32
