@@ -6,7 +6,7 @@ using Chapeau.Enums;
 
 namespace Chapeau.Repositories
 {
-    public class EmployeeRepository : IEmployeeRepository 
+    public class EmployeeRepository : IEmployeeRepository
     {
         private readonly string _connectionString;
 
@@ -23,7 +23,7 @@ namespace Chapeau.Repositories
             {
                 string query = "SELECT EmployeeId, EmployeeName, EmployeeNumber, EmployeeOccupation, EmployeePassword, IsActive FROM Employee";
                 SqlCommand command = new SqlCommand(query, connection);
-                connection.Open();  
+                connection.Open();
                 SqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                 {
@@ -51,6 +51,9 @@ namespace Chapeau.Repositories
             }
             return employee;
         }
+
+        
+
         public void Add(Employee employee)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
