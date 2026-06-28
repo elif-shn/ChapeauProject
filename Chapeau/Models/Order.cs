@@ -40,34 +40,13 @@ namespace Chapeau.Models
         // Method to update the order status based on the statuses of its order items
         public void UpdateOrderStatus()
         {
-            bool allReady = true;
-            bool anyPreparing = false;
-
-            foreach (OrderItem item in OrderItems)
-            {
-                if (item.OrderItemStatus != OrderItemStatus.Ready)
-                {
-                    allReady = false;
-                }
-
-                if (item.OrderItemStatus == OrderItemStatus.Preparing)
-                {
-                    anyPreparing = true;
-                }
-            }
-
-            if (allReady)
-            {
+            if (OrderItems.All(i => i.OrderItemStatus == OrderItemStatus.Ready))
                 OrderStatus = OrderStatus.Ready;
-            }
-            else if (anyPreparing)
-            {
+            else if (OrderItems.Any(i => i.OrderItemStatus == OrderItemStatus.Preparing))
                 OrderStatus = OrderStatus.Preparing;
-            }
             else
-            {
                 OrderStatus = OrderStatus.Ordered;
-            }
         }
+
     }
 }
