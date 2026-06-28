@@ -96,6 +96,11 @@ namespace Chapeau.Services
         {
             PaymentViewModel paymentViewModel = GetBillByTableId(tableId);
 
+            if (paymentViewModel.OrderId == 0)
+            {
+                throw new Exception(paymentViewModel.ErrorMessage);
+            }
+
             decimal totalPaid = _paymentRepository.GetTotalPaidByOrderId(paymentViewModel.OrderId);
             decimal remainingAmount = Math.Round(paymentViewModel.SubTotal - totalPaid, 2);
 
@@ -111,11 +116,6 @@ namespace Chapeau.Services
             if (splitViewModel.RemainingAmount < 0)
             {
                 splitViewModel.RemainingAmount = 0;
-            }
-
-            for (int i = 0; i < 4; i++)
-            {
-                splitViewModel.Payments.Add(new SplitPaymentPersonViewModel());
             }
 
             return splitViewModel;
