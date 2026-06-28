@@ -12,6 +12,5 @@ namespace Chapeau.Repositories
         void SetActive(int id, bool isActive);
         bool EmployeeNumberExists(string employeeNumber);
 
-        
     }
 }

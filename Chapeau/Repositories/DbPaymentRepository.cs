@@ -11,7 +11,7 @@ namespace Chapeau.Repositories
 
         public DbPaymentRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection") ?? "";
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
         public Order? GetActiveOrderByTableId(int tableId)

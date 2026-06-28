@@ -707,5 +707,4 @@ namespace Chapeau.Repositories
             return menu;
         }
     }
-
 }
