@@ -27,22 +27,13 @@ namespace Chapeau.Repositories
                 INNER JOIN OrderItem oi ON o.OrderId = oi.OrderId
                 INNER JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
                 WHERE mi.IsFood = @IsFood
-                AND o.OrderStatus NOT IN (@Paid, @Served, @Settled)
-                AND EXISTS (
-                    SELECT 1 FROM OrderItem oi2
-                    INNER JOIN MenuItem mi2 ON mi2.MenuItemId = oi2.MenuItemId
-                    WHERE oi2.OrderId = o.OrderId
-                    AND mi2.IsFood = @IsFood
-                    AND oi2.OrderItemsStatus != @Ready
-                )
+                AND o.OrderStatus IN (@Ordered, @Preparing)
                 ORDER BY o.OrderTime ASC";
 
                     SqlCommand command = new SqlCommand(query, connection);
                     command.Parameters.AddWithValue("@IsFood", isFood);
-                    command.Parameters.AddWithValue("@Ready", OrderItemStatus.Ready.ToString());
-                    command.Parameters.AddWithValue("@Paid", OrderStatus.Paid.ToString());
-                    command.Parameters.AddWithValue("@Served", OrderStatus.Served.ToString());
-                    command.Parameters.AddWithValue("@Settled", OrderStatus.Settled.ToString());
+                    command.Parameters.AddWithValue("@Ordered", OrderStatus.Ordered.ToString());
+                    command.Parameters.AddWithValue("@Preparing", OrderStatus.Preparing.ToString());
 
                     connection.Open();
 
@@ -68,7 +59,6 @@ namespace Chapeau.Repositories
             return orders;
         }
 
-
         public List<Order> GetFinishedOrders(bool isFood)
         {
             List<Order> orders = new List<Order>();
@@ -77,25 +67,18 @@ namespace Chapeau.Repositories
             {
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    string query = @"
-                        SELECT DISTINCT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus
-                        FROM [Order] o
-                        INNER JOIN OrderItem oi ON o.OrderId = oi.OrderId
-                        INNER JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
-                        WHERE mi.IsFood = @IsFood
-                        AND CAST(o.OrderTime AS DATE) = CAST(GETDATE() AS DATE)
-                        AND NOT EXISTS (
-                            SELECT 1 FROM OrderItem oi2
-                            INNER JOIN MenuItem mi2 ON mi2.MenuItemId = oi2.MenuItemId
-                            WHERE oi2.OrderId = o.OrderId
-                            AND mi2.IsFood = @IsFood
-                            AND oi2.OrderItemsStatus != @Ready
-                        )
-                        ORDER BY o.OrderTime DESC";
+                    string query = @"SELECT DISTINCT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus   FROM [Order] o
+                                  INNER JOIN OrderItem oi ON o.OrderId = oi.OrderId
+                                  INNER JOIN MenuItem mi ON oi.MenuItemId = mi.MenuItemId
+                                  WHERE mi.IsFood = @IsFood
+                                  AND CAST(o.OrderTime AS DATE) = CAST(GETDATE() AS DATE)
+                                  AND o.OrderStatus IN (@Ready, @Served)
+                                  ORDER BY o.OrderTime DESC";
 
                     SqlCommand command = new SqlCommand(query, connection);
                     command.Parameters.AddWithValue("@IsFood", isFood);
-                    command.Parameters.AddWithValue("@Ready", OrderItemStatus.Ready.ToString());
+                    command.Parameters.AddWithValue("@Ready", OrderStatus.Ready.ToString());
+                    command.Parameters.AddWithValue("@Served", OrderStatus.Served.ToString());
 
                     connection.Open();
 
@@ -121,6 +104,8 @@ namespace Chapeau.Repositories
             return orders;
         }
 
+
+
         public void UpdateOrderStatus(Order order)
         {
             try
@@ -142,6 +127,7 @@ namespace Chapeau.Repositories
                 throw new Exception("Database error while updating order status.", ex);
             }
         }
+       
 
         public void UpdateOrderItemStatus(OrderItem orderItem)
         {
@@ -162,6 +148,31 @@ namespace Chapeau.Repositories
             catch (SqlException ex)
             {
                 throw new Exception("Database error while updating order item status.", ex);
+            }
+        }
+        public void UpdateAllOrderItemsStatus(Order order, bool isFood, OrderItemStatus status)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    string query = @"UPDATE OrderItem SET OrderItemsStatus = @Status  FROM OrderItem oi
+                                   INNER JOIN MenuItem mi ON mi.MenuItemId = oi.MenuItemId
+                                   WHERE oi.OrderId = @OrderId
+                                   AND mi.IsFood = @IsFood";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@OrderId", order.OrderId);
+                    command.Parameters.AddWithValue("@IsFood", isFood);
+                    command.Parameters.AddWithValue("@Status", status.ToString());
+
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Database error while updating all order items status.", ex);
             }
         }
 
@@ -525,18 +536,15 @@ namespace Chapeau.Repositories
                 }
             }
         }
-
-        public List<Order> GetRunningTableOrders(int tableId)
+        public Order? GetRunningTableOrder(int tableId)
         {
             try
             {
-                List<Order> orders = new List<Order>();
-
                 using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
                     string query = @"
-                SELECT o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus 
-                FROM [Order] o 
+                SELECT TOP 1 o.OrderId, o.TableId, o.EmployeeId, o.OrderTime, o.ServedTime, o.OrderStatus
+                FROM [Order] o
                 WHERE o.OrderStatus NOT IN (@Paid, @Cancelled, @Served, @Settled)
                 AND o.TableId = @tableId
                 ORDER BY o.OrderTime ASC";
@@ -552,51 +560,50 @@ namespace Chapeau.Repositories
 
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        while (reader.Read())
+                        if (reader.Read())
                         {
-                            orders.Add(ReadOrder(reader));
+                            Order order = ReadOrder(reader);
+                            order.OrderItems = GetOrderItemsByOrderIdNoFilter(order);
+                            return order;
                         }
-                    }
-
-                    foreach (Order order in orders)
-                    {
-                        order.OrderItems = GetOrderItemsByOrderIdNoFilter(order);
                     }
                 }
 
-                return orders;
+                return null;
             }
             catch (SqlException ex)
             {
-                throw new Exception("Failed to retrieve running orders.", ex);
+                throw new Exception("Failed to retrieve running order.", ex);
             }
         }
+
 
         public void MarkOrderAsServed(int orderId)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string query = @"
-                UPDATE [Order]
-                SET
-                    OrderStatus = 'Served',
-                    ServedTime = GETDATE()
-                WHERE OrderId = @orderId";
+                string query = @"  UPDATE [Order]
+                              SET OrderStatus = 'Served', ServedTime = GETDATE()
+                              WHERE OrderId = @orderId;
+
+                              UPDATE OrderItem
+                              SET OrderItemsStatus = 'Served'
+                              WHERE OrderId = @orderId";
 
                 SqlCommand command = new SqlCommand(query, connection);
                 command.Parameters.AddWithValue("@orderId", orderId);
 
                 connection.Open();
 
-                int noOfRowsAffected = command.ExecuteNonQuery();
-                if (noOfRowsAffected == 0)
+                int rowsAffected = command.ExecuteNonQuery();
+
+                if (rowsAffected == 0)
                 {
                     throw new Exception("No record updated!");
                 }
             }
         }
 
-    
         public Order? GetActiveFoodOrDrinkOrder(int tableId, int isFood)
         {
             try
