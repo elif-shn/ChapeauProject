@@ -191,6 +191,7 @@
                        step="0.01"
                        min="0"
                        placeholder="0.00"
+                       onfocus="clearZero(this)"
                        oninput="updateTotal()" />
 
                 <label>Payment Method</label>
@@ -472,9 +473,25 @@
         text-align: center;
         padding: 60px 20px;
     }
+
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type=number] {
+        appearance: textfield;
+        -moz-appearance: textfield;
+    }
 </style>
 
 <script>
+        function clearZero(input) {
+        if (input.value === "0" || input.value === "0.00") {
+            input.value = "";
+        }
+    }
     function openTablePopup() {
         document.getElementById("tablePopup").style.display = "block";
         filterTables();

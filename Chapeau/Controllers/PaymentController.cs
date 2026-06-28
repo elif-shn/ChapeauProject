@@ -1,5 +1,6 @@
 ﻿using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chapeau.Controllers
@@ -13,6 +14,7 @@ namespace Chapeau.Controllers
             _paymentService = paymentService;
         }
 
+        [Authorize(Roles = "Waiter,Manager")]
         public IActionResult Index()
         {
             PaymentViewModel viewModel = _paymentService.GetDashboard();
@@ -20,6 +22,7 @@ namespace Chapeau.Controllers
             return View(viewModel);
         }
 
+        [Authorize(Roles = "Waiter,Manager")]
         public IActionResult LoadBill(int tableId)
         {
             PaymentViewModel viewModel = _paymentService.GetBillByTableId(tableId);
@@ -28,6 +31,7 @@ namespace Chapeau.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Waiter,Manager")]
         public IActionResult ConfirmPayment(PaymentViewModel viewModel)
         {
             try
@@ -50,6 +54,7 @@ namespace Chapeau.Controllers
             }
         }
 
+        [Authorize(Roles = "Waiter,Manager")]
         public IActionResult SplitEqual(int tableId)
         {
             SplitPaymentViewModel viewModel = _paymentService.GetSplitPaymentByTableId(tableId);
@@ -59,6 +64,7 @@ namespace Chapeau.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Waiter,Manager")]
         public IActionResult SplitEqual(SplitPaymentViewModel viewModel)
         {
             try
@@ -75,15 +81,25 @@ namespace Chapeau.Controllers
             }
         }
 
-        public IActionResult SplitDifferent(int tableId)
+        [Authorize(Roles = "Waiter,Manager")]
+        public IActionResult SplitDifferent(int tableId, int numberOfPeople = 1)
         {
             SplitPaymentViewModel viewModel = _paymentService.GetSplitPaymentByTableId(tableId);
             viewModel.IsEqualSplit = false;
+            viewModel.NumberOfPeople = numberOfPeople;
+
+            viewModel.Payments.Clear();
+
+            for (int i = 0; i < numberOfPeople; i++)
+            {
+                viewModel.Payments.Add(new SplitPaymentPersonViewModel());
+            }
 
             return View(viewModel);
         }
 
         [HttpPost]
+        [Authorize(Roles = "Waiter,Manager")]
         public IActionResult SplitDifferent(SplitPaymentViewModel viewModel)
         {
             try
@@ -100,6 +116,7 @@ namespace Chapeau.Controllers
             }
         }
 
+        [Authorize(Roles = "Waiter,Manager")]
         public IActionResult Success()
         {
             return View();
