@@ -553,6 +553,39 @@ namespace Chapeau.Repositories
             }
         }
 
+        public void MarkFoodOrDrinkAsServed(int orderId, bool isFood)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = @"
+                            UPDATE oi
+                            SET oi.OrderItemsStatus = @served
+                            FROM OrderItem oi
+                            JOIN MenuItem mi
+                                ON oi.MenuItemId = mi.MenuItemId
+                            WHERE oi.OrderId = @orderId
+                              AND mi.IsFood = @isFood
+                              AND oi.OrderItemsStatus = @ready";
+
+                SqlCommand command = new SqlCommand(query, connection);
+
+                command.Parameters.AddWithValue("@orderId", orderId);
+                command.Parameters.AddWithValue("@isFood", isFood);
+                command.Parameters.AddWithValue("@ready", OrderItemStatus.Ready.ToString());
+                command.Parameters.AddWithValue("@served", OrderItemStatus.Served.ToString());
+
+                connection.Open();
+
+                int noOfRowsAffected = command.ExecuteNonQuery();
+                if (noOfRowsAffected == 0)
+                {
+                    throw new Exception("No record updated!");
+                }
+            }
+
+            
+        }
+
         public void MarkOrderAsServed(int orderId)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))

@@ -146,7 +146,7 @@ namespace Chapeau.Repositories
                     @"SELECT EmployeeId, EmployeeName, EmployeeNumber, EmployeeOccupation, EmployeePassword, IsActive
                       FROM Employee
                       WHERE EmployeeName = @username
-                      AND EmployeePassword = @password";
+                      AND EmployeePassword = @password AND IsActive = 1";
 
                 SqlCommand command = new SqlCommand(query, connection);
                 

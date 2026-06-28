@@ -20,6 +20,8 @@ public interface IOrderRepository
     List<OrderItem> GetOrderItemsByOrderId(int orderId, bool isFood);
     List<OrderItem> GetOrderItemsByOrderIdNoFilter(Order order);
     void MarkOrderAsServed(int orderId);
+
+    void MarkFoodOrDrinkAsServed(int orderId, bool isFood);
 }
 
 

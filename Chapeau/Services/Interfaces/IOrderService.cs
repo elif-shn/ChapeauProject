@@ -24,5 +24,6 @@ namespace Chapeau.Services.Interfaces
         void AddItemToCurrentOrder(List<OrderItem> currentOrder, int menuItemId, string comment = "");
         void AddNote(List<OrderItem> currentItems,int menuItemId, string comment);
         void DeleteItem(List<OrderItem> currentItems, int menuItemId, string comment = "");
+        void MarkFoodOrDrinkAsServed(int orderId, bool isFood);
     }
 }

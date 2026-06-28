@@ -3,6 +3,7 @@ using Chapeau.Enums;
 using Chapeau.Models;
 using Chapeau.Repositories;
 using Chapeau.Repositories.Interfaces;
+using Chapeau.Services;
 using Chapeau.Services.Interfaces;
 using Chapeau.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -22,30 +23,54 @@ namespace Chapeau.Controllers
 
         public IActionResult Index()
         {
-            List<Table> tables = _tableService.GetAllTables();
-            
-
-            List<RestaurantOverviewViewModel> overview = new List<RestaurantOverviewViewModel>();
-            
-
-            foreach (Table table in tables)
+            try
             {
-                RestaurantOverviewViewModel tableOverview = new RestaurantOverviewViewModel()
-                  
+                List<Table> tables = _tableService.GetAllTables();
+
+
+                List<RestaurantOverviewViewModel> overview = new List<RestaurantOverviewViewModel>();
+
+
+                foreach (Table table in tables)
+                {
+                    Order? order = _orderServices.GetRunningTableOrder(table.TableId);
+                    RestaurantOverviewViewModel tableOverview = new RestaurantOverviewViewModel()
+
                     {
                         Table = table,
 
-                        HasFoodOrders = _orderServices.GetActiveFoodOrDrinkOrder(table.TableId, 1) != null,
-                        
+                        Order = order,
 
-                        HasDrinkOrders = _orderServices.GetActiveFoodOrDrinkOrder(table.TableId, 0) != null
-                            
+                        HasFoodOrders =
+                        order?.OrderItems.Any(item =>
+                            item.MenuItem.IsFood) ?? false,
+
+                        HasDrinkOrders =
+                        order?.OrderItems.Any(item =>
+                            !item.MenuItem.IsFood) ?? false,
+
+                        FoodReady =
+                        order?.OrderItems.Any(item =>
+                            item.MenuItem.IsFood &&
+                            item.OrderItemStatus == OrderItemStatus.Ready) ?? false,
+
+                        DrinkReady =
+                        order?.OrderItems.Any(item =>
+                            !item.MenuItem.IsFood &&
+                            item.OrderItemStatus == OrderItemStatus.Ready) ?? false
                     };
 
-                overview.Add(tableOverview);
-            }
+                    overview.Add(tableOverview);
+                }
 
-            return View(overview);
+                return View(overview);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return View(new List<RestaurantOverviewViewModel>());
+            }
+            
         }
 
         [HttpGet]
@@ -54,6 +79,14 @@ namespace Chapeau.Controllers
             Order? order = _orderServices.GetRunningTableOrder(tableId);
             return View(order);
 
+        }
+
+        [HttpPost]
+        public IActionResult MarkFoodOrDrinkServed(int orderId, bool isFood)
+        {
+            _orderServices.MarkFoodOrDrinkAsServed(orderId, isFood);
+
+            return RedirectToAction("Index");
         }
 
         [HttpPost]
@@ -98,6 +131,8 @@ namespace Chapeau.Controllers
 
             return RedirectToAction("Index");
         }
+
+
     }
 }
 //test 2

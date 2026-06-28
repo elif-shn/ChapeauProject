@@ -142,6 +142,11 @@ namespace Chapeau.Services
         {
             return _orderRepository.GetActiveFoodOrDrinkOrder(tableId, isFood);
         }
+
+        public void MarkFoodOrDrinkAsServed(int orderId, bool isFood)
+        {
+            _orderRepository.MarkFoodOrDrinkAsServed(orderId, isFood);
+        }
     }
 }
 

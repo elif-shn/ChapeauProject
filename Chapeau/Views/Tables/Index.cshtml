@@ -2,7 +2,7 @@
 @using Chapeau.Extensions;
 
 @using Chapeau.ViewModels
-@model List<RestaurantOverviewViewModel>
+@model IEnumerable<Chapeau.ViewModels.RestaurantOverviewViewModel>
 @{
     var employee = Context.Session.GetObject<Employee>("LoggedInUser");
     bool isWaiter = employee != null && employee.EmployeeOccupation == EmployeeRole.Waiter;
@@ -38,6 +38,15 @@
 
             <p>Status: @item.Table.TableStatus</p>
 
+            @if (item.Order != null)
+            {
+                <p>Order Status: @item.Order.OrderStatus</p>
+            }
+            else
+            {
+                <p>Order Status: No active order</p>
+            }
+
             @if(item.HasFoodOrders && item.HasDrinkOrders)
             {
                 <span class="badge bg-primary">
@@ -55,6 +64,43 @@
                 <span class="badge bg-info">
                     Drink
                 </span>
+            }
+            @if (item.HasDrinkOrders)
+            {
+                <div>
+                    <span class="badge bg-info">Drink</span>
+
+                    @if (item.DrinkReady)
+                    {
+                        <form asp-action="MarkFoodOrDrinkServed" method="post">
+                            <input type="hidden" name="orderId" value="@item.Order.OrderId" />
+                            <input type="hidden" name="isFood" value="false" />
+
+                            <button class="btn btn-primary btn-sm">
+                                Serve Drinks
+                            </button>
+                        </form>
+                    }
+                </div>
+            }
+
+            @if (item.HasFoodOrders)
+            {
+                <div>
+                    <span class="badge bg-success">Food</span>
+
+                    @if (item.FoodReady)
+                    {
+                        <form asp-action="MarkFoodOrDrinkServed" method="post">
+                            <input type="hidden" name="orderId" value="@item.Order.OrderId" />
+                            <input type="hidden" name="isFood" value="true" />
+
+                            <button class="btn btn-success btn-sm">
+                                Serve Food
+                            </button>
+                        </form>
+                    }
+                </div>
             }
 
             <form asp-action="ChangeTableStatus"
@@ -108,7 +154,7 @@
                        asp-action="ShowOrders"
                        asp-route-tableId="@item.Table.TableId"
                        class="btn btn-sm btn-primary flex-fill text-center">
-                        View Orders
+                        View Order
                     </a>
                 }
                 else
@@ -116,7 +162,7 @@
                    
 
                     <span class="btn btn-sm btn-secondary flex-fill text-center disabled">
-                        View Orders
+                        View Order
                     </span>
                 }
                 

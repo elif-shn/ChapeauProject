@@ -9,5 +9,12 @@ namespace Chapeau.ViewModels
         public bool HasFoodOrders { get; set; }
 
         public bool HasDrinkOrders { get; set; }
+
+        public Order? Order { get; set; }
+
+        public bool FoodReady { get; set; }
+
+        public bool DrinkReady { get; set; }
+
     }
 }

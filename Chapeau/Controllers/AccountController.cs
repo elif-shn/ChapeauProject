@@ -56,7 +56,7 @@ namespace Chapeau.Controllers
             ClaimsIdentity identity = new ClaimsIdentity(claims, "ChapeauCookie");
             ClaimsPrincipal principal = new ClaimsPrincipal(identity);
 
-            await HttpContext.SignInAsync("ChapeauCookie", principal);
+            HttpContext.SignInAsync("ChapeauCookie", principal);
 
             return RedirectToAction("Index", "Home");
             
@@ -67,7 +67,7 @@ namespace Chapeau.Controllers
         {
             HttpContext.Session.Remove("LoggedInUser");
 
-            await HttpContext.SignOutAsync("ChapeauCookie");
+            HttpContext.SignOutAsync("ChapeauCookie");
 
             return RedirectToAction("Login");
         }
