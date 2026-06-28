@@ -1,149 +1,14 @@
 ﻿@model Chapeau.ViewModels.EmployeeManagementViewModel
+@using Chapeau.Extensions
+@using Chapeau.Models
 
-<style>
-    body {
-        background-color: #f8f6f3;
-        font-family: 'Segoe UI', sans-serif;
-        color: #2d2d2d;
-    }
+@{
+    Employee? loggedInEmployee = Context.Session.GetObject<Employee>("LoggedInUser");
+}
 
-    .page-title {
-        font-size: 38px;
-        font-weight: 700;
-        margin-bottom: 10px;
-        color: #4b2e1f;
-    }
-
-    .title-line {
-        height: 2px;
-        background-color: #c8a96b;
-        width: 100%;
-        margin-bottom: 24px;
-    }
-
-    .btn-add {
-        display: inline-block;
-        background-color: #6b442b;
-        color: white;
-        text-decoration: none;
-        padding: 12px 22px;
-        border-radius: 10px;
-        font-size: 18px;
-        font-weight: 500;
-        margin-bottom: 24px;
-        transition: 0.2s ease;
-    }
-
-        .btn-add:hover {
-            background-color: #553520;
-            color: white;
-        }
-
-    .table-wrapper {
-        overflow-x: auto;
-        border-radius: 18px;
-    }
-
-    .menu-table {
-        width: 100%;
-        border-collapse: collapse;
-        background-color: white;
-        border-radius: 18px;
-    }
-
-        .menu-table thead {
-            background-color: #6b442b;
-            color: white;
-        }
-
-        .menu-table th {
-            padding: 16px 18px;
-            font-size: 18px;
-            font-weight: 700;
-            text-align: left;
-        }
-
-        .menu-table td {
-            padding: 16px 18px;
-            font-size: 16px;
-            border-bottom: 1px solid #ececec;
-            vertical-align: middle;
-        }
-
-        .menu-table tbody tr:hover {
-            background-color: #faf7f2;
-        }
-
-    .inactive-row td:not(.actions-cell) {
-        filter: blur(0.7px) grayscale(40%) brightness(0.95);
-    }
-
-    .inactive-row .actions-cell, .inactive-row .actions-cell * {
-        filter: none !important;
-        opacity: 1 !important;
-    }
-
-    .badge-role {
-        background-color: #ffe7b3;
-        color: #8a5a00;
-        padding: 5px 14px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 700;
-    }
-
-    .status-active {
-        color: #222;
-        font-weight: 500;
-    }
-
-    .status-inactive {
-        color: #888;
-        font-weight: 500;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-
-    .btn-edit {
-        background-color: #c8a96b;
-        color: white;
-        padding: 8px 14px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-    }
-
-    .btn-deactivate {
-        background-color: #d43c2f;
-        color: white;
-        padding: 8px 14px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-        border: none;
-        cursor: pointer;
-        font-family: inherit;
-    }
-
-    .btn-activate {
-        background-color: #22a652;
-        color: white;
-        padding: 8px 14px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-        border: none;
-        cursor: pointer;
-        font-family: inherit;
-    }
-</style>
+@section Styles {
+    <link rel="stylesheet" href="~/css/employee-management.css" asp-append-version="true" />
+}
 
 <h2 class="page-title mb-2">Employee Management</h2>
 <div class="title-line"></div>
@@ -177,22 +42,31 @@
                         }
                         else
                         {
-
                             <span class="status-inactive">Inactive</span>
                         }
                     </td>
                     <td class="actions-cell">
                         <div class="action-buttons">
                             <a asp-action="Edit" asp-route-id="@emp.EmployeeId" class="btn-edit">Edit</a>
+
                             @if (emp.IsActive)
                             {
-                                <form asp-action="Deactivate" asp-route-id="@emp.EmployeeId" method="post" style="display:inline;">
-                                    <button type="submit" class="btn-deactivate">Deactivate</button>
-                                </form>
+                                if (loggedInEmployee != null && loggedInEmployee.EmployeeId == emp.EmployeeId)
+                                {
+                                    <button type="button" class="btn-deactivate" disabled>Current User</button>
+                                }
+                                else
+                                {
+                                    <form asp-action="Deactivate" asp-route-id="@emp.EmployeeId" method="post" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn-deactivate">Deactivate</button>
+                                    </form>
+                                }
                             }
                             else
                             {
                                 <form asp-action="Activate" asp-route-id="@emp.EmployeeId" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
                                     <button type="submit" class="btn-activate">Activate</button>
                                 </form>
                             }

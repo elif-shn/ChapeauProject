@@ -39,7 +39,7 @@ namespace Chapeau.Controllers
             }
         }
         [Authorize(Roles = "Manager")]
-        public IActionResult Management(Card? selectedCard, Category? selectedCategory)
+        public IActionResult Management(Card? selectedCard, Category? selectedCategory) 
         {
             try
             {
