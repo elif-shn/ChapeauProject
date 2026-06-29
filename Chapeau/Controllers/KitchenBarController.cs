@@ -7,7 +7,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Chapeau.Controllers
+//login as a chef with username: Emma Johnson, password: 12345
+//login as a bartender with username: Bissy, password: 12345
 {
+    [Authorize]
     public class KitchenBarController : Controller
     {
         private readonly IOrderService _orderServices;
@@ -23,6 +26,7 @@ namespace Chapeau.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Chef")]
         public IActionResult GetRunningKitchenOrders()
         {
             try
@@ -40,6 +44,7 @@ namespace Chapeau.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Bartender")]
         public IActionResult GetRunningBarOrders()
         {
             try
@@ -57,6 +62,7 @@ namespace Chapeau.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Chef")]
         public IActionResult GetFinishedKitchenOrders()
         {
             try
@@ -73,6 +79,7 @@ namespace Chapeau.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Bartender")]
         public IActionResult GetFinishedBarOrders()
         {
             try
@@ -87,7 +94,6 @@ namespace Chapeau.Controllers
                 return View("GetFinishedOrders", new List<Order>());
             }
         }
-
 
         [HttpPost]
         public IActionResult UpdateOrderStatus(Order order, bool isFood)
@@ -122,15 +128,12 @@ namespace Chapeau.Controllers
             }
 
             if (isFood)
-            {
                 return RedirectToAction("GetRunningKitchenOrders");
-            }
             else
-            {
                 return RedirectToAction("GetRunningBarOrders");
-            }
         }
 
+        [HttpPost]
         public IActionResult UpdateCourseStatus(Order order, Category category, OrderItemStatus status)
         {
             try
@@ -146,5 +149,4 @@ namespace Chapeau.Controllers
             return RedirectToAction("GetRunningKitchenOrders");
         }
     }
-
 }

@@ -19,6 +19,7 @@ namespace Chapeau.Controllers
         }
 
         //you can Log in as a waiter with username: Marie Lee, password: admin123
+        //you can Log in as a chef with username: Emma Johnson, password: 12345
         [AllowAnonymous]
         public IActionResult Login()
         {
